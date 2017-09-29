@@ -1,0 +1,16 @@
+[
+{
+  "modid": "clothesline",
+  "name": "Clothesline",
+  "description": "For more than clothes",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["JamiesWhiteShirt"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
