@@ -1,0 +1,31 @@
+{
+    "ambientocclusion": false,
+    "textures": {
+        "particle": "clothesline:blocks/clothesline_pole",
+        "pole": "clothesline:blocks/clothesline_pole",
+        "pole_bare": "clothesline:blocks/clothesline_pole_bare"
+    },
+    "elements": [
+        {   "from": [ 7, 0, 7 ],
+            "to": [ 9, 11, 9 ],
+            "faces": {
+                "down": { "texture": "#pole_bare" },
+                "up":   { "texture": "#pole_bare" }
+            }
+        },
+        {   "from": [ 7, 0, 6 ],
+            "to": [ 9, 16, 10 ],
+            "faces": {
+                "west": { "texture": "#pole" },
+                "east": { "texture": "#pole" }
+            }
+        },
+        {   "from": [ 6, 0, 7 ],
+            "to": [ 10, 16, 9 ],
+            "faces": {
+                "north": { "texture": "#pole" },
+                "south": { "texture": "#pole" }
+            }
+        }
+    ]
+}

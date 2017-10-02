@@ -1,0 +1,10 @@
+{
+    "variants": {
+        "facing=up": { "model": "clothesline:clothesline_pole" },
+        "facing=down": { "model": "clothesline:clothesline_pole", "x": 180 },
+        "facing=east": { "model": "clothesline:clothesline_hook", "y": 90 },
+        "facing=west": { "model": "clothesline:clothesline_hook", "y": 270 },
+        "facing=south": { "model": "clothesline:clothesline_hook", "y": 180 },
+        "facing=north": { "model": "clothesline:clothesline_hook" }
+    }
+}

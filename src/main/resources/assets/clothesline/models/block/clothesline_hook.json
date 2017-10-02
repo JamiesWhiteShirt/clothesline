@@ -1,0 +1,53 @@
+{
+    "ambientocclusion": false,
+    "textures": {
+        "particle": "clothesline:blocks/clothesline_pole",
+        "hook_left": "clothesline:blocks/clothesline_hook_left",
+        "hook_right": "clothesline:blocks/clothesline_hook_right",
+        "pole": "clothesline:blocks/clothesline_pole",
+        "pole_bare": "clothesline:blocks/clothesline_pole_bare"
+    },
+    "elements": [
+        {   "from": [ 7, 5, 7 ],
+            "to": [ 9, 7, 14 ],
+            "faces": {
+                "down": { "uv": [7, 7, 9, 14], "rotation": 180, "texture": "#pole_bare" },
+                "up":   { "texture": "#pole" }
+            }
+        },
+        {   "from": [ 7, 11, 7 ],
+            "to": [ 9, 11, 9 ],
+            "faces": {
+                "up": { "texture": "#pole_bare" }
+            }
+        },
+        {   "from": [ 7, 0, 14 ],
+            "to": [ 9, 11, 16 ],
+            "faces": {
+                "down": { "uv": [7, 14, 9, 16], "rotation": 180, "texture": "#pole_bare" },
+                "up": { "texture": "#pole_bare" }
+            }
+        },
+        {   "from": [ 7, 0, 6 ],
+            "to": [ 9, 16, 16 ],
+            "faces": {
+                "west": { "texture": "#hook_right" },
+                "east": { "texture": "#hook_left" }
+            }
+        },
+        {   "from": [ 6, 5, 7 ],
+            "to": [ 10, 11, 9 ],
+            "faces": {
+                "north": { "texture": "#pole" },
+                "south": { "texture": "#pole" }
+            }
+        },
+        {   "from": [ 7, 0, 14 ],
+            "to": [ 9, 11, 16 ],
+            "faces": {
+                "north": { "texture": "#pole_bare" },
+                "south": { "texture": "#pole_bare" }
+            }
+        }
+    ]
+}
