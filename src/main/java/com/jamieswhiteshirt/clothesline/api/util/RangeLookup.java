@@ -1,4 +1,4 @@
-package com.jamieswhiteshirt.clothesline.api;
+package com.jamieswhiteshirt.clothesline.api.util;
 
 import java.util.List;
 

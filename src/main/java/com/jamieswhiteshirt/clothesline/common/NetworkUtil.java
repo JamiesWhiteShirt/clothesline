@@ -1,40 +1,25 @@
 package com.jamieswhiteshirt.clothesline.common;
 
-import com.jamieswhiteshirt.clothesline.api.Attachment;
-import com.jamieswhiteshirt.clothesline.api.Network;
-import com.jamieswhiteshirt.clothesline.api.Node;
-import com.jamieswhiteshirt.clothesline.api.NodeLoop;
+import com.jamieswhiteshirt.clothesline.api.*;
+import com.jamieswhiteshirt.clothesline.api.util.SortedIntShiftMap;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class NetworkUtil {
     public static void writeNetworkToByteBuf(ByteBuf buf, Network network) {
         writeNetworkUuidToByteBuf(buf, network.getUuid());
-        writeNodeLoopToByteBuf(buf, network.getNodeLoop());
-        buf.writeShort(network.getAttachments().size());
-        for (Attachment attachment : network.getAttachments().values()) {
-            writeAttachmentToByteBuf(buf, attachment);
-        }
+        writeNetworkStateToByteBuf(buf, network.getState());
     }
 
     public static Network readNetworkFromByteBuf(ByteBuf buf) {
         UUID uuid = readNetworkUuidFromByteBuf(buf);
-        NodeLoop nodeLoop = readNodeLoopFromByteBuf(buf);
-        int numAttachments = buf.readUnsignedShort();
-        Attachment[] attachments = new Attachment[numAttachments];
-        for (int i = 0; i < numAttachments; i++) {
-            attachments[i] = readAttachmentFromByteBuf(buf);
-        }
-        return new Network(uuid, nodeLoop, Arrays.stream(attachments).collect(Collectors.toMap(
-                Attachment::getId,
-                attachment -> attachment
-        )));
+        return new Network(uuid, readNetworkStateFromByteBuf(buf));
     }
 
     public static void writeNetworkUuidToByteBuf(ByteBuf buf, UUID networkUuid) {
@@ -46,49 +31,59 @@ public class NetworkUtil {
         return new UUID(buf.readLong(), buf.readLong());
     }
 
-    public static void writeNodeLoopToByteBuf(ByteBuf buf, NodeLoop nodeLoop) {
-        List<Node> nodes = nodeLoop.getNodes();
-        buf.writeShort(nodes.size());
-        for (Node node : nodes) {
-            writeNodeToByteBuf(buf, node);
+    public static void writeNetworkStateToByteBuf(ByteBuf buf, AbsoluteNetworkState state) {
+        writeBasicTreeToByteBuf(buf, BasicTree.fromAbsolute(state.getTree()));
+        buf.writeInt(state.getPreviousOffset());
+        buf.writeInt(state.getOffset());
+        buf.writeInt(state.getMomentum());
+        buf.writeShort(state.getStacks().size());
+        for (SortedIntShiftMap.Entry<ItemStack> entry : state.getStacks().entries()) {
+            buf.writeInt(entry.getKey());
+            writeItemStackToByteBuf(buf, entry.getValue());
         }
-        buf.writeInt(nodeLoop.getLoopLength());
     }
 
-    public static NodeLoop readNodeLoopFromByteBuf(ByteBuf buf) {
-        int numNodes = buf.readShort();
-        Node[] nodes = new Node[numNodes];
-        for (int i = 0; i < numNodes; i++) {
-            nodes[i] = readNodeFromByteBuf(buf);
+    public static AbsoluteNetworkState readNetworkStateFromByteBuf(ByteBuf buf) {
+        AbsoluteTree tree = readBasicTreeFromByteBuf(buf).toAbsolute();
+        int previousOffset = buf.readInt();
+        int offset = buf.readInt();
+        int momentum = buf.readInt();
+        int numItemStacks = buf.readUnsignedShort();
+        ArrayList<SortedIntShiftMap.Entry<ItemStack>> entries = new ArrayList<>(numItemStacks);
+        for (int i = 0; i < numItemStacks; i++) {
+            entries.add(new SortedIntShiftMap.Entry<>(buf.readInt(), readItemStackFromByteBuf(buf)));
         }
-        return new NodeLoop(Arrays.asList(nodes), buf.readInt());
+        return new AbsoluteNetworkState(
+                previousOffset,
+                offset,
+                momentum,
+                tree,
+                new SortedIntShiftMap<>(entries, tree.getLoopLength())
+        );
     }
 
-    public static void writeNodeToByteBuf(ByteBuf buf, Node node) {
-        buf.writeLong(node.getPos().toLong());
-        buf.writeShort(node.getOffset());
-        buf.writeFloat(node.getAngleY());
+    public static void writeBasicTreeToByteBuf(ByteBuf buf, BasicTree tree) {
+        buf.writeLong(tree.getPos().toLong());
+        buf.writeByte(tree.getChildren().size());
+        for (BasicTree child : tree.getChildren()) {
+            writeBasicTreeToByteBuf(buf, child);
+        }
     }
 
-    public static Node readNodeFromByteBuf(ByteBuf buf) {
-        return new Node(BlockPos.fromLong(buf.readLong()), buf.readUnsignedShort(), buf.readFloat());
+    public static BasicTree readBasicTreeFromByteBuf(ByteBuf buf) {
+        BlockPos pos = BlockPos.fromLong(buf.readLong());
+        int numChildren = buf.readUnsignedByte();
+        BasicTree[] children = new BasicTree[numChildren];
+        for (int i = 0; i < numChildren; i++) {
+            children[i] = readBasicTreeFromByteBuf(buf);
+        }
+        return new BasicTree(pos, Arrays.asList(children));
+    }
+    public static void writeItemStackToByteBuf(ByteBuf buf, ItemStack stack) {
+        ByteBufUtils.writeItemStack(buf, stack);
     }
 
-    public static void writeAttachmentToByteBuf(ByteBuf buf, Attachment attachment) {
-        writeAttachmentIdToByteBuf(buf, attachment.getId());
-        buf.writeInt(attachment.getOffset());
-        ByteBufUtils.writeItemStack(buf, attachment.getStack());
-    }
-
-    public static Attachment readAttachmentFromByteBuf(ByteBuf buf) {
-        return new Attachment(readAttachmentIdFromByteBuf(buf), buf.readInt(), ByteBufUtils.readItemStack(buf));
-    }
-
-    public static void writeAttachmentIdToByteBuf(ByteBuf buf, int attachmentId) {
-        buf.writeInt(attachmentId);
-    }
-
-    public static int readAttachmentIdFromByteBuf(ByteBuf buf) {
-        return buf.readInt();
+    public static ItemStack readItemStackFromByteBuf(ByteBuf buf) {
+        return ByteBufUtils.readItemStack(buf);
     }
 }

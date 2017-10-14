@@ -57,8 +57,8 @@ public class ClientProxy extends CommonProxy {
         Clothesline.instance.networkWrapper.registerMessage(new MessageSyncNetworksHandler(), MessageSyncNetworks.class, 0, Side.CLIENT);
         Clothesline.instance.networkWrapper.registerMessage(new MessageAddNetworkHandler(), MessageAddNetwork.class, 1, Side.CLIENT);
         Clothesline.instance.networkWrapper.registerMessage(new MessageRemoveNetworkHandler(), MessageRemoveNetwork.class, 2, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new MessageAddAttachmentHandler(), MessageAddAttachment.class, 3, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new MessageRemoveAttachmentHandler(), MessageRemoveAttachment.class, 4, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new MessageSetItemHandler(), MessageSetItem.class, 3, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new MessageRemoveAttachmentHandler(), MessageRemoveItem.class, 4, Side.CLIENT);
     }
 
     @SubscribeEvent
@@ -84,12 +84,12 @@ public class ClientProxy extends CommonProxy {
         if (world != null && player != null) {
             INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
-                float partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
+                float partialTicks = event.getPartialTicks();
                 double x = player.posX * partialTicks + player.prevPosX * (1.0F - partialTicks);
                 double y = player.posY * partialTicks + player.prevPosY * (1.0F - partialTicks);
                 double z = player.posZ * partialTicks + player.prevPosZ * (1.0F - partialTicks);
                 for (Network network : manager.getNetworks().values()) {
-                    renderClothesline.render(network, x, y, z, partialTicks);
+                    renderClothesline.render(network.getState(), x, y, z, partialTicks);
                 }
             }
         }
@@ -97,7 +97,7 @@ public class ClientProxy extends CommonProxy {
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) {
+        if (event.phase == TickEvent.Phase.END && !Minecraft.getMinecraft().isGamePaused()) {
             WorldClient world = Minecraft.getMinecraft().world;
             if (world != null) {
                 INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);

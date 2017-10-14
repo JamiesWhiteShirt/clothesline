@@ -1,45 +1,42 @@
 package com.jamieswhiteshirt.clothesline.common.tileentity;
 
-import com.jamieswhiteshirt.clothesline.api.Network;
-import com.jamieswhiteshirt.clothesline.api.INetworkManager;
+import com.jamieswhiteshirt.clothesline.api.*;
+import com.jamieswhiteshirt.clothesline.api.util.SortedIntShiftMap;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.items.IItemHandler;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.UUID;
 
 public class TileEntityClotheslineAnchor extends TileEntity implements ITickable {
     @CapabilityInject(INetworkManager.class)
     private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = null;
+    @CapabilityInject(IItemHandler.class)
+    private static final Capability<IItemHandler> ITEM_HANDLER_CAPABILITY = null;
     private INetworkManager manager;
-    @Nullable
-    private UUID networkUuid;
-    private Network network;
 
     @Nullable
     public Network getNetwork() {
-        return network;
-    }
-
-    public void setNetwork(@Nullable Network network) {
-        if (network != null) {
-            this.network = network;
-            this.networkUuid = network.getUuid();
+        if (manager != null) {
+            return manager.getNetworkByBlockPos(pos);
         } else {
-            this.network = null;
-            this.networkUuid = null;
+            return null;
         }
     }
 
     public void crank(int amount) {
+        Network network = getNetwork();
         if (network != null) {
-            network.addMomentum(amount);
+            network.getState().addMomentum(amount);
         }
     }
 
@@ -47,34 +44,80 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     public void setWorld(World world) {
         super.setWorld(world);
         manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
-        if (manager != null && networkUuid != null) {
-            setNetwork(manager.getNetworkByUUID(networkUuid));
-        } else {
-            setNetwork(null);
-        }
     }
 
     @Override
     public void update() {
     }
 
+    @Nullable
+    @Override
+    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
+        if (capability == ITEM_HANDLER_CAPABILITY) {
+            Network network = getNetwork();
+            if (network != null) {
+                AbsoluteNetworkState state = network.getState();
+                AbsoluteTree tree = state.getSubTree(pos);
+                return ITEM_HANDLER_CAPABILITY.cast(new IItemHandler() {
+                    @Override
+                    public int getSlots() {
+                        return tree.getChildren().size();
+                    }
+
+                    @Override
+                    public ItemStack getStackInSlot(int slot) {
+                        return state.getItem(tree.getChildren().get(slot).getMinOffset());
+                    }
+
+                    @Override
+                    public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+                        return manager.insertItem(network, tree.getEdges().get(slot).getPreMinOffset(), stack, simulate);
+                    }
+
+                    @Override
+                    public ItemStack extractItem(int slot, int amount, boolean simulate) {
+                        return manager.extractItem(network, tree.getChildren().get(slot).getMinOffset(), simulate);
+                    }
+
+                    @Override
+                    public int getSlotLimit(int slot) {
+                        return 1;
+                    }
+                });
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
+        if (capability == ITEM_HANDLER_CAPABILITY) {
+            Network network = getNetwork();
+            if (network != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         super.writeToNBT(compound);
-        if (networkUuid != null) {
+        /*if (networkUuid != null) {
             NBTTagCompound networkTag = new NBTTagCompound();
             networkTag.setUniqueId("Id", networkUuid);
             compound.setTag("Network", networkTag);
-        }
+        }*/
         return compound;
     }
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
-        if (compound.hasKey("Network", Constants.NBT.TAG_COMPOUND)) {
+        super.readFromNBT(compound);
+        /*if (compound.hasKey("Network", Constants.NBT.TAG_COMPOUND)) {
             NBTTagCompound networkTag = compound.getCompoundTag("Network");
             networkUuid = networkTag.getUniqueId("Id");
-        }
+        }*/
     }
 
     @Override

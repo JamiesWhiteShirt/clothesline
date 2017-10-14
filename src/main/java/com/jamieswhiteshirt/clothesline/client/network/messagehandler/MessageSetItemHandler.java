@@ -2,7 +2,7 @@ package com.jamieswhiteshirt.clothesline.client.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.api.Network;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageAddAttachment;
+import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraftforge.common.capabilities.Capability;
@@ -14,19 +14,19 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class MessageAddAttachmentHandler implements IMessageHandler<MessageAddAttachment, IMessage> {
+public class MessageSetItemHandler implements IMessageHandler<MessageSetItem, IMessage> {
     @CapabilityInject(INetworkManager.class)
     public static Capability<INetworkManager> CLOTHESLINE_NETWORK_MANAGER_CAPABILITY;
 
     @Override
-    public IMessage onMessage(MessageAddAttachment message, MessageContext ctx) {
+    public IMessage onMessage(MessageSetItem message, MessageContext ctx) {
         WorldClient world = Minecraft.getMinecraft().world;
         if (world != null) {
             INetworkManager manager = world.getCapability(CLOTHESLINE_NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 Network network = manager.getNetworkByUUID(message.networkUuid);
                 if (network != null) {
-                    network.addAttachment(message.attachment);
+                    network.getState().setItem(message.offset, message.stack);
                 }
             }
         }

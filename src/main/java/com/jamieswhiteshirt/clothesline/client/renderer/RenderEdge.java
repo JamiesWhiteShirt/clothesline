@@ -1,5 +1,6 @@
 package com.jamieswhiteshirt.clothesline.client.renderer;
 
+import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.api.Node;
 import net.minecraft.util.math.Vec3d;
 
@@ -33,8 +34,8 @@ public class RenderEdge {
     }
 
     public static RenderEdge create(Node from, Node to) {
-        Vec3d fromVec = new Vec3d(from.getPos()).addVector(0.5D, 0.5D, 0.5D);
-        Vec3d toVec = new Vec3d(to.getPos()).addVector(0.5D, 0.5D, 0.5D);
+        Vec3d fromVec = new Vec3d(from.getTree().getPos()).addVector(0.5D, 0.5D, 0.5D);
+        Vec3d toVec = new Vec3d(to.getTree().getPos()).addVector(0.5D, 0.5D, 0.5D);
         Vec3d forward = toVec.subtract(fromVec);
 
         // The normal vector facing from the from pos to the to pos
@@ -50,7 +51,7 @@ public class RenderEdge {
         Vec3d upNormal = rightNormal.crossProduct(forwardNormal);
 
 
-        return new RenderEdge(fromVec, from.getOffset(), to.getOffset(), rightNormal, upNormal, forward, from.getAngleY());
+        return new RenderEdge(fromVec, from.getOffset(), to.getOffset(), rightNormal, upNormal, forward, Measurements.calculateGlobalAngle(from.getTree().getPos(), to.getTree().getPos()));
     }
 
     public double getFromOffset() {

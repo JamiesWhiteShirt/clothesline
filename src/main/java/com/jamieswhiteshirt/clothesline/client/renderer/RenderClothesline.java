@@ -2,13 +2,13 @@ package com.jamieswhiteshirt.clothesline.client.renderer;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.*;
-import net.minecraft.client.Minecraft;
+import com.jamieswhiteshirt.clothesline.api.util.SortedIntShiftMap;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.relauncher.Side;
@@ -83,7 +83,23 @@ public class RenderClothesline {
         return Arrays.asList(renderEdges);
     }
 
-    public void render(Network network, double x, double y, double z, float partialTicks) {
+    private void renderTree(AbsoluteTree absoluteTree, double x, double y, double z) {
+        List<AbsoluteTree> children = absoluteTree.getChildren();
+        for (int i = 0; i < children.size(); i++) {
+            AbsoluteTree child = children.get(i);
+            Vec3d pos = new Vec3d(absoluteTree.getPos()).scale(0.75D).add(new Vec3d(child.getPos()).scale(0.25D)).addVector(0.5D, 0.5D, 0.5D);
+
+            /*String msg = Integer.toString(i);
+            TileEntityRendererDispatcher rendererDispatcher = TileEntityRendererDispatcher.instance;
+            float f = rendererDispatcher.entityYaw;
+            float f1 = rendererDispatcher.entityPitch;
+            EntityRenderer.drawNameplate(Minecraft.getMinecraft().fontRenderer, msg, (float)(pos.x - x), (float)(pos.y - y), (float)(pos.z - z), 0, f, f1, false, false);*/
+
+            renderTree(child, x, y, z);
+        }
+    }
+
+    public void render(AbsoluteNetworkState network, double x, double y, double z, float partialTicks) {
         NodeLoop nodeLoop = network.getNodeLoop();
         Vec3d viewPos = new Vec3d(x, y, z);
 
@@ -91,7 +107,6 @@ public class RenderClothesline {
 
         List<RenderEdge> renderEdges = createRenderEdges(nodeLoop);
 
-        GlStateManager.disableCull();
         renderManager.renderEngine.bindTexture(TEXTURE);
         RenderHelper.enableStandardItemLighting();
 
@@ -106,21 +121,22 @@ public class RenderClothesline {
         }
         tessellator.draw();
         GlStateManager.popMatrix();
-        GlStateManager.enableCull();
 
         for (int i = 0; i < renderEdges.size(); i++) {
             RenderEdge edge = renderEdges.get(i);
             Vec3d pos = edge.projectVec(new Vec3d(0.125D, 0.125D, 0.5D));
-            TileEntityRendererDispatcher rendererDispatcher = TileEntityRendererDispatcher.instance;
+            /*TileEntityRendererDispatcher rendererDispatcher = TileEntityRendererDispatcher.instance;
             float f = rendererDispatcher.entityYaw;
             float f1 = rendererDispatcher.entityPitch;
             String msg = Integer.toString(i);
             //String msg = i + ": " + edge.getAngleY();
-            EntityRenderer.drawNameplate(Minecraft.getMinecraft().fontRenderer, msg, (float)(pos.x - x), (float)(pos.y - y), (float)(pos.z - z), 0, f, f1, false, false);
+            EntityRenderer.drawNameplate(Minecraft.getMinecraft().fontRenderer, msg, (float)(pos.x - x), (float)(pos.y - y), (float)(pos.z - z), 0, f, f1, false, false);*/
         }
 
-        for (Attachment attachment : network.getAttachments().values()) {
-            double attachmentOffset = (attachment.getOffset() + networkOffset) % nodeLoop.getLoopLength();
+        renderTree(network.getTree(), x, y, z);
+
+        for (SortedIntShiftMap.Entry<ItemStack> entry : network.getStacks().entries()) {
+            double attachmentOffset = (entry.getKey() + networkOffset) % nodeLoop.getLoopLength();
             RenderEdge edge = renderEdges.get(network.getMinNodeIndexForOffset((int)attachmentOffset));
             double d = (attachmentOffset - edge.getFromOffset()) / (edge.getToOffset() - edge.getFromOffset());
             Vec3d pos = edge.projectVec(new Vec3d(2.0D / 16.0D, 0.0D, d));
@@ -130,9 +146,16 @@ public class RenderClothesline {
             GlStateManager.scale(0.5D, 0.5D, 0.5D);
             GlStateManager.rotate(-edge.getAngleY(), 0.0f, 1.0f, 0.0f);
 
-            renderItem.renderItem(attachment.getStack(), ItemCameraTransforms.TransformType.FIXED);
+            renderItem.renderItem(entry.getValue(), ItemCameraTransforms.TransformType.FIXED);
 
             GlStateManager.popMatrix();
+
+            /*TileEntityRendererDispatcher rendererDispatcher = TileEntityRendererDispatcher.instance;
+            float f = rendererDispatcher.entityYaw;
+            float f1 = rendererDispatcher.entityPitch;
+            String msg = Integer.toString(entry.getValue().getOffset());
+            //String msg = i + ": " + edge.getAngleY();
+            EntityRenderer.drawNameplate(Minecraft.getMinecraft().fontRenderer, msg, (float)(pos.x - x), (float)(pos.y - y), (float)(pos.z - z), 0, f, f1, false, false);*/
         }
     }
 }

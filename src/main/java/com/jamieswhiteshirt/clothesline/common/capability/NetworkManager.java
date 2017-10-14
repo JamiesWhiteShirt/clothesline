@@ -1,10 +1,10 @@
 package com.jamieswhiteshirt.clothesline.common.capability;
 
 import com.jamieswhiteshirt.clothesline.api.*;
-import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
+import com.jamieswhiteshirt.clothesline.common.BasicTree;
+import com.jamieswhiteshirt.clothesline.common.RelativeNetworkState;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -40,12 +40,13 @@ public class NetworkManager implements INetworkManager {
     @Override
     public void addNetwork(Network network) {
         networksByUuid.put(network.getUuid(), network);
-        assignNodeLoop(network, network.getNodeLoop());
+        assignNetworkTree(network, network.getState().getTree());
     }
 
-    private void assignNodeLoop(Network network, NodeLoop nodeLoop) {
-        for (BlockPos pos : nodeLoop.getPositions()) {
-            networksByBlockPos.put(pos, network);
+    private void assignNetworkTree(Network network, AbsoluteTree tree) {
+        networksByBlockPos.put(tree.getPos(), network);
+        for (AbsoluteTree child : tree.getChildren()) {
+            assignNetworkTree(network, child);
         }
     }
 
@@ -53,13 +54,14 @@ public class NetworkManager implements INetworkManager {
     public void removeNetwork(UUID networkUuid) {
         Network network = networksByUuid.remove(networkUuid);
         if (network != null) {
-            unassignNodeLoop(network, network.getNodeLoop());
+            unassignTree(network, network.getState().getTree());
         }
     }
 
-    private void unassignNodeLoop(Network network, NodeLoop nodeLoop) {
-        for (BlockPos pos : nodeLoop.getPositions()) {
-            networksByBlockPos.remove(pos, network);
+    private void unassignTree(Network network, AbsoluteTree tree) {
+        networksByBlockPos.remove(tree.getPos(), network);
+        for (AbsoluteTree child : tree.getChildren()) {
+            unassignTree(network, child);
         }
     }
 
@@ -74,60 +76,88 @@ public class NetworkManager implements INetworkManager {
     }
 
     private void extend(Network network, BlockPos fromPos, BlockPos toPos) {
-        NodeLoop extensionLoop = NodeLoop.buildInitial(fromPos, toPos);
-        network.setNodeLoop(network.getNodeLoop().mergeWith(extensionLoop));
-        assignNodeLoop(network, extensionLoop);
+        network.setState(RelativeNetworkState.fromAbsolute(network.getState()).addEdge(fromPos, toPos).toAbsolute());
+        assignNetworkTree(network, network.getState().getTree());
     }
 
     @Override
     public boolean connect(BlockPos posA, BlockPos posB) {
+        Network networkA = getNetworkByBlockPos(posA);
+        Network networkB = getNetworkByBlockPos(posB);
+
         if (posA.equals(posB)) {
+            if (networkA != null) {
+                networkA.setState(RelativeNetworkState.fromAbsolute(networkA.getState()).reroot(posA).toAbsolute());
+                return true;
+            }
             return false;
         }
 
-        TileEntity tileEntityA = world.getTileEntity(posA);
-        TileEntity tileEntityB = world.getTileEntity(posB);
-        if (tileEntityA instanceof TileEntityClotheslineAnchor && tileEntityB instanceof TileEntityClotheslineAnchor) {
-            TileEntityClotheslineAnchor anchorA = (TileEntityClotheslineAnchor) tileEntityA;
-            TileEntityClotheslineAnchor anchorB = (TileEntityClotheslineAnchor) tileEntityB;
-
-
-            Network networkA = getNetworkByBlockPos(posA);
-            Network networkB = getNetworkByBlockPos(posB);
-
-            Network network = null;
-            if (networkA != null) {
-                if (networkB != null) {
-                    if (networkA == networkB) {
-                        //TODO: Look into circular networks
-                        return false;
-                    }
-
-                    removeNetwork(networkA.getUuid());
-                    removeNetwork(networkB.getUuid());
-
-                    NodeLoop nodeLoop =
-                } else {
-                    extend(networkA, posA, posB);
-                    network = networkA;
+        if (networkA != null) {
+            if (networkB != null) {
+                if (networkA == networkB) {
+                    //TODO: Look into circular networks
+                    return false;
                 }
+
+                removeNetwork(networkA.getUuid());
+                removeNetwork(networkB.getUuid());
+
+                RelativeNetworkState stateA = RelativeNetworkState.fromAbsolute(networkA.getState());
+                RelativeNetworkState stateB = RelativeNetworkState.fromAbsolute(networkB.getState());
+                RelativeNetworkState state = stateA.mergeWith(posA, posB, stateB);
+                Network network = new Network(UUID.randomUUID(), state.toAbsolute());
+
+                addNetwork(network);
             } else {
-                if (networkB != null) {
-                    extend(networkB, posB, posA);
-                    network = networkB;
-                } else {
-                    network = Network.buildInitial(UUID.randomUUID(), posA, posB, Collections.emptyMap());
-                    network.addAttachment(new Attachment(0, 0, new ItemStack(Items.LEATHER_CHESTPLATE)));
-
-                    addNetwork(network);
-                }
+                extend(networkA, posA, posB);
             }
+        } else {
+            if (networkB != null) {
+                extend(networkB, posB, posA);
+            } else {
+                AbsoluteNetworkState state = AbsoluteNetworkState.createInitial(BasicTree.createInitial(posA, posB).toAbsolute());
+                Network network = new Network(UUID.randomUUID(), state);
+                network.getState().insertItem(0, new ItemStack(Items.LEATHER_CHESTPLATE), false);
 
-            anchorA.setNetwork(network);
-            anchorB.setNetwork(network);
-
-            return true;
+                addNetwork(network);
+            }
         }
-        return false;
+
+        return true;
+    }
+
+    @Override
+    public void destroy(BlockPos pos) {
+        Network network = getNetworkByBlockPos(pos);
+        if (network != null) {
+            removeNetwork(network.getUuid());
+            RelativeNetworkState state = RelativeNetworkState.fromAbsolute(network.getState());
+            RelativeNetworkState.SplitResult splitResult = state.split(pos);
+            for (RelativeNetworkState subState : splitResult.getSubStates()) {
+                Network newNetwork = new Network(UUID.randomUUID(), subState.toAbsolute());
+                addNetwork(newNetwork);
+            }
+        }
+    }
+
+    @Override
+    public ItemStack insertItem(Network network, int offset, ItemStack stack, boolean simulate) {
+        return network.getState().insertItem(offset, stack, simulate);
+    }
+
+    @Override
+    public ItemStack extractItem(Network network, int offset, boolean simulate) {
+        return network.getState().extractItem(offset, simulate);
+    }
+
+    @Override
+    public void setItem(Network network, int offset, ItemStack stack) {
+        network.getState().setItem(offset, stack);
+    }
+
+    @Override
+    public void removeItem(Network network, int offset) {
+        network.getState().removeItem(offset);
     }
 }

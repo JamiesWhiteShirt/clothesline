@@ -6,28 +6,28 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 import java.util.UUID;
 
-public class MessageRemoveAttachment implements IMessage {
+public class MessageRemoveItem implements IMessage {
     public UUID networkUuid;
-    public int attachmentId;
+    public int offset;
 
-    public MessageRemoveAttachment() {
+    public MessageRemoveItem() {
 
     }
 
-    public MessageRemoveAttachment(UUID networkUuid, int attachmentId) {
+    public MessageRemoveItem(UUID networkUuid, int offset) {
         this.networkUuid = networkUuid;
-        this.attachmentId = attachmentId;
+        this.offset = offset;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
         this.networkUuid = NetworkUtil.readNetworkUuidFromByteBuf(buf);
-        this.attachmentId = NetworkUtil.readAttachmentIdFromByteBuf(buf);
+        this.offset = buf.readInt();
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         NetworkUtil.writeNetworkUuidToByteBuf(buf, networkUuid);
-        NetworkUtil.writeAttachmentIdToByteBuf(buf, attachmentId);
+        buf.writeInt(offset);
     }
 }

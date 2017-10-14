@@ -1,5 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.block;
 
+import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
 import net.minecraft.block.Block;
@@ -15,12 +16,18 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
 
 import javax.annotation.Nullable;
 
 public class BlockClotheslineAnchor extends BlockDirectional {
+    @CapabilityInject(INetworkManager.class)
+    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = null;
+
     private static final AxisAlignedBB AABB_DOWN  = new AxisAlignedBB(7.0D / 16.0D,         0.0D, 7.0D / 16.0D, 9.0D / 16.0D, 11.0D / 16.0D, 9.0D / 16.0D);
     private static final AxisAlignedBB AABB_UP    = new AxisAlignedBB(7.0D / 16.0D, 5.0D / 16.0D, 7.0D / 16.0D, 9.0D / 16.0D,          1.0D, 9.0D / 16.0D);
     private static final AxisAlignedBB AABB_NORTH = new AxisAlignedBB(7.0D / 16.0D,         0.0D, 7.0D / 16.0D, 9.0D / 16.0D, 11.0D / 16.0D,         1.0D);
@@ -163,5 +170,22 @@ public class BlockClotheslineAnchor extends BlockDirectional {
         if (tileEntity != null) {
             //tileEntity.initializeNetwork();
         }
+    }
+
+    private void onDestroyed(World world, BlockPos pos) {
+        INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
+        if (manager != null) {
+            manager.destroy(pos);
+        }
+    }
+
+    @Override
+    public void onBlockDestroyedByPlayer(World world, BlockPos pos, IBlockState state) {
+        onDestroyed(world, pos);
+    }
+
+    @Override
+    public void onBlockDestroyedByExplosion(World world, BlockPos pos, Explosion explosion) {
+        onDestroyed(world, pos);
     }
 }

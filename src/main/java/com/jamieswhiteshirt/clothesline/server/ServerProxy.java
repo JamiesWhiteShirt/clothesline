@@ -16,7 +16,7 @@ public class ServerProxy extends CommonProxy {
         Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), MessageSyncNetworks.class, 0, Side.CLIENT);
         Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), MessageAddNetwork.class, 1, Side.CLIENT);
         Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), MessageRemoveNetwork.class, 2, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), MessageAddAttachment.class, 3, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), MessageRemoveAttachment.class, 4, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), MessageSetItem.class, 3, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), MessageRemoveItem.class, 4, Side.CLIENT);
     }
 }

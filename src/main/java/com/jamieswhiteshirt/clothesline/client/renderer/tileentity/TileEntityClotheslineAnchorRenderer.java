@@ -24,7 +24,7 @@ public class TileEntityClotheslineAnchorRenderer extends TileEntitySpecialRender
         Network network = te.getNetwork();
         float crankRotation = 0.0F;
         if (network != null) {
-            crankRotation = (network.getOffset() * partialTicks + network.getPreviousOffset() * (1.0F - partialTicks)) * 4.0F;
+            crankRotation = (network.getState().getOffset() * partialTicks + network.getState().getPreviousOffset() * (1.0F - partialTicks)) * 4.0F;
         }
         GlStateManager.pushMatrix();
         GlStateManager.translate(x + 0.5D, y + 0.5D, z + 0.5D);

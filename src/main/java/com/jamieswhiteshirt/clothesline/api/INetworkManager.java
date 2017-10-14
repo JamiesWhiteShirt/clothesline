@@ -1,5 +1,6 @@
 package com.jamieswhiteshirt.clothesline.api;
 
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
@@ -24,4 +25,14 @@ public interface INetworkManager {
     void update();
 
     boolean connect(BlockPos from, BlockPos to);
+
+    void destroy(BlockPos pos);
+
+    ItemStack insertItem(Network network, int offset, ItemStack stack, boolean simulate);
+
+    ItemStack extractItem(Network network, int offset, boolean simulate);
+
+    void setItem(Network network, int offset, ItemStack stack);
+
+    void removeItem(Network network, int offset);
 }

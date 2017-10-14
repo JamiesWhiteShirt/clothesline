@@ -1,34 +1,37 @@
 package com.jamieswhiteshirt.clothesline.common.network.message;
 
-import com.jamieswhiteshirt.clothesline.api.Attachment;
 import com.jamieswhiteshirt.clothesline.common.NetworkUtil;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 import java.util.UUID;
 
-public class MessageAddAttachment implements IMessage {
+public class MessageSetItem implements IMessage {
     public UUID networkUuid;
-    public Attachment attachment;
+    public int offset;
+    public ItemStack stack;
 
-    public MessageAddAttachment() {
+    public MessageSetItem() {
 
     }
 
-    public MessageAddAttachment(UUID networkUuid, Attachment attachment) {
+    public MessageSetItem(UUID networkUuid, ItemStack stack) {
         this.networkUuid = networkUuid;
-        this.attachment = attachment;
+        this.stack = stack;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
         this.networkUuid = NetworkUtil.readNetworkUuidFromByteBuf(buf);
-        this.attachment = NetworkUtil.readAttachmentFromByteBuf(buf);
+        this.offset = buf.readInt();
+        this.stack = NetworkUtil.readItemStackFromByteBuf(buf);
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         NetworkUtil.writeNetworkUuidToByteBuf(buf, networkUuid);
-        NetworkUtil.writeAttachmentToByteBuf(buf, attachment);
+        buf.writeInt(offset);
+        NetworkUtil.writeItemStackToByteBuf(buf, stack);
     }
 }

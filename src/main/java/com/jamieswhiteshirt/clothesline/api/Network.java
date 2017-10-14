@@ -1,84 +1,29 @@
 package com.jamieswhiteshirt.clothesline.api;
 
-import net.minecraft.util.math.BlockPos;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 public final class Network {
-    public static Network buildInitial(UUID uuid, BlockPos a, BlockPos b, Map<Integer, Attachment> attachments) {
-        return new Network(uuid, NodeLoop.buildInitial(a, b), attachments);
-    }
-
     private final UUID uuid;
-    private NodeLoop nodeLoop;
-    private RangeLookup offsetLookup;
+    private AbsoluteNetworkState state;
 
-    private HashMap<Integer, Attachment> attachments;
-
-    private int previousOffset;
-    private int offset;
-    private int momentum;
-
-    public Network(UUID uuid, NodeLoop nodeLoop, Map<Integer, Attachment> attachments) {
+    public Network(UUID uuid, AbsoluteNetworkState state) {
         this.uuid = uuid;
-        reset(nodeLoop, attachments);
+        this.state = state;
     }
 
-    private void reset(NodeLoop nodeLoop, Map<Integer, Attachment> attachments) {
-        setNodeLoop(nodeLoop);
-        this.attachments = new HashMap<>(attachments);
+    public void setState(AbsoluteNetworkState state) {
+        this.state = state;
     }
 
     public UUID getUuid() {
         return uuid;
     }
 
-    public NodeLoop getNodeLoop() {
-        return nodeLoop;
-    }
-
-    public void setNodeLoop(NodeLoop nodeLoop) {
-        this.nodeLoop = nodeLoop;
-        this.offsetLookup = RangeLookup.build(0, nodeLoop.getNodes().stream().map(Node::getOffset).collect(Collectors.toList()));
-    }
-
-    public Map<Integer, Attachment> getAttachments() {
-        return attachments;
-    }
-
-    public void addAttachment(Attachment attachment) {
-        this.attachments.put(attachment.getId(), attachment);
-    }
-
-    public void removeAttachment(int attachmentId) {
-        this.attachments.remove(attachmentId);
+    public AbsoluteNetworkState getState() {
+        return state;
     }
 
     public void update() {
-        if (momentum > 0) {
-            momentum -= 1;
-        } else if (momentum < 0) {
-            momentum += 1;
-        }
-
-        previousOffset = offset;
-        offset += momentum;
-    }
-
-    public void addMomentum(int momentum) {
-        this.momentum = Math.min(this.momentum + momentum, 25);
-    }
-
-    public int getPreviousOffset() {
-        return previousOffset;
-    }
-
-    public int getOffset() {
-        return offset;
-    }
-
-    public int getMinNodeIndexForOffset(int offset) {
-        return offsetLookup.getMinIndex(offset);
+        this.state.update();
     }
 }
