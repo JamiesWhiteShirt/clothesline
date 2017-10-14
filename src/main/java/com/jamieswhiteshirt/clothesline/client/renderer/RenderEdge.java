@@ -52,7 +52,7 @@ public class RenderEdge {
         if (rightNormal.equals(Vec3d.ZERO)) {
             // We are looking straight up or down so the right normal is undefined
             // Let it be x instead
-            rightNormal = new Vec3d(1.0D, 0.0D, 0.0D);
+            rightNormal = new Vec3d(Math.signum(forward.y), 0.0D, 0.0D);
         }
         // The normal vector facing up from the forward normal (on the right normal plane)
         Vec3d upNormal = rightNormal.crossProduct(forwardNormal);
