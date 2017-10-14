@@ -35,4 +35,6 @@ public interface INetworkManager {
     void setItem(Network network, int offset, ItemStack stack);
 
     void removeItem(Network network, int offset);
+
+    void addMomentum(Network network, int momentum);
 }

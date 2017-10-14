@@ -117,7 +117,7 @@ public final class AbsoluteNetworkState {
     }
 
     public void addMomentum(int momentum) {
-        this.momentum = Math.min(this.momentum + momentum, 25);
+        this.momentum = Math.min(this.momentum + momentum, 40);
     }
 
     public int getOffset() {

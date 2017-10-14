@@ -3,6 +3,8 @@ package com.jamieswhiteshirt.clothesline.api;
 import net.minecraft.util.math.BlockPos;
 
 public class Measurements {
+    public static final int UNIT_LENGTH = 160;
+
     public static float floorModAngle(float angle) {
         if (angle >= 0.0F) {
             return angle % 360.0F;
@@ -20,7 +22,7 @@ public class Measurements {
     }
 
     public static int calculateDistance(BlockPos from, BlockPos to) {
-        return (int)(100.0D * from.getDistance(to.getX(), to.getY(), to.getZ()));
+        return (int)(UNIT_LENGTH * from.getDistance(to.getX(), to.getY(), to.getZ()));
     }
 
     /**

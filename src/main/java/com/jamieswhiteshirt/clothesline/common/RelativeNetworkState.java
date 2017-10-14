@@ -55,6 +55,7 @@ public class RelativeNetworkState {
 
     public void addEdge(BlockPos fromPos, BlockPos toPos) {
         treeRoot.addChild(fromPos, RelativeTree.empty(toPos));
+        momentum /= 2;
     }
 
     public void addSubState(BlockPos fromPos, RelativeNetworkState other) {

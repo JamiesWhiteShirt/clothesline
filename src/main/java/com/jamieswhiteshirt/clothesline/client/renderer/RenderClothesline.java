@@ -56,22 +56,22 @@ public class RenderClothesline {
                     (r1 - 4.0D) / 32.0D,
                     u1 / 32.0D,
                     0.0D
-            )), normal).tex(0.0D, (e.getFromOffset() + networkOffset) / 100.0D).endVertex();
+            )), normal).tex(0.0D, (e.getFromOffset() + networkOffset) / Measurements.UNIT_LENGTH).endVertex();
             posNormal(bufferBuilder, e.projectVec(new Vec3d(
                     (r2 - 4.0D) / 32.0D,
                     u2 / 32.0D,
                     0.0D
-            )), normal).tex(1.0D, (e.getFromOffset() + networkOffset) / 100.0D).endVertex();
+            )), normal).tex(1.0D, (e.getFromOffset() + networkOffset) / Measurements.UNIT_LENGTH).endVertex();
             posNormal(bufferBuilder, e.projectVec(new Vec3d(
                     (r2 - 4.0D) / 32.0D,
                     u2 / 32.0D,
                     1.0D
-            )), normal).tex(1.0D, (e.getToOffset() + networkOffset) / 100.0D).endVertex();
+            )), normal).tex(1.0D, (e.getToOffset() + networkOffset) / Measurements.UNIT_LENGTH).endVertex();
             posNormal(bufferBuilder, e.projectVec(new Vec3d(
                     (r1 - 4.0D) / 32.0D,
                     u1 / 32.0D,
                     1.0D
-            )), normal).tex(0.0D, (e.getToOffset() + networkOffset) / 100.0D).endVertex();
+            )), normal).tex(0.0D, (e.getToOffset() + networkOffset) / Measurements.UNIT_LENGTH).endVertex();
         }
     }
 

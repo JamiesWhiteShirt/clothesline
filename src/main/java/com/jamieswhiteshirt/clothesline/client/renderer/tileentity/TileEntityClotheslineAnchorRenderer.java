@@ -1,5 +1,6 @@
 package com.jamieswhiteshirt.clothesline.client.renderer.tileentity;
 
+import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
@@ -24,7 +25,8 @@ public class TileEntityClotheslineAnchorRenderer extends TileEntitySpecialRender
         Network network = te.getNetwork();
         float crankRotation = 0.0F;
         if (network != null) {
-            crankRotation = (network.getState().getOffset() * partialTicks + network.getState().getPreviousOffset() * (1.0F - partialTicks)) * 4.0F;
+            float offset = network.getState().getOffset() * partialTicks + network.getState().getPreviousOffset() * (1.0F - partialTicks);
+            crankRotation = (offset) * 360.0F / Measurements.UNIT_LENGTH;
         }
         GlStateManager.pushMatrix();
         GlStateManager.translate(x + 0.5D, y + 0.5D, z + 0.5D);

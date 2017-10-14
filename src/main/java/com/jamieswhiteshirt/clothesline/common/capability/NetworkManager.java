@@ -166,4 +166,9 @@ public class NetworkManager implements INetworkManager {
     public void removeItem(Network network, int offset) {
         network.getState().removeItem(offset);
     }
+
+    @Override
+    public void addMomentum(Network network, int momentum) {
+        network.getState().addMomentum(momentum);
+    }
 }
