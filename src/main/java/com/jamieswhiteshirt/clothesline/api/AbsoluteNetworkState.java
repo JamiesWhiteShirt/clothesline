@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
  * Performant for manipulation of attachments on the network.
  */
 public final class AbsoluteNetworkState {
+    private static final int MAX_MOMENTUM = 40;
+
     private int previousOffset;
     private int offset;
     private int momentum;
@@ -117,7 +119,7 @@ public final class AbsoluteNetworkState {
     }
 
     public void addMomentum(int momentum) {
-        this.momentum = Math.min(this.momentum + momentum, 40);
+        this.momentum = Math.min(Math.max(this.momentum + momentum, -MAX_MOMENTUM), MAX_MOMENTUM);
     }
 
     public int getOffset() {

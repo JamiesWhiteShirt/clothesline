@@ -156,7 +156,7 @@ public class BlockClotheslineAnchor extends BlockDirectional {
         if (stack.getItem() != ClotheslineItems.CLOTHESLINE) {
             TileEntityClotheslineAnchor tileEntity = (TileEntityClotheslineAnchor)world.getTileEntity(pos);
             if (tileEntity != null) {
-                tileEntity.crank(5);
+                tileEntity.crank(8);
             }
             return true;
         } else {
