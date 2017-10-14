@@ -2,9 +2,12 @@ package com.jamieswhiteshirt.clothesline.client.renderer;
 
 import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.api.Node;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 public class RenderEdge {
+    private final BlockPos fromPos;
+    private final BlockPos toPos;
     private final Vec3d from;
     private final double fromOffset;
     private final double toOffset;
@@ -15,7 +18,9 @@ public class RenderEdge {
 
     private final float angleY;
 
-    private RenderEdge(Vec3d from, double fromOffset, double toOffset, Vec3d right, Vec3d up, Vec3d forward, float angleY) {
+    private RenderEdge(BlockPos fromPos, BlockPos toPos, Vec3d from, double fromOffset, double toOffset, Vec3d right, Vec3d up, Vec3d forward, float angleY) {
+        this.fromPos = fromPos;
+        this.toPos = toPos;
         this.from = from;
         this.fromOffset = fromOffset;
         this.toOffset = toOffset;
@@ -34,8 +39,10 @@ public class RenderEdge {
     }
 
     public static RenderEdge create(Node from, Node to) {
-        Vec3d fromVec = new Vec3d(from.getTree().getPos()).addVector(0.5D, 0.5D, 0.5D);
-        Vec3d toVec = new Vec3d(to.getTree().getPos()).addVector(0.5D, 0.5D, 0.5D);
+        BlockPos fromPos = from.getTree().getPos();
+        BlockPos toPos = to.getTree().getPos();
+        Vec3d fromVec = new Vec3d(fromPos).addVector(0.5D, 0.5D, 0.5D);
+        Vec3d toVec = new Vec3d(toPos).addVector(0.5D, 0.5D, 0.5D);
         Vec3d forward = toVec.subtract(fromVec);
 
         // The normal vector facing from the from pos to the to pos
@@ -51,7 +58,13 @@ public class RenderEdge {
         Vec3d upNormal = rightNormal.crossProduct(forwardNormal);
 
 
-        return new RenderEdge(fromVec, from.getOffset(), to.getOffset(), rightNormal, upNormal, forward, Measurements.calculateGlobalAngle(from.getTree().getPos(), to.getTree().getPos()));
+        return new RenderEdge(
+                fromPos, toPos,
+                fromVec,
+                from.getOffset(), to.getOffset(),
+                rightNormal, upNormal, forward,
+                Measurements.calculateGlobalAngle(fromPos, toPos)
+        );
     }
 
     public double getFromOffset() {
@@ -64,5 +77,13 @@ public class RenderEdge {
 
     public float getAngleY() {
         return angleY;
+    }
+
+    public BlockPos getFromPos() {
+        return fromPos;
+    }
+
+    public BlockPos getToPos() {
+        return toPos;
     }
 }

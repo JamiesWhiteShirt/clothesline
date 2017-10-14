@@ -89,7 +89,7 @@ public class ClientProxy extends CommonProxy {
                 double y = player.posY * partialTicks + player.prevPosY * (1.0F - partialTicks);
                 double z = player.posZ * partialTicks + player.prevPosZ * (1.0F - partialTicks);
                 for (Network network : manager.getNetworks().values()) {
-                    renderClothesline.render(network.getState(), x, y, z, partialTicks);
+                    renderClothesline.render(world, network.getState(), x, y, z, partialTicks);
                 }
             }
         }
