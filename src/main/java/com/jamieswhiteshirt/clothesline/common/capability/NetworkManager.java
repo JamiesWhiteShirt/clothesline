@@ -76,7 +76,9 @@ public class NetworkManager implements INetworkManager {
     }
 
     private void extend(Network network, BlockPos fromPos, BlockPos toPos) {
-        network.setState(RelativeNetworkState.fromAbsolute(network.getState()).addEdge(fromPos, toPos).toAbsolute());
+        RelativeNetworkState relativeState = RelativeNetworkState.fromAbsolute(network.getState());
+        relativeState.addEdge(fromPos, toPos);
+        network.setState(relativeState.toAbsolute());
         assignNetworkTree(network, network.getState().getTree());
     }
 
@@ -87,7 +89,9 @@ public class NetworkManager implements INetworkManager {
 
         if (posA.equals(posB)) {
             if (networkA != null) {
-                networkA.setState(RelativeNetworkState.fromAbsolute(networkA.getState()).reroot(posA).toAbsolute());
+                RelativeNetworkState relativeState = RelativeNetworkState.fromAbsolute(networkA.getState());
+                relativeState.reroot(posB);
+                networkA.setState(relativeState.toAbsolute());
                 return true;
             }
             return false;
@@ -105,8 +109,9 @@ public class NetworkManager implements INetworkManager {
 
                 RelativeNetworkState stateA = RelativeNetworkState.fromAbsolute(networkA.getState());
                 RelativeNetworkState stateB = RelativeNetworkState.fromAbsolute(networkB.getState());
-                RelativeNetworkState state = stateA.mergeWith(posA, posB, stateB);
-                Network network = new Network(UUID.randomUUID(), state.toAbsolute());
+                stateB.reroot(posB);
+                stateA.addSubState(posA, stateB);
+                Network network = new Network(UUID.randomUUID(), stateA.toAbsolute());
 
                 addNetwork(network);
             } else {
@@ -133,7 +138,8 @@ public class NetworkManager implements INetworkManager {
         if (network != null) {
             removeNetwork(network.getUuid());
             RelativeNetworkState state = RelativeNetworkState.fromAbsolute(network.getState());
-            RelativeNetworkState.SplitResult splitResult = state.split(pos);
+            state.reroot(pos);
+            RelativeNetworkState.SplitResult splitResult = state.splitRoot();
             for (RelativeNetworkState subState : splitResult.getSubStates()) {
                 Network newNetwork = new Network(UUID.randomUUID(), subState.toAbsolute());
                 addNetwork(newNetwork);

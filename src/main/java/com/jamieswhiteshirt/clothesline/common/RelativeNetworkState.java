@@ -41,32 +41,29 @@ public class RelativeNetworkState {
         return new RelativeNetworkState(state.getMomentum(), tree);
     }
 
-    private final int momentum;
-    private final RelativeTree tree;
+    private int momentum;
+    private RelativeTree treeRoot;
 
-    private RelativeNetworkState(int momentum, RelativeTree tree) {
+    private RelativeNetworkState(int momentum, RelativeTree treeRoot) {
         this.momentum = momentum;
-        this.tree = tree;
+        this.treeRoot = treeRoot;
     }
 
-    public RelativeNetworkState reroot(BlockPos pos) {
-        return new RelativeNetworkState(momentum, tree.reroot(pos));
+    public void reroot(BlockPos pos) {
+        treeRoot = treeRoot.reroot(pos);
     }
 
-    public RelativeNetworkState addEdge(BlockPos fromPos, BlockPos toPos) {
-        RelativeTree newTree = tree.reroot(fromPos).addChild(RelativeTree.empty(toPos));
-        return new RelativeNetworkState(momentum, newTree);
+    public void addEdge(BlockPos fromPos, BlockPos toPos) {
+        treeRoot.addChild(fromPos, RelativeTree.empty(toPos));
     }
 
-    public RelativeNetworkState mergeWith(BlockPos thisPos, BlockPos otherPos, RelativeNetworkState other) {
-        RelativeTree thisTree = tree.reroot(thisPos);
-        RelativeTree otherTree = other.tree.reroot(otherPos);
-        RelativeTree mergedTree = thisTree.addChild(otherTree);
-        return new RelativeNetworkState((momentum + other.momentum) / 2, mergedTree);
+    public void addSubState(BlockPos fromPos, RelativeNetworkState other) {
+        treeRoot.addChild(fromPos, other.treeRoot);
+        momentum = (momentum + other.momentum) / 2;
     }
 
-    public SplitResult split(BlockPos splitPos) {
-        RelativeTree.SplitResult result = tree.reroot(splitPos).split();
+    public SplitResult splitRoot() {
+        RelativeTree.SplitResult result = treeRoot.split();
         return new SplitResult(
                 new RelativeNetworkState(momentum, result.getTree()),
                 result.getSubTrees().stream().filter(tree -> !tree.isEmpty()).map(
@@ -77,7 +74,7 @@ public class RelativeNetworkState {
 
     public AbsoluteNetworkState toAbsolute() {
         LinkedList<SortedIntShiftMap<ItemStack>> attachmentsList = new LinkedList<>();
-        AbsoluteTree absoluteTree = tree.toAbsolute(attachmentsList, 0);
+        AbsoluteTree absoluteTree = treeRoot.toAbsolute(attachmentsList, 0);
         return new AbsoluteNetworkState(0, 0, momentum, absoluteTree, SortedIntShiftMap.concatenate(attachmentsList));
     }
 }

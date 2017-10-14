@@ -125,37 +125,46 @@ public class RelativeTree {
         return edges.isEmpty();
     }
 
-    public RelativeTree addChild(RelativeTree child) {
+    public boolean addChild(BlockPos pos, RelativeTree child) {
+        if (this.pos.equals(pos)) {
+            addChild(child);
+            return true;
+        } else {
+            for (Edge edge : edges) {
+                if (edge.tree.addChild(pos, child)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    private void addChild(RelativeTree child) {
         EdgeKey key = new EdgeKey(pos, child.pos);
-        return addEdge(new Edge(key, SortedIntShiftMap.empty(key.getLength()), child, SortedIntShiftMap.empty(key.getLength())));
+        addEdge(new Edge(key, SortedIntShiftMap.empty(key.getLength()), child, SortedIntShiftMap.empty(key.getLength())));
     }
 
-    private RelativeTree addEdge(Edge edge) {
+    private void addEdge(Edge edge) {
         int insertionIndex = findEdgeKeyIndex(edge.key);
-        ArrayList<Edge> newEdges = new ArrayList<>(edges.size() + 1);
-        newEdges.addAll(edges.subList(0, insertionIndex));
-        newEdges.add(edge);
-        newEdges.addAll(edges.subList(insertionIndex, edges.size()));
-        return new RelativeTree(pos, newEdges, loopLength + edge.getLoopLength());
+        edges.add(insertionIndex, edge);
     }
 
-    private RelativeTree removeEdge(int index) {
-        Edge removedEdge = edges.get(index);
-        ArrayList<Edge> newEdges = new ArrayList<>(edges.size() - 1);
-        newEdges.addAll(edges.subList(0, index));
-        newEdges.addAll(edges.subList(index + 1, edges.size()));
-        return new RelativeTree(pos, newEdges, loopLength - removedEdge.getLoopLength());
+    private void removeEdge(int index) {
+        edges.remove(index);
     }
 
     @Nullable
-    private RelativeTree reroot(BlockPos pos, Edge edgeToParent) {
+    private RelativeTree rerootInner(BlockPos pos) {
         if (this.pos.equals(pos)) {
-            return addEdge(edgeToParent);
+            return this;
         } else {
             for (int i = 0; i < edges.size(); i++) {
                 Edge edge = edges.get(i);
-                RelativeTree rerooted = edge.tree.reroot(pos, edge.reverse(removeEdge(i).addEdge(edgeToParent)));
+                RelativeTree childTree = edge.tree;
+                RelativeTree rerooted = childTree.rerootInner(pos);
                 if (rerooted != null) {
+                    removeEdge(i);
+                    childTree.addEdge(edge.reverse(this));
                     return rerooted;
                 }
             }
@@ -164,16 +173,10 @@ public class RelativeTree {
     }
 
     public RelativeTree reroot(BlockPos pos) {
-        if (this.pos.equals(pos)) {
-            return this;
+        RelativeTree rerooted = rerootInner(pos);
+        if (rerooted != null) {
+            return rerooted;
         } else {
-            for (int i = 0; i < edges.size(); i++) {
-                Edge edge = edges.get(i);
-                RelativeTree rerooted = edge.tree.reroot(pos, edge.reverse(removeEdge(i)));
-                if (rerooted != null) {
-                    return rerooted;
-                }
-            }
             throw new IllegalArgumentException("Position is not in RelativeTree");
         }
     }
