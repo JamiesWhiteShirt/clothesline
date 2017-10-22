@@ -43,11 +43,6 @@ public class AbsoluteTree {
         public int getPostMaxOffset() {
             return tree.maxOffset + key.getLength();
         }
-
-        private void collectNodes(AbsoluteTree from, ArrayList<Node> nodes) {
-            nodes.add(new Node(from, preMinOffset));
-            tree.collectNodes(nodes);
-        }
     }
 
     public static AbsoluteTree empty(BlockPos pos, int offset) {
@@ -112,23 +107,6 @@ public class AbsoluteTree {
 
     public boolean isEmpty() {
         return edges.isEmpty();
-    }
-
-    private void collectNodes(ArrayList<Node> nodes) {
-        for (Edge edge : edges) {
-            edge.collectNodes(this, nodes);
-        }
-        nodes.add(new Node(this, maxOffset));
-    }
-
-    public NodeLoop toNodeLoop() {
-        if (!edges.isEmpty()) {
-            ArrayList<Node> nodes = new ArrayList<>();
-            collectNodes(nodes);
-            return new NodeLoop(nodes.subList(0, nodes.size() - 1), maxOffset);
-        } else {
-            return NodeLoop.empty(this);
-        }
     }
 
     private void buildPositionLookup(HashMap<BlockPos, AbsoluteTree> result) {

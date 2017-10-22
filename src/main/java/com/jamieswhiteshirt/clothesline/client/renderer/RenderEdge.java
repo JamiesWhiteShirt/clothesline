@@ -1,7 +1,6 @@
 package com.jamieswhiteshirt.clothesline.client.renderer;
 
 import com.jamieswhiteshirt.clothesline.api.Measurements;
-import com.jamieswhiteshirt.clothesline.api.Node;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 

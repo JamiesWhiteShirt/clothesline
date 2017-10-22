@@ -22,8 +22,6 @@ public final class AbsoluteNetworkState {
 
     private final AbsoluteTree tree;
     private final Map<BlockPos, AbsoluteTree> posLookup;
-    private final NodeLoop nodeLoop;
-    private final RangeLookup offsetLookup;
     private final MutableSortedIntMap<ItemStack> stacks;
 
     public static AbsoluteNetworkState createInitial(AbsoluteTree tree) {
@@ -39,8 +37,6 @@ public final class AbsoluteNetworkState {
     public AbsoluteNetworkState(int previousOffset, int offset, int momentum, AbsoluteTree tree, MutableSortedIntMap<ItemStack> stacks) {
         this.tree = tree;
         this.posLookup = tree.createPositionLookup();
-        this.nodeLoop = tree.toNodeLoop();
-        this.offsetLookup = RangeLookup.build(0, nodeLoop.getNodes().stream().map(Node::getOffset).collect(Collectors.toList()));
         this.stacks = stacks;
         this.previousOffset = previousOffset;
         this.offset = offset;
@@ -53,10 +49,6 @@ public final class AbsoluteNetworkState {
 
     public AbsoluteTree getSubTree(BlockPos pos) {
         return posLookup.get(pos);
-    }
-
-    public NodeLoop getNodeLoop() {
-        return nodeLoop;
     }
 
     public MutableSortedIntMap<ItemStack> getStacks() {
@@ -132,10 +124,6 @@ public final class AbsoluteNetworkState {
 
     public int getMomentum() {
         return momentum;
-    }
-
-    public int getMinNodeIndexForOffset(int offset) {
-        return offsetLookup.getMinIndex(offset);
     }
 
     public int getLoopLength() {

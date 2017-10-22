@@ -112,11 +112,11 @@ public class RenderClothesline {
         }
     }
 
-    public void render(IBlockAccess world, AbsoluteNetworkState network, double x, double y, double z, float partialTicks) {
-        NodeLoop nodeLoop = network.getNodeLoop();
+    public void render(IBlockAccess world, RenderNetworkState state, double x, double y, double z, float partialTicks) {
+        NodeLoop nodeLoop = state.getNodeLoop();
         Vec3d viewPos = new Vec3d(x, y, z);
 
-        double networkOffset = network.getOffset() * partialTicks + network.getPreviousOffset() * (1.0F - partialTicks);
+        double networkOffset = state.getOffset(partialTicks);
 
         List<RenderEdge> renderEdges = createRenderEdges(nodeLoop);
 
@@ -147,11 +147,11 @@ public class RenderClothesline {
             EntityRenderer.drawNameplate(Minecraft.getMinecraft().fontRenderer, msg, (float)(pos.x - x), (float)(pos.y - y), (float)(pos.z - z), 0, f, f1, false, false);*/
         }
 
-        renderTree(network.getTree(), x, y, z);
+        renderTree(state.getTree(), x, y, z);
 
-        for (MutableSortedIntMap.Entry<ItemStack> entry : network.getStacks().entries()) {
+        for (MutableSortedIntMap.Entry<ItemStack> entry : state.getStacks().entries()) {
             double attachmentOffset = (entry.getKey() + networkOffset) % nodeLoop.getLoopLength();
-            RenderEdge edge = renderEdges.get(network.getMinNodeIndexForOffset((int)attachmentOffset));
+            RenderEdge edge = renderEdges.get(state.getMinNodeIndexForOffset((int)attachmentOffset));
             double d = (attachmentOffset - edge.getFromOffset()) / (edge.getToOffset() - edge.getFromOffset());
             Vec3d pos = edge.projectVec(new Vec3d(2.0D / 16.0D, 0.0D, d));
 

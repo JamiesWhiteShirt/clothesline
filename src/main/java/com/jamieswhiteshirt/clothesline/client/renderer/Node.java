@@ -1,4 +1,6 @@
-package com.jamieswhiteshirt.clothesline.api;
+package com.jamieswhiteshirt.clothesline.client.renderer;
+
+import com.jamieswhiteshirt.clothesline.api.AbsoluteTree;
 
 public class Node {
     private final AbsoluteTree tree;

@@ -5,6 +5,7 @@ import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.client.network.messagehandler.*;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderClothesline;
+import com.jamieswhiteshirt.clothesline.client.renderer.RenderNetworkState;
 import com.jamieswhiteshirt.clothesline.client.renderer.tileentity.TileEntityClotheslineAnchorRenderer;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
 import com.jamieswhiteshirt.clothesline.common.CommonProxy;
@@ -89,7 +90,7 @@ public class ClientProxy extends CommonProxy {
                 double y = player.posY * partialTicks + player.prevPosY * (1.0F - partialTicks);
                 double z = player.posZ * partialTicks + player.prevPosZ * (1.0F - partialTicks);
                 for (Network network : manager.getNetworks()) {
-                    renderClothesline.render(world, network.getState(), x, y, z, partialTicks);
+                    renderClothesline.render(world, RenderNetworkState.fromNetworkState(network.getState()), x, y, z, partialTicks);
                 }
             }
         }

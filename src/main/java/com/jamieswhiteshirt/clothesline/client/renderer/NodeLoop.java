@@ -1,8 +1,28 @@
-package com.jamieswhiteshirt.clothesline.api;
+package com.jamieswhiteshirt.clothesline.client.renderer;
+
+import com.jamieswhiteshirt.clothesline.api.AbsoluteTree;
 
 import java.util.*;
 
 public class NodeLoop {
+    private static void collectNodes(AbsoluteTree tree, ArrayList<Node> nodes) {
+        for (AbsoluteTree.Edge edge : tree.getEdges()) {
+            nodes.add(new Node(tree, edge.getPreMinOffset()));
+            collectNodes(edge.getTree(), nodes);
+        }
+        nodes.add(new Node(tree, tree.getMaxOffset()));
+    }
+
+    public static NodeLoop fromTree(AbsoluteTree tree) {
+        if (!tree.getEdges().isEmpty()) {
+            ArrayList<Node> nodes = new ArrayList<>();
+            collectNodes(tree, nodes);
+            return new NodeLoop(nodes.subList(0, nodes.size() - 1), tree.getMaxOffset());
+        } else {
+            return empty(tree);
+        }
+    }
+
     public static NodeLoop empty(AbsoluteTree tree) {
         return new NodeLoop(tree);
     }
