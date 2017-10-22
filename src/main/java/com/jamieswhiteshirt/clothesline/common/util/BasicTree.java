@@ -1,4 +1,4 @@
-package com.jamieswhiteshirt.clothesline.common;
+package com.jamieswhiteshirt.clothesline.common.util;
 
 import com.jamieswhiteshirt.clothesline.api.EdgeKey;
 import com.jamieswhiteshirt.clothesline.api.Measurements;

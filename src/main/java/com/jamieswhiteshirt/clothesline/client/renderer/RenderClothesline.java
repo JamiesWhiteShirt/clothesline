@@ -2,7 +2,7 @@ package com.jamieswhiteshirt.clothesline.client.renderer;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.*;
-import com.jamieswhiteshirt.clothesline.api.util.SortedIntShiftMap;
+import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
@@ -149,7 +149,7 @@ public class RenderClothesline {
 
         renderTree(network.getTree(), x, y, z);
 
-        for (SortedIntShiftMap.Entry<ItemStack> entry : network.getStacks().entries()) {
+        for (MutableSortedIntMap.Entry<ItemStack> entry : network.getStacks().entries()) {
             double attachmentOffset = (entry.getKey() + networkOffset) % nodeLoop.getLoopLength();
             RenderEdge edge = renderEdges.get(network.getMinNodeIndexForOffset((int)attachmentOffset));
             double d = (attachmentOffset - edge.getFromOffset()) / (edge.getToOffset() - edge.getFromOffset());

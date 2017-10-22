@@ -1,8 +1,8 @@
-package com.jamieswhiteshirt.clothesline.common.capability;
+package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.*;
-import com.jamieswhiteshirt.clothesline.common.BasicTree;
-import com.jamieswhiteshirt.clothesline.common.RelativeNetworkState;
+import com.jamieswhiteshirt.clothesline.common.util.BasicTree;
+import com.jamieswhiteshirt.clothesline.common.util.RelativeNetworkState;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -10,6 +10,7 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class NetworkManager implements INetworkManager {
     private final World world;
@@ -66,8 +67,15 @@ public class NetworkManager implements INetworkManager {
     }
 
     @Override
-    public void setNetworks(Map<UUID, Network> networks) {
-        this.networksByUuid = new HashMap<>(networks);
+    public void setNetworks(Collection<Network> networks) {
+        this.networksByUuid = new HashMap<>(networks.stream().collect(Collectors.toMap(
+                Network::getUuid,
+                network -> network
+        )));
+        this.networksByBlockPos = new HashMap<>();
+        for (Network network : networks) {
+            assignNetworkTree(network, network.getState().getTree());
+        }
     }
 
     @Override

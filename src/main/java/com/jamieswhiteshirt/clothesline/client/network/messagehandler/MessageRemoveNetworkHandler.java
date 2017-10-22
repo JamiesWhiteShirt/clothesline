@@ -20,13 +20,15 @@ public class MessageRemoveNetworkHandler implements IMessageHandler<MessageRemov
 
     @Override
     public IMessage onMessage(MessageRemoveNetwork message, MessageContext ctx) {
-        WorldClient world = Minecraft.getMinecraft().world;
-        if (world != null) {
-            INetworkManager manager = world.getCapability(CLOTHESLINE_NETWORK_MANAGER_CAPABILITY, null);
-            if (manager != null) {
-                manager.removeNetwork(message.networkUuid);
+        Minecraft.getMinecraft().addScheduledTask(() -> {
+            WorldClient world = Minecraft.getMinecraft().world;
+            if (world != null) {
+                INetworkManager manager = world.getCapability(CLOTHESLINE_NETWORK_MANAGER_CAPABILITY, null);
+                if (manager != null) {
+                    manager.removeNetwork(message.networkUuid);
+                }
             }
-        }
+        });
         return null;
     }
 }

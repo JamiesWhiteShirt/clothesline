@@ -21,7 +21,7 @@ public interface INetworkManager {
 
     void removeNetwork(UUID networkUuid);
 
-    void setNetworks(Map<UUID, Network> networks);
+    void setNetworks(Collection<Network> networks);
 
     void update();
 

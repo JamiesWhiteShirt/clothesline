@@ -1,7 +1,7 @@
-package com.jamieswhiteshirt.clothesline.common;
+package com.jamieswhiteshirt.clothesline.common.util;
 
 import com.jamieswhiteshirt.clothesline.api.*;
-import com.jamieswhiteshirt.clothesline.api.util.SortedIntShiftMap;
+import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
@@ -35,20 +35,20 @@ public class RelativeTree {
 
     private static class Edge {
         private final EdgeKey key;
-        private final SortedIntShiftMap<ItemStack> preStacks;
+        private final MutableSortedIntMap<ItemStack> preStacks;
         private final RelativeTree tree;
-        private final SortedIntShiftMap<ItemStack> postStacks;
+        private final MutableSortedIntMap<ItemStack> postStacks;
 
-        private static Edge fromAbsolute(AbsoluteTree.Edge edge, SortedIntShiftMap<ItemStack> attachments) {
+        private static Edge fromAbsolute(AbsoluteTree.Edge edge, MutableSortedIntMap<ItemStack> attachments) {
             return new Edge(
                     edge.getKey(),
-                    attachments.subMap(edge.getPreMinOffset(), edge.getPreMaxOffset()),
+                    attachments.shiftedSubMap(edge.getPreMinOffset(), edge.getPreMaxOffset()),
                     RelativeTree.fromAbsolute(edge.getTree(), attachments),
-                    attachments.subMap(edge.getPostMinOffset(), edge.getPostMaxOffset())
+                    attachments.shiftedSubMap(edge.getPostMinOffset(), edge.getPostMaxOffset())
             );
         }
 
-        private Edge(EdgeKey key, SortedIntShiftMap<ItemStack> preStacks, RelativeTree tree, SortedIntShiftMap<ItemStack> postStacks) {
+        private Edge(EdgeKey key, MutableSortedIntMap<ItemStack> preStacks, RelativeTree tree, MutableSortedIntMap<ItemStack> postStacks) {
             this.key = key;
             this.preStacks = preStacks;
             this.tree = tree;
@@ -63,7 +63,7 @@ public class RelativeTree {
             return new Edge(key.reverse(parent.pos), postStacks, parent, preStacks);
         }
 
-        private AbsoluteTree.Edge toAbsolute(List<SortedIntShiftMap<ItemStack>> attachmentsList, int fromOffset, RelativeTree from) {
+        private AbsoluteTree.Edge toAbsolute(List<MutableSortedIntMap<ItemStack>> attachmentsList, int fromOffset, RelativeTree from) {
             attachmentsList.add(preStacks);
             AbsoluteTree absoluteTree = tree.toAbsolute(attachmentsList, fromOffset + key.getLength(), key.reverse(from.pos));
             attachmentsList.add(postStacks);
@@ -71,7 +71,7 @@ public class RelativeTree {
         }
     }
 
-    public static RelativeTree fromAbsolute(AbsoluteTree absoluteTree, SortedIntShiftMap<ItemStack> attachments) {
+    public static RelativeTree fromAbsolute(AbsoluteTree absoluteTree, MutableSortedIntMap<ItemStack> attachments) {
         ArrayList<RelativeTree.Edge> edges = new ArrayList<>(absoluteTree.getEdges().size());
         edges.sort(Comparator.comparing(a -> a.key));
         return new RelativeTree(absoluteTree.getPos(), absoluteTree.getEdges().stream().map(
@@ -141,7 +141,7 @@ public class RelativeTree {
 
     private void addChild(RelativeTree child) {
         EdgeKey key = new EdgeKey(pos, child.pos);
-        addEdge(new Edge(key, SortedIntShiftMap.empty(key.getLength()), child, SortedIntShiftMap.empty(key.getLength())));
+        addEdge(new Edge(key, MutableSortedIntMap.empty(key.getLength()), child, MutableSortedIntMap.empty(key.getLength())));
     }
 
     private void addEdge(Edge edge) {
@@ -189,7 +189,7 @@ public class RelativeTree {
         return new SplitResult(tree, this.edges.stream().map(edge -> edge.tree).collect(Collectors.toList()));
     }
 
-    public AbsoluteTree toAbsolute(List<SortedIntShiftMap<ItemStack>> stacksList, int fromOffset) {
+    public AbsoluteTree toAbsolute(List<MutableSortedIntMap<ItemStack>> stacksList, int fromOffset) {
         int toOffset = fromOffset;
         ArrayList<AbsoluteTree.Edge> treeEdges = new ArrayList<>(edges.size());
         for (Edge edge : edges) {
@@ -200,7 +200,7 @@ public class RelativeTree {
         return new AbsoluteTree(pos, treeEdges, fromOffset, toOffset);
     }
 
-    private AbsoluteTree toAbsolute(List<SortedIntShiftMap<ItemStack>> stacksList, int fromOffset, EdgeKey fromEdgeKey) {
+    private AbsoluteTree toAbsolute(List<MutableSortedIntMap<ItemStack>> stacksList, int fromOffset, EdgeKey fromEdgeKey) {
         int toOffset = fromOffset;
         int splitIndex = findEdgeKeyIndex(fromEdgeKey);
         ArrayList<AbsoluteTree.Edge> treeEdges = new ArrayList<>(edges.size());

@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.network.message;
 
-import com.jamieswhiteshirt.clothesline.common.NetworkUtil;
+import com.jamieswhiteshirt.clothesline.common.util.ByteBufSerialization;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
@@ -21,13 +21,13 @@ public class MessageRemoveItem implements IMessage {
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        this.networkUuid = NetworkUtil.readNetworkUuidFromByteBuf(buf);
+        this.networkUuid = ByteBufSerialization.readNetworkUuid(buf);
         this.offset = buf.readInt();
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
-        NetworkUtil.writeNetworkUuidToByteBuf(buf, networkUuid);
+        ByteBufSerialization.writeNetworkUuid(buf, networkUuid);
         buf.writeInt(offset);
     }
 }

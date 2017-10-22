@@ -23,7 +23,7 @@ public class MessageAddNetworkHandler implements IMessageHandler<MessageAddNetwo
         if (world != null) {
             INetworkManager manager = world.getCapability(CLOTHESLINE_NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
-                manager.addNetwork(message.network);
+                manager.addNetwork(message.network.toAbsolute());
             }
         }
         return null;

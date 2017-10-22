@@ -1,6 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common.capability;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
+import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;

@@ -1,8 +1,8 @@
-package com.jamieswhiteshirt.clothesline.common;
+package com.jamieswhiteshirt.clothesline.common.util;
 
 import com.jamieswhiteshirt.clothesline.api.AbsoluteTree;
 import com.jamieswhiteshirt.clothesline.api.AbsoluteNetworkState;
-import com.jamieswhiteshirt.clothesline.api.util.SortedIntShiftMap;
+import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
@@ -31,11 +31,11 @@ public class RelativeNetworkState {
     }
 
     public static RelativeNetworkState fromAbsolute(AbsoluteNetworkState state) {
-        SortedIntShiftMap<ItemStack> attachments = state.getStacks();
+        MutableSortedIntMap<ItemStack> attachments = state.getStacks();
         int midOffset = Math.floorMod(-state.getOffset(), attachments.getMaxKey());
-        SortedIntShiftMap<ItemStack> shiftedItemStacks = SortedIntShiftMap.concatenate(Arrays.asList(
-                attachments.subMap(midOffset, attachments.getMaxKey()),
-                attachments.subMap(0, midOffset)
+        MutableSortedIntMap<ItemStack> shiftedItemStacks = MutableSortedIntMap.concatenate(Arrays.asList(
+                attachments.shiftedSubMap(midOffset, attachments.getMaxKey()),
+                attachments.shiftedSubMap(0, midOffset)
         ));
         RelativeTree tree = RelativeTree.fromAbsolute(state.getTree(), shiftedItemStacks);
         return new RelativeNetworkState(state.getMomentum(), tree);
@@ -74,8 +74,8 @@ public class RelativeNetworkState {
     }
 
     public AbsoluteNetworkState toAbsolute() {
-        LinkedList<SortedIntShiftMap<ItemStack>> attachmentsList = new LinkedList<>();
+        LinkedList<MutableSortedIntMap<ItemStack>> attachmentsList = new LinkedList<>();
         AbsoluteTree absoluteTree = treeRoot.toAbsolute(attachmentsList, 0);
-        return new AbsoluteNetworkState(0, 0, momentum, absoluteTree, SortedIntShiftMap.concatenate(attachmentsList));
+        return new AbsoluteNetworkState(0, 0, momentum, absoluteTree, MutableSortedIntMap.concatenate(attachmentsList));
     }
 }

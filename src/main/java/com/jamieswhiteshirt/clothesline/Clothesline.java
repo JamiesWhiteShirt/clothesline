@@ -6,9 +6,12 @@ import com.jamieswhiteshirt.clothesline.common.ClotheslineBlocks;
 import com.jamieswhiteshirt.clothesline.common.CommonProxy;
 import com.jamieswhiteshirt.clothesline.common.block.BlockClotheslineAnchor;
 import com.jamieswhiteshirt.clothesline.common.capability.*;
+import com.jamieswhiteshirt.clothesline.common.impl.Attacher;
+import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
 import com.jamieswhiteshirt.clothesline.common.item.ItemClothesline;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageSyncNetworks;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
+import com.jamieswhiteshirt.clothesline.common.util.BasicNetwork;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -34,6 +37,9 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import org.apache.logging.log4j.Logger;
+
+import java.util.stream.Collectors;
 
 @Mod(
         modid = Clothesline.MODID,
@@ -56,10 +62,13 @@ public class Clothesline {
     )
     public static CommonProxy proxy;
 
+    public static Logger logger;
+
     public final SimpleNetworkWrapper networkWrapper = NetworkRegistry.INSTANCE.newSimpleChannel(MODID);
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        logger = event.getModLog();
         MinecraftForge.EVENT_BUS.register(this);
         CapabilityManager.INSTANCE.register(INetworkManager.class, new NetworkManagerStorage(), NetworkManager.class);
         CapabilityManager.INSTANCE.register(IAttacher.class, new AttacherStorage(), Attacher::new);
@@ -108,7 +117,9 @@ public class Clothesline {
             EntityPlayerMP player = (EntityPlayerMP) event.getEntity();
             INetworkManager manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
-                networkWrapper.sendTo(new MessageSyncNetworks(manager.getNetworks()), player);
+                networkWrapper.sendTo(new MessageSyncNetworks(manager.getNetworks().stream().map(
+                        BasicNetwork::fromAbsolute
+                ).collect(Collectors.toList())), player);
             }
         }
     }

@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.api;
 
+import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.api.util.RangeLookup;
-import com.jamieswhiteshirt.clothesline.api.util.SortedIntShiftMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
@@ -24,7 +24,7 @@ public final class AbsoluteNetworkState {
     private final Map<BlockPos, AbsoluteTree> posLookup;
     private final NodeLoop nodeLoop;
     private final RangeLookup offsetLookup;
-    private final SortedIntShiftMap<ItemStack> stacks;
+    private final MutableSortedIntMap<ItemStack> stacks;
 
     public static AbsoluteNetworkState createInitial(AbsoluteTree tree) {
         return new AbsoluteNetworkState(
@@ -32,11 +32,11 @@ public final class AbsoluteNetworkState {
                 0,
                 0,
                 tree,
-                SortedIntShiftMap.empty(tree.getMaxOffset())
+                MutableSortedIntMap.empty(tree.getMaxOffset())
         );
     }
 
-    public AbsoluteNetworkState(int previousOffset, int offset, int momentum, AbsoluteTree tree, SortedIntShiftMap<ItemStack> stacks) {
+    public AbsoluteNetworkState(int previousOffset, int offset, int momentum, AbsoluteTree tree, MutableSortedIntMap<ItemStack> stacks) {
         this.tree = tree;
         this.posLookup = tree.createPositionLookup();
         this.nodeLoop = tree.toNodeLoop();
@@ -59,7 +59,7 @@ public final class AbsoluteNetworkState {
         return nodeLoop;
     }
 
-    public SortedIntShiftMap<ItemStack> getStacks() {
+    public MutableSortedIntMap<ItemStack> getStacks() {
         return stacks;
     }
 

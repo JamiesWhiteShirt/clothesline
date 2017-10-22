@@ -1,4 +1,4 @@
-package com.jamieswhiteshirt.clothesline.common.capability;
+package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.IAttacher;
 import net.minecraft.util.math.BlockPos;

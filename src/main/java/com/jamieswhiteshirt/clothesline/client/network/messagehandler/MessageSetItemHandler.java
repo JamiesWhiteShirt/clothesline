@@ -20,16 +20,18 @@ public class MessageSetItemHandler implements IMessageHandler<MessageSetItem, IM
 
     @Override
     public IMessage onMessage(MessageSetItem message, MessageContext ctx) {
-        WorldClient world = Minecraft.getMinecraft().world;
-        if (world != null) {
-            INetworkManager manager = world.getCapability(CLOTHESLINE_NETWORK_MANAGER_CAPABILITY, null);
-            if (manager != null) {
-                Network network = manager.getNetworkByUUID(message.networkUuid);
-                if (network != null) {
-                    network.getState().setItem(message.offset, message.stack);
+        Minecraft.getMinecraft().addScheduledTask(() -> {
+            WorldClient world = Minecraft.getMinecraft().world;
+            if (world != null) {
+                INetworkManager manager = world.getCapability(CLOTHESLINE_NETWORK_MANAGER_CAPABILITY, null);
+                if (manager != null) {
+                    Network network = manager.getNetworkByUUID(message.networkUuid);
+                    if (network != null) {
+                        network.getState().setItem(message.attachment.getOffset(), message.attachment.getStack());
+                    }
                 }
             }
-        }
+        });
         return null;
     }
 }

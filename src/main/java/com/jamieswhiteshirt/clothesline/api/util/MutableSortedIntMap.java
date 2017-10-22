@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class SortedIntShiftMap<T> {
+public class MutableSortedIntMap<T> {
     public static class Entry<T> {
         private final int key;
-        private T value;
+        private final T value;
 
         public Entry(int key, T value) {
             this.key = key;
@@ -18,10 +18,6 @@ public class SortedIntShiftMap<T> {
 
         public int getKey() {
             return key;
-        }
-
-        private void setValue(T value) {
-            this.value = value;
         }
 
         public T getValue() {
@@ -49,32 +45,32 @@ public class SortedIntShiftMap<T> {
         return findKeyIndex(key, 0, entries.size());
     }
 
-    public static <T> SortedIntShiftMap<T> build(Map<Integer, T> map, int maxKey) {
-        return new SortedIntShiftMap<>(new ArrayList<>(map.entrySet().stream().map(
+    public static <T> MutableSortedIntMap<T> build(Map<Integer, T> map, int maxKey) {
+        return new MutableSortedIntMap<>(new ArrayList<>(map.entrySet().stream().map(
                 entry -> new Entry<>(entry.getKey(), entry.getValue())
         ).collect(Collectors.toList())), maxKey);
     }
 
-    public static <T> SortedIntShiftMap<T> empty(int maxKey) {
-        return new SortedIntShiftMap<>(new ArrayList<>(), maxKey);
+    public static <T> MutableSortedIntMap<T> empty(int maxKey) {
+        return new MutableSortedIntMap<>(new ArrayList<>(), maxKey);
     }
 
-    public static <T> SortedIntShiftMap<T> concatenate(List<SortedIntShiftMap<T>> subMaps) {
-        ArrayList<Entry<T>> entries = new ArrayList<>(subMaps.stream().mapToInt(SortedIntShiftMap::size).sum());
+    public static <T> MutableSortedIntMap<T> concatenate(List<MutableSortedIntMap<T>> subMaps) {
+        ArrayList<Entry<T>> entries = new ArrayList<>(subMaps.stream().mapToInt(MutableSortedIntMap::size).sum());
         int maxKey = 0;
-        for (SortedIntShiftMap<T> subMap : subMaps) {
+        for (MutableSortedIntMap<T> subMap : subMaps) {
             for (Entry<T> entry : subMap.entries) {
                 entries.add(new Entry<>(entry.key + maxKey, entry.value));
             }
             maxKey += subMap.maxKey;
         }
-        return new SortedIntShiftMap<>(entries, maxKey);
+        return new MutableSortedIntMap<>(entries, maxKey);
     }
 
     private final ArrayList<Entry<T>> entries;
     private final int maxKey;
 
-    public SortedIntShiftMap(ArrayList<Entry<T>> entries, int maxKey) {
+    public MutableSortedIntMap(ArrayList<Entry<T>> entries, int maxKey) {
         this.entries = entries;
         this.maxKey = maxKey;
     }
@@ -118,11 +114,11 @@ public class SortedIntShiftMap<T> {
         return entries.size();
     }
 
-    public SortedIntShiftMap<T> subMap(int minKey, int maxKey) {
+    public MutableSortedIntMap<T> shiftedSubMap(int minKey, int maxKey) {
         int minIndex = findKeyIndex(minKey);
         int maxIndex = findKeyIndex(maxKey);
-        return new SortedIntShiftMap<>(new ArrayList<>(entries.subList(minIndex, maxIndex).stream().map(
-                entry -> new SortedIntShiftMap.Entry<>(entry.getKey() - minKey, entry.getValue())
+        return new MutableSortedIntMap<>(new ArrayList<>(entries.subList(minIndex, maxIndex).stream().map(
+                entry -> new MutableSortedIntMap.Entry<>(entry.getKey() - minKey, entry.getValue())
         ).collect(Collectors.toList())), maxKey - minKey);
     }
 }

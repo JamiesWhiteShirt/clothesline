@@ -20,16 +20,18 @@ public class MessageRemoveAttachmentHandler implements IMessageHandler<MessageRe
 
     @Override
     public IMessage onMessage(MessageRemoveItem message, MessageContext ctx) {
-        WorldClient world = Minecraft.getMinecraft().world;
-        if (world != null) {
-            INetworkManager manager = world.getCapability(CLOTHESLINE_NETWORK_MANAGER_CAPABILITY, null);
-            if (manager != null) {
-                Network network = manager.getNetworkByUUID(message.networkUuid);
-                if (network != null) {
-                    network.getState().removeItem(message.offset);
+        Minecraft.getMinecraft().addScheduledTask(() -> {
+            WorldClient world = Minecraft.getMinecraft().world;
+            if (world != null) {
+                INetworkManager manager = world.getCapability(CLOTHESLINE_NETWORK_MANAGER_CAPABILITY, null);
+                if (manager != null) {
+                    Network network = manager.getNetworkByUUID(message.networkUuid);
+                    if (network != null) {
+                        network.getState().removeItem(message.offset);
+                    }
                 }
             }
-        }
+        });
         return null;
     }
 }
