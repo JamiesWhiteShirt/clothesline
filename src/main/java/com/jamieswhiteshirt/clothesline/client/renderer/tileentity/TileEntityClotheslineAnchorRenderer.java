@@ -3,12 +3,14 @@ package com.jamieswhiteshirt.clothesline.client.renderer.tileentity;
 import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
+import com.jamieswhiteshirt.clothesline.common.block.BlockClotheslineAnchor;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -30,6 +32,10 @@ public class TileEntityClotheslineAnchorRenderer extends TileEntitySpecialRender
         }
         GlStateManager.pushMatrix();
         GlStateManager.translate(x + 0.5D, y + 0.5D, z + 0.5D);
+        if (te.getWorld().getBlockState(te.getPos()).getValue(BlockClotheslineAnchor.FACING) == EnumFacing.DOWN) {
+            GlStateManager.rotate(180.0F, 1.0F, 0.0F, 0.0F);
+            crankRotation = -crankRotation;
+        }
         GlStateManager.rotate(crankRotation, 0.0F, 1.0F, 0.0F);
 
         GlStateManager.pushMatrix();
