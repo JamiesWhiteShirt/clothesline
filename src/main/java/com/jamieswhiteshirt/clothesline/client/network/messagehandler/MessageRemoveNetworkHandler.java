@@ -1,7 +1,6 @@
 package com.jamieswhiteshirt.clothesline.client.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
-import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageRemoveNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;

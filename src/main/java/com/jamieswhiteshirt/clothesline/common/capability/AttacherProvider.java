@@ -1,6 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common.capability;
 
 import com.jamieswhiteshirt.clothesline.api.IAttacher;
+import com.jamieswhiteshirt.clothesline.common.Util;
 import com.jamieswhiteshirt.clothesline.common.impl.Attacher;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -13,7 +14,7 @@ import javax.annotation.Nullable;
 
 public class AttacherProvider implements ICapabilitySerializable<NBTTagCompound> {
     @CapabilityInject(IAttacher.class)
-    private static final Capability<IAttacher> CAPABILITY = null;
+    private static final Capability<IAttacher> CAPABILITY = Util.nonNullInjected();
 
     private final Attacher instance = new Attacher();
 

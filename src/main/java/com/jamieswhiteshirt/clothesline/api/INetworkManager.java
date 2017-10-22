@@ -5,7 +5,6 @@ import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.Map;
 import java.util.UUID;
 
 public interface INetworkManager {

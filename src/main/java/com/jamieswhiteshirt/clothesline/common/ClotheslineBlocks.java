@@ -6,5 +6,5 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 
 @GameRegistry.ObjectHolder(Clothesline.MODID)
 public class ClotheslineBlocks {
-    public static final BlockClotheslineAnchor CLOTHESLINE_ANCHOR = null;
+    public static final BlockClotheslineAnchor CLOTHESLINE_ANCHOR = Util.nonNullInjected();
 }

@@ -1,6 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common.tileentity;
 
 import com.jamieswhiteshirt.clothesline.api.*;
+import com.jamieswhiteshirt.clothesline.common.Util;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
@@ -16,9 +17,9 @@ import javax.annotation.Nullable;
 
 public class TileEntityClotheslineAnchor extends TileEntity implements ITickable {
     @CapabilityInject(INetworkManager.class)
-    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = null;
+    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
     @CapabilityInject(IItemHandler.class)
-    private static final Capability<IItemHandler> ITEM_HANDLER_CAPABILITY = null;
+    private static final Capability<IItemHandler> ITEM_HANDLER_CAPABILITY = Util.nonNullInjected();
     private INetworkManager manager;
 
     @Nullable

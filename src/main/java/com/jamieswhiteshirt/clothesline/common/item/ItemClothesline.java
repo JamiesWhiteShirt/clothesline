@@ -3,6 +3,7 @@ package com.jamieswhiteshirt.clothesline.common.item;
 import com.jamieswhiteshirt.clothesline.api.IAttacher;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineBlocks;
+import com.jamieswhiteshirt.clothesline.common.Util;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -22,7 +23,7 @@ import javax.annotation.Nullable;
 
 public class ItemClothesline extends Item {
     @CapabilityInject(IAttacher.class)
-    private static final Capability<IAttacher> ATTACHER_CAPABILITY = null;
+    private static final Capability<IAttacher> ATTACHER_CAPABILITY = Util.nonNullInjected();
     @CapabilityInject(INetworkManager.class)
     private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = null;
 

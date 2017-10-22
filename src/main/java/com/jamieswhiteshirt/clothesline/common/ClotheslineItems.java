@@ -8,8 +8,8 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 
 @GameRegistry.ObjectHolder(Clothesline.MODID)
 public class ClotheslineItems {
-    public static final ItemClothesline CLOTHESLINE = null;
-    public static final ItemBlock CLOTHESLINE_ANCHOR = null;
-    public static final Item CLOTHESLINE_CRANK = null;
-    public static final Item PULLEY_WHEEL = null;
+    public static final ItemClothesline CLOTHESLINE = Util.nonNullInjected();
+    public static final ItemBlock CLOTHESLINE_ANCHOR = Util.nonNullInjected();
+    public static final Item CLOTHESLINE_CRANK = Util.nonNullInjected();
+    public static final Item PULLEY_WHEEL = Util.nonNullInjected();
 }

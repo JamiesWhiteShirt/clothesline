@@ -1,6 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common.capability;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
+import com.jamieswhiteshirt.clothesline.common.Util;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
@@ -14,7 +15,7 @@ import javax.annotation.Nullable;
 
 public class NetworkManagerProvider implements ICapabilitySerializable<NBTTagList> {
     @CapabilityInject(INetworkManager.class)
-    private static final Capability<INetworkManager> CAPABILITY = null;
+    private static final Capability<INetworkManager> CAPABILITY = Util.nonNullInjected();
 
     private final NetworkManager instance;
 
