@@ -4,11 +4,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
 public interface INetworkManager {
-    Map<UUID, Network> getNetworks();
+    Collection<Network> getNetworks();
 
     @Nullable
     Network getNetworkByUUID(UUID uuid);

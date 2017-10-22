@@ -21,8 +21,8 @@ public class NetworkManager implements INetworkManager {
     }
 
     @Override
-    public Map<UUID, Network> getNetworks() {
-        return networksByUuid;
+    public Collection<Network> getNetworks() {
+        return networksByUuid.values();
     }
 
     @Nullable
