@@ -43,3 +43,19 @@ processResources {
         exclude 'mcmod.info'
     }
 }
+
+jar {
+    from sourceSets.api.output
+    from sourceSets.main.output
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.api.allSource
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+task apiJar(type: Jar) {
+    from sourceSets.api.output
+    classifier = 'api'
+}
