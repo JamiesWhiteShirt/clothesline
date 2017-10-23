@@ -16,7 +16,7 @@ public abstract class CommonProxy {
     }
 
     public NetworkManager createNetworkManager(World world) {
-        NetworkManager manager = new NetworkManager(world);
+        NetworkManager manager = new NetworkManager();
         if (world instanceof WorldServer) {
             manager.addEventListener(new SynchronizationListener((WorldServer) world, Clothesline.instance.networkWrapper));
         }

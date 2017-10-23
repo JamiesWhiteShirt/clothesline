@@ -2,7 +2,7 @@ package com.jamieswhiteshirt.clothesline.api;
 
 import net.minecraft.util.math.BlockPos;
 
-public class EdgeKey implements Comparable<EdgeKey> {
+public final class EdgeKey implements Comparable<EdgeKey> {
     private final BlockPos pos;
     private final float angle;
     private final int length;

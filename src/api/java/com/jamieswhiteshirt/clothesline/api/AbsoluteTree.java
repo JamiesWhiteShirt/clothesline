@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 /**
  * Immutable data structure of a network as a tree. Values are absolute.
  */
-public class AbsoluteTree {
+public final class AbsoluteTree {
     public static class Edge {
         private final EdgeKey key;
         private final int preMinOffset;
