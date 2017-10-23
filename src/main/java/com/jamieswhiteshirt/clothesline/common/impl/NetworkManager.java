@@ -100,8 +100,7 @@ public final class NetworkManager implements INetworkManager {
     private void extend(Network network, BlockPos fromPos, BlockPos toPos) {
         RelativeNetworkState relativeState = RelativeNetworkState.fromAbsolute(network.getState());
         relativeState.addEdge(fromPos, toPos);
-        network.setState(relativeState.toAbsolute());
-        assignNetworkTree(network, network.getState().getTree());
+        setNetworkState(network, relativeState.toAbsolute());
     }
 
     @Override
@@ -166,6 +165,17 @@ public final class NetworkManager implements INetworkManager {
                 Network newNetwork = new Network(UUID.randomUUID(), subState.toAbsolute());
                 addNetwork(newNetwork);
             }
+        }
+    }
+
+    @Override
+    public void setNetworkState(Network network, AbsoluteNetworkState state) {
+        unassignTree(network, network.getState().getTree());
+        network.setState(state);
+        assignNetworkTree(network, network.getState().getTree());
+
+        for (INetworkManagerEventListener eventListener : eventListeners) {
+            eventListener.onNetworkStateChanged(network, state);
         }
     }
 

@@ -2,6 +2,7 @@ package com.jamieswhiteshirt.clothesline.client.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.api.Network;
+import com.jamieswhiteshirt.clothesline.common.Util;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetAttachment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -16,7 +17,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class MessageSetAttachmentHandler implements IMessageHandler<MessageSetAttachment, IMessage> {
     @CapabilityInject(INetworkManager.class)
-    public static Capability<INetworkManager> CLOTHESLINE_NETWORK_MANAGER_CAPABILITY;
+    private static final Capability<INetworkManager> CLOTHESLINE_NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
 
     @Override
     public IMessage onMessage(MessageSetAttachment message, MessageContext ctx) {

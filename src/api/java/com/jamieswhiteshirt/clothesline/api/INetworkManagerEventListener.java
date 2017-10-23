@@ -11,5 +11,7 @@ public interface INetworkManagerEventListener {
 
     void onNetworkRemoved(Network network);
 
+    void onNetworkStateChanged(Network network, AbsoluteNetworkState state);
+
     void onAttachmentChanged(Network network, int offset, ItemStack previousStack, ItemStack newStack);
 }

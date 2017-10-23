@@ -164,18 +164,13 @@ public class BlockClotheslineAnchor extends BlockDirectional {
         }
     }
 
-    @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-        TileEntityClotheslineAnchor tileEntity = (TileEntityClotheslineAnchor)world.getTileEntity(pos);
-        if (tileEntity != null) {
-            //tileEntity.initializeNetwork();
-        }
-    }
-
     private void onDestroyed(World world, BlockPos pos) {
-        INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
-        if (manager != null) {
-            manager.destroy(pos);
+        //TODO: This does not handle all cases by far, we need a world event listener.
+        if (!world.isRemote) {
+            INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
+            if (manager != null) {
+                manager.destroy(pos);
+            }
         }
     }
 

@@ -19,13 +19,15 @@ public class MessageAddNetworkHandler implements IMessageHandler<MessageAddNetwo
 
     @Override
     public IMessage onMessage(MessageAddNetwork message, MessageContext ctx) {
-        WorldClient world = Minecraft.getMinecraft().world;
-        if (world != null) {
-            INetworkManager manager = world.getCapability(CLOTHESLINE_NETWORK_MANAGER_CAPABILITY, null);
-            if (manager != null) {
-                manager.addNetwork(message.network.toAbsolute());
+        Minecraft.getMinecraft().addScheduledTask(() -> {
+            WorldClient world = Minecraft.getMinecraft().world;
+            if (world != null) {
+                INetworkManager manager = world.getCapability(CLOTHESLINE_NETWORK_MANAGER_CAPABILITY, null);
+                if (manager != null) {
+                    manager.addNetwork(message.network.toAbsolute());
+                }
             }
-        }
+        });
         return null;
     }
 }

@@ -1,10 +1,12 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
+import com.jamieswhiteshirt.clothesline.api.AbsoluteNetworkState;
 import com.jamieswhiteshirt.clothesline.api.INetworkManagerEventListener;
 import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.common.network.message.*;
 import com.jamieswhiteshirt.clothesline.common.util.BasicAttachment;
 import com.jamieswhiteshirt.clothesline.common.util.BasicNetwork;
+import com.jamieswhiteshirt.clothesline.common.util.BasicNetworkState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
@@ -37,6 +39,11 @@ public class SynchronizationListener implements INetworkManagerEventListener {
     @Override
     public void onNetworkRemoved(Network network) {
         networkWrapper.sendToDimension(new MessageRemoveNetwork(network.getUuid()), dimension);
+    }
+
+    @Override
+    public void onNetworkStateChanged(Network network, AbsoluteNetworkState state) {
+        networkWrapper.sendToDimension(new MessageSetNetworkState(network.getUuid(), BasicNetworkState.fromAbsolute(state)), dimension);
     }
 
     @Override

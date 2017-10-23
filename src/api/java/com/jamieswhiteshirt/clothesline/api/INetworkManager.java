@@ -28,6 +28,8 @@ public interface INetworkManager {
 
     void destroy(BlockPos pos);
 
+    void setNetworkState(Network network, AbsoluteNetworkState state);
+
     ItemStack insertItem(Network network, int offset, ItemStack stack, boolean simulate);
 
     ItemStack extractItem(Network network, int offset, boolean simulate);

@@ -66,7 +66,7 @@ public class ItemClothesline extends Item {
 
     @Override
     public void onPlayerStoppedUsing(ItemStack stack, World world, EntityLivingBase entity, int timeLeft) {
-        if (entity instanceof EntityPlayer) {
+        if (!world.isRemote && entity instanceof EntityPlayer) {
             EntityPlayer player = (EntityPlayer) entity;
             IAttacher attacher = player.getCapability(ATTACHER_CAPABILITY, null);
             INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
