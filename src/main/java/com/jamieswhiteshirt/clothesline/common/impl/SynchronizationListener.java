@@ -40,11 +40,13 @@ public class SynchronizationListener implements INetworkManagerEventListener {
     }
 
     @Override
-    public void onItemSet(Network network, int offset, ItemStack stack) {
-        if (!stack.isEmpty()) {
-            networkWrapper.sendToDimension(new MessageSetAttachment(network.getUuid(), new BasicAttachment(offset, stack)), dimension);
-        } else {
-            networkWrapper.sendToDimension(new MessageRemoveAttachment(network.getUuid(), offset), dimension);
+    public void onAttachmentChanged(Network network, int offset, ItemStack previousStack, ItemStack newStack) {
+        if (!ItemStack.areItemStacksEqual(previousStack, newStack)) {
+            if (!newStack.isEmpty()) {
+                networkWrapper.sendToDimension(new MessageSetAttachment(network.getUuid(), new BasicAttachment(offset, newStack)), dimension);
+            } else {
+                networkWrapper.sendToDimension(new MessageRemoveAttachment(network.getUuid(), offset), dimension);
+            }
         }
     }
 }

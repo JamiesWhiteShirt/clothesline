@@ -196,10 +196,11 @@ public final class NetworkManager implements INetworkManager {
 
     @Override
     public void setAttachment(Network network, int offset, ItemStack stack) {
+        ItemStack previousStack = network.getState().getAttachment(offset);
         network.getState().setAttachment(offset, stack);
 
         for (INetworkManagerEventListener eventListener : eventListeners) {
-            eventListener.onItemSet(network, offset, stack);
+            eventListener.onAttachmentChanged(network, offset, previousStack, stack);
         }
     }
 
