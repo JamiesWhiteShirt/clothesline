@@ -19,8 +19,8 @@ public class NetworkManagerProvider implements ICapabilitySerializable<NBTTagLis
 
     private final NetworkManager instance;
 
-    public NetworkManagerProvider(World world) {
-        instance = new NetworkManager(world);
+    public NetworkManagerProvider(NetworkManager instance) {
+        this.instance = instance;
     }
 
     @Override

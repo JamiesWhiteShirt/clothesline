@@ -4,11 +4,12 @@ import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.client.network.messagehandler.*;
-import com.jamieswhiteshirt.clothesline.client.renderer.RenderClothesline;
+import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderNetworkState;
 import com.jamieswhiteshirt.clothesline.client.renderer.tileentity.TileEntityClotheslineAnchorRenderer;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
 import com.jamieswhiteshirt.clothesline.common.CommonProxy;
+import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
 import com.jamieswhiteshirt.clothesline.common.network.message.*;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
 import net.minecraft.client.Minecraft;
@@ -16,6 +17,7 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.model.ModelLoader;
@@ -35,7 +37,7 @@ public class ClientProxy extends CommonProxy {
     @CapabilityInject(INetworkManager.class)
     private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = null;
 
-    private RenderClothesline renderClothesline;
+    private RenderClotheslineNetwork renderClotheslineNetwork;
 
     @Override
     public void preInit(FMLPreInitializationEvent event) {
@@ -53,13 +55,23 @@ public class ClientProxy extends CommonProxy {
                 TileEntityClotheslineAnchor.class,
                 new TileEntityClotheslineAnchorRenderer(minecraft.getRenderItem())
         );
-        renderClothesline = new RenderClothesline(minecraft.getRenderManager(), minecraft.getRenderItem());
+        renderClotheslineNetwork = new RenderClotheslineNetwork(minecraft.getRenderManager(), minecraft.getRenderItem());
 
-        Clothesline.instance.networkWrapper.registerMessage(new MessageSyncNetworksHandler(), MessageSyncNetworks.class, 0, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new MessageSetNetworksHandler(), MessageSetNetworks.class, 0, Side.CLIENT);
         Clothesline.instance.networkWrapper.registerMessage(new MessageAddNetworkHandler(), MessageAddNetwork.class, 1, Side.CLIENT);
         Clothesline.instance.networkWrapper.registerMessage(new MessageRemoveNetworkHandler(), MessageRemoveNetwork.class, 2, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new MessageSetItemHandler(), MessageSetItem.class, 3, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new MessageRemoveAttachmentHandler(), MessageRemoveItem.class, 4, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new MessageSetAttachmentHandler(), MessageSetAttachment.class, 3, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new MessageRemoveAttachmentHandler(), MessageRemoveAttachment.class, 4, Side.CLIENT);
+    }
+
+    @Override
+    public NetworkManager createNetworkManager(World world) {
+        NetworkManager manager = super.createNetworkManager(world);
+        if (world instanceof WorldClient) {
+            return manager;
+        } else {
+            return manager;
+        }
     }
 
     @SubscribeEvent
@@ -90,7 +102,8 @@ public class ClientProxy extends CommonProxy {
                 double y = player.posY * partialTicks + player.prevPosY * (1.0F - partialTicks);
                 double z = player.posZ * partialTicks + player.prevPosZ * (1.0F - partialTicks);
                 for (Network network : manager.getNetworks()) {
-                    renderClothesline.render(world, RenderNetworkState.fromNetworkState(network.getState()), x, y, z, partialTicks);
+                    //TODO: Cache the RenderNetworkStates
+                    renderClotheslineNetwork.render(world, RenderNetworkState.fromNetworkState(network.getState()), x, y, z, partialTicks);
                 }
             }
         }

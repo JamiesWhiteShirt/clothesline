@@ -2,7 +2,7 @@ package com.jamieswhiteshirt.clothesline.client.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.api.Network;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetItem;
+import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetAttachment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraftforge.common.capabilities.Capability;
@@ -14,12 +14,12 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class MessageSetItemHandler implements IMessageHandler<MessageSetItem, IMessage> {
+public class MessageSetAttachmentHandler implements IMessageHandler<MessageSetAttachment, IMessage> {
     @CapabilityInject(INetworkManager.class)
     public static Capability<INetworkManager> CLOTHESLINE_NETWORK_MANAGER_CAPABILITY;
 
     @Override
-    public IMessage onMessage(MessageSetItem message, MessageContext ctx) {
+    public IMessage onMessage(MessageSetAttachment message, MessageContext ctx) {
         Minecraft.getMinecraft().addScheduledTask(() -> {
             WorldClient world = Minecraft.getMinecraft().world;
             if (world != null) {
@@ -27,7 +27,7 @@ public class MessageSetItemHandler implements IMessageHandler<MessageSetItem, IM
                 if (manager != null) {
                     Network network = manager.getNetworkByUUID(message.networkUuid);
                     if (network != null) {
-                        network.getState().setItem(message.attachment.getOffset(), message.attachment.getStack());
+                        manager.setAttachment(network, message.attachment.getOffset(), message.attachment.getStack());
                     }
                 }
             }

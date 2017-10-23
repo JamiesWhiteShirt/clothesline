@@ -31,7 +31,7 @@ public class RelativeNetworkState {
     }
 
     public static RelativeNetworkState fromAbsolute(AbsoluteNetworkState state) {
-        MutableSortedIntMap<ItemStack> attachments = state.getStacks();
+        MutableSortedIntMap<ItemStack> attachments = state.getAttachments();
         int midOffset = Math.floorMod(-state.getOffset(), attachments.getMaxKey());
         MutableSortedIntMap<ItemStack> shiftedItemStacks = MutableSortedIntMap.concatenate(Arrays.asList(
                 attachments.shiftedSubMap(midOffset, attachments.getMaxKey()),

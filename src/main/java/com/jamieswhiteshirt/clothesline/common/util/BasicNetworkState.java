@@ -15,7 +15,7 @@ public class BasicNetworkState {
                 state.getOffset(),
                 state.getMomentum(),
                 BasicTree.fromAbsolute(state.getTree()),
-                state.getStacks().entries().stream().map(
+                state.getAttachments().entries().stream().map(
                         entry -> new BasicAttachment(entry.getKey(), entry.getValue().copy())
                 ).collect(Collectors.toList())
         );

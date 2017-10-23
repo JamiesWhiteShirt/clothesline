@@ -12,8 +12,9 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class NetworkManager implements INetworkManager {
+public final class NetworkManager implements INetworkManager {
     private final World world;
+    private final List<INetworkManagerEventListener> eventListeners = new ArrayList<>();
     private HashMap<UUID, Network> networksByUuid = new HashMap<>();
     private HashMap<BlockPos, Network> networksByBlockPos = new HashMap<>();
 
@@ -22,26 +23,31 @@ public class NetworkManager implements INetworkManager {
     }
 
     @Override
-    public Collection<Network> getNetworks() {
+    public final Collection<Network> getNetworks() {
         return networksByUuid.values();
     }
 
     @Nullable
     @Override
-    public Network getNetworkByUUID(UUID uuid) {
+    public final Network getNetworkByUUID(UUID uuid) {
         return networksByUuid.get(uuid);
     }
 
     @Nullable
     @Override
-    public Network getNetworkByBlockPos(BlockPos pos) {
+    public final Network getNetworkByBlockPos(BlockPos pos) {
         return networksByBlockPos.get(pos);
     }
 
     @Override
     public void addNetwork(Network network) {
-        networksByUuid.put(network.getUuid(), network);
-        assignNetworkTree(network, network.getState().getTree());
+        if (network != networksByUuid.put(network.getUuid(), network)) {
+            assignNetworkTree(network, network.getState().getTree());
+
+            for (INetworkManagerEventListener eventListener : eventListeners) {
+                eventListener.onNetworkAdded(network);
+            }
+        }
     }
 
     private void assignNetworkTree(Network network, AbsoluteTree tree) {
@@ -56,6 +62,10 @@ public class NetworkManager implements INetworkManager {
         Network network = networksByUuid.remove(networkUuid);
         if (network != null) {
             unassignTree(network, network.getState().getTree());
+
+            for (INetworkManagerEventListener eventListener : eventListeners) {
+                eventListener.onNetworkRemoved(network);
+            }
         }
     }
 
@@ -76,10 +86,14 @@ public class NetworkManager implements INetworkManager {
         for (Network network : networks) {
             assignNetworkTree(network, network.getState().getTree());
         }
+
+        for (INetworkManagerEventListener eventListener : eventListeners) {
+            eventListener.onNetworksSet(getNetworks());
+        }
     }
 
     @Override
-    public void update() {
+    public final void update() {
         networksByUuid.values().forEach(Network::update);
     }
 
@@ -91,7 +105,7 @@ public class NetworkManager implements INetworkManager {
     }
 
     @Override
-    public boolean connect(BlockPos posA, BlockPos posB) {
+    public final boolean connect(BlockPos posA, BlockPos posB) {
         Network networkA = getNetworkByBlockPos(posA);
         Network networkB = getNetworkByBlockPos(posB);
 
@@ -131,7 +145,7 @@ public class NetworkManager implements INetworkManager {
             } else {
                 AbsoluteNetworkState state = AbsoluteNetworkState.createInitial(BasicTree.createInitial(posA, posB).toAbsolute());
                 Network network = new Network(UUID.randomUUID(), state);
-                network.getState().insertItem(0, new ItemStack(Items.LEATHER_CHESTPLATE), false);
+                network.getState().setAttachment(0, new ItemStack(Items.LEATHER_CHESTPLATE));
 
                 addNetwork(network);
             }
@@ -141,7 +155,7 @@ public class NetworkManager implements INetworkManager {
     }
 
     @Override
-    public void destroy(BlockPos pos) {
+    public final void destroy(BlockPos pos) {
         Network network = getNetworkByBlockPos(pos);
         if (network != null) {
             removeNetwork(network.getUuid());
@@ -157,26 +171,50 @@ public class NetworkManager implements INetworkManager {
 
     @Override
     public ItemStack insertItem(Network network, int offset, ItemStack stack, boolean simulate) {
-        return network.getState().insertItem(offset, stack, simulate);
+        if (!stack.isEmpty() && network.getState().getAttachment(offset).isEmpty()) {
+            if (!simulate) {
+                ItemStack insertedItem = stack.copy();
+                insertedItem.setCount(1);
+                setAttachment(network, offset, stack);
+            }
+
+            ItemStack returnedStack = stack.copy();
+            returnedStack.shrink(1);
+            return returnedStack;
+        }
+        return stack;
     }
 
     @Override
     public ItemStack extractItem(Network network, int offset, boolean simulate) {
-        return network.getState().extractItem(offset, simulate);
+        ItemStack result = network.getState().getAttachment(offset);
+        if (!result.isEmpty() && !simulate) {
+            setAttachment(network, offset, ItemStack.EMPTY);
+        }
+        return result;
     }
 
     @Override
-    public void setItem(Network network, int offset, ItemStack stack) {
-        network.getState().setItem(offset, stack);
-    }
+    public void setAttachment(Network network, int offset, ItemStack stack) {
+        network.getState().setAttachment(offset, stack);
 
-    @Override
-    public void removeItem(Network network, int offset) {
-        network.getState().removeItem(offset);
+        for (INetworkManagerEventListener eventListener : eventListeners) {
+            eventListener.onItemSet(network, offset, stack);
+        }
     }
 
     @Override
     public void addMomentum(Network network, int momentum) {
         network.getState().addMomentum(momentum);
+    }
+
+    @Override
+    public void addEventListener(INetworkManagerEventListener eventListener) {
+        eventListeners.add(eventListener);
+    }
+
+    @Override
+    public void removeEventListener(INetworkManagerEventListener eventListener) {
+        eventListeners.remove(eventListener);
     }
 }

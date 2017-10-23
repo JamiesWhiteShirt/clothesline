@@ -65,7 +65,7 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
 
                     @Override
                     public ItemStack getStackInSlot(int slot) {
-                        return state.getItem(tree.getChildren().get(slot).getMinOffset());
+                        return state.getAttachment(tree.getChildren().get(slot).getMinOffset());
                     }
 
                     @Override

@@ -32,9 +32,11 @@ public interface INetworkManager {
 
     ItemStack extractItem(Network network, int offset, boolean simulate);
 
-    void setItem(Network network, int offset, ItemStack stack);
-
-    void removeItem(Network network, int offset);
+    void setAttachment(Network network, int offset, ItemStack stack);
 
     void addMomentum(Network network, int momentum);
+
+    void addEventListener(INetworkManagerEventListener eventListener);
+
+    void removeEventListener(INetworkManagerEventListener eventListener);
 }

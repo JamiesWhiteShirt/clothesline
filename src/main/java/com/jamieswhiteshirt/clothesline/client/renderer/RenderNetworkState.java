@@ -49,7 +49,7 @@ public class RenderNetworkState {
     }
 
     public MutableSortedIntMap<ItemStack> getStacks() {
-        return state.getStacks();
+        return state.getAttachments();
     }
 
     public int getMinNodeIndexForOffset(int offset) {

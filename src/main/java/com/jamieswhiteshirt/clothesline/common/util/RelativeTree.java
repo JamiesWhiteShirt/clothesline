@@ -35,9 +35,9 @@ public class RelativeTree {
 
     private static class Edge {
         private final EdgeKey key;
-        private final MutableSortedIntMap<ItemStack> preStacks;
+        private final MutableSortedIntMap<ItemStack> preAttachments;
         private final RelativeTree tree;
-        private final MutableSortedIntMap<ItemStack> postStacks;
+        private final MutableSortedIntMap<ItemStack> postAttachments;
 
         private static Edge fromAbsolute(AbsoluteTree.Edge edge, MutableSortedIntMap<ItemStack> attachments) {
             return new Edge(
@@ -48,11 +48,11 @@ public class RelativeTree {
             );
         }
 
-        private Edge(EdgeKey key, MutableSortedIntMap<ItemStack> preStacks, RelativeTree tree, MutableSortedIntMap<ItemStack> postStacks) {
+        private Edge(EdgeKey key, MutableSortedIntMap<ItemStack> preAttachments, RelativeTree tree, MutableSortedIntMap<ItemStack> postAttachments) {
             this.key = key;
-            this.preStacks = preStacks;
+            this.preAttachments = preAttachments;
             this.tree = tree;
-            this.postStacks = postStacks;
+            this.postAttachments = postAttachments;
         }
 
         private int getLoopLength() {
@@ -60,13 +60,13 @@ public class RelativeTree {
         }
 
         private Edge reverse(RelativeTree parent) {
-            return new Edge(key.reverse(parent.pos), postStacks, parent, preStacks);
+            return new Edge(key.reverse(parent.pos), postAttachments, parent, preAttachments);
         }
 
         private AbsoluteTree.Edge toAbsolute(List<MutableSortedIntMap<ItemStack>> attachmentsList, int fromOffset, RelativeTree from) {
-            attachmentsList.add(preStacks);
+            attachmentsList.add(preAttachments);
             AbsoluteTree absoluteTree = tree.toAbsolute(attachmentsList, fromOffset + key.getLength(), key.reverse(from.pos));
-            attachmentsList.add(postStacks);
+            attachmentsList.add(postAttachments);
             return new AbsoluteTree.Edge(key, fromOffset, absoluteTree);
         }
     }
@@ -183,7 +183,7 @@ public class RelativeTree {
 
     public SplitResult split() {
         List<Edge> edges = this.edges.stream().map(
-                edge -> new Edge(edge.key, edge.preStacks, empty(edge.tree.pos), edge.postStacks)
+                edge -> new Edge(edge.key, edge.preAttachments, empty(edge.tree.pos), edge.postAttachments)
         ).collect(Collectors.toList());
         RelativeTree tree = new RelativeTree(pos, edges, edges.stream().mapToInt(Edge::getLoopLength).sum());
         return new SplitResult(tree, this.edges.stream().map(edge -> edge.tree).collect(Collectors.toList()));

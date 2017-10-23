@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @SideOnly(Side.CLIENT)
-public class RenderClothesline {
+public class RenderClotheslineNetwork {
     private static final ResourceLocation TEXTURE = new ResourceLocation(Clothesline.MODID, "textures/misc/clothesline.png");
     private static final VertexFormat VERTEX_FORMAT = new VertexFormat()
             .addElement(DefaultVertexFormats.POSITION_3F)
@@ -36,7 +36,7 @@ public class RenderClothesline {
     private final RenderManager renderManager;
     private final RenderItem renderItem;
 
-    public RenderClothesline(RenderManager renderManager, RenderItem renderItem) {
+    public RenderClotheslineNetwork(RenderManager renderManager, RenderItem renderItem) {
         this.renderManager = renderManager;
         this.renderItem = renderItem;
     }

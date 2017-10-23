@@ -2,7 +2,7 @@ package com.jamieswhiteshirt.clothesline.client.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageSyncNetworks;
+import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetNetworks;
 import com.jamieswhiteshirt.clothesline.common.util.BasicNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -20,7 +20,7 @@ import java.lang.reflect.Field;
 import java.util.stream.Collectors;
 
 @SideOnly(Side.CLIENT)
-public class MessageSyncNetworksHandler implements IMessageHandler<MessageSyncNetworks, IMessage> {
+public class MessageSetNetworksHandler implements IMessageHandler<MessageSetNetworks, IMessage> {
     @CapabilityInject(INetworkManager.class)
     public static final Capability<INetworkManager> CLOTHESLINE_NETWORK_MANAGER_CAPABILITY = null;
     // This message may be received before the client world is actually assigned to Minecraft.
@@ -28,7 +28,7 @@ public class MessageSyncNetworksHandler implements IMessageHandler<MessageSyncNe
     private static final Field clientWorldController = ReflectionHelper.findField(NetHandlerPlayClient.class, "field_147300_g", "clientWorldController");
 
     @Override
-    public IMessage onMessage(MessageSyncNetworks message, MessageContext ctx) {
+    public IMessage onMessage(MessageSetNetworks message, MessageContext ctx) {
         Minecraft.getMinecraft().addScheduledTask(() -> {
             WorldClient world = null;
             try {

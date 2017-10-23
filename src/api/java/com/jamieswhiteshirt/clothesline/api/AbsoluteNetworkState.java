@@ -1,12 +1,10 @@
 package com.jamieswhiteshirt.clothesline.api;
 
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
-import com.jamieswhiteshirt.clothesline.api.util.RangeLookup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * State container for a network.
@@ -22,7 +20,7 @@ public final class AbsoluteNetworkState {
 
     private final AbsoluteTree tree;
     private final Map<BlockPos, AbsoluteTree> posLookup;
-    private final MutableSortedIntMap<ItemStack> stacks;
+    private final MutableSortedIntMap<ItemStack> attachments;
 
     public static AbsoluteNetworkState createInitial(AbsoluteTree tree) {
         return new AbsoluteNetworkState(
@@ -34,10 +32,10 @@ public final class AbsoluteNetworkState {
         );
     }
 
-    public AbsoluteNetworkState(int previousOffset, int offset, int momentum, AbsoluteTree tree, MutableSortedIntMap<ItemStack> stacks) {
+    public AbsoluteNetworkState(int previousOffset, int offset, int momentum, AbsoluteTree tree, MutableSortedIntMap<ItemStack> attachments) {
         this.tree = tree;
         this.posLookup = tree.createPositionLookup();
-        this.stacks = stacks;
+        this.attachments = attachments;
         this.previousOffset = previousOffset;
         this.offset = offset;
         this.momentum = momentum;
@@ -51,12 +49,12 @@ public final class AbsoluteNetworkState {
         return posLookup.get(pos);
     }
 
-    public MutableSortedIntMap<ItemStack> getStacks() {
-        return stacks;
+    public MutableSortedIntMap<ItemStack> getAttachments() {
+        return attachments;
     }
 
-    public ItemStack getItem(int offset) {
-        ItemStack result = stacks.get(offset);
+    public ItemStack getAttachment(int offset) {
+        ItemStack result = attachments.get(offset);
         if (result != null) {
             return result;
         } else {
@@ -64,39 +62,12 @@ public final class AbsoluteNetworkState {
         }
     }
 
-    public ItemStack insertItem(int offset, ItemStack stack, boolean simulate) {
-        if (!stack.isEmpty() && getItem(offset).isEmpty()) {
-            if (!simulate) {
-                ItemStack insertedItem = stack.copy();
-                insertedItem.setCount(1);
-                stacks.put(offset, stack);
-            }
-
-            ItemStack returnedStack = stack.copy();
-            returnedStack.shrink(1);
-            return returnedStack;
-        }
-        return stack;
-    }
-
-    public ItemStack extractItem(int offset, boolean simulate) {
-        ItemStack result = getItem(offset);
-        if (!result.isEmpty() && !simulate) {
-            stacks.remove(offset);
-        }
-        return result;
-    }
-
-    public void setItem(int offset, ItemStack stack) {
+    public void setAttachment(int offset, ItemStack stack) {
         if (stack.isEmpty()) {
-            stacks.remove(offset);
+            attachments.remove(offset);
         } else {
-            stacks.put(offset, stack);
+            attachments.put(offset, stack);
         }
-    }
-
-    public void removeItem(int offset) {
-        stacks.remove(offset);
     }
 
     public void update() {

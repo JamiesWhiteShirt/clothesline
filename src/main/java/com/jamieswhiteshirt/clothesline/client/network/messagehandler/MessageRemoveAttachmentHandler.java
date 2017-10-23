@@ -2,9 +2,10 @@ package com.jamieswhiteshirt.clothesline.client.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.api.Network;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageRemoveItem;
+import com.jamieswhiteshirt.clothesline.common.network.message.MessageRemoveAttachment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -14,12 +15,12 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class MessageRemoveAttachmentHandler implements IMessageHandler<MessageRemoveItem, IMessage> {
+public class MessageRemoveAttachmentHandler implements IMessageHandler<MessageRemoveAttachment, IMessage> {
     @CapabilityInject(INetworkManager.class)
     public static Capability<INetworkManager> CLOTHESLINE_NETWORK_MANAGER_CAPABILITY;
 
     @Override
-    public IMessage onMessage(MessageRemoveItem message, MessageContext ctx) {
+    public IMessage onMessage(MessageRemoveAttachment message, MessageContext ctx) {
         Minecraft.getMinecraft().addScheduledTask(() -> {
             WorldClient world = Minecraft.getMinecraft().world;
             if (world != null) {
@@ -27,7 +28,7 @@ public class MessageRemoveAttachmentHandler implements IMessageHandler<MessageRe
                 if (manager != null) {
                     Network network = manager.getNetworkByUUID(message.networkUuid);
                     if (network != null) {
-                        network.getState().removeItem(message.offset);
+                        manager.setAttachment(network, message.offset, ItemStack.EMPTY);
                     }
                 }
             }

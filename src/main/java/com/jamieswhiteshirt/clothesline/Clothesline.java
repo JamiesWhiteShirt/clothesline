@@ -9,7 +9,7 @@ import com.jamieswhiteshirt.clothesline.common.capability.*;
 import com.jamieswhiteshirt.clothesline.common.impl.Attacher;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
 import com.jamieswhiteshirt.clothesline.common.item.ItemClothesline;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageSyncNetworks;
+import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetNetworks;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
 import com.jamieswhiteshirt.clothesline.common.util.BasicNetwork;
 import net.minecraft.block.Block;
@@ -101,7 +101,7 @@ public class Clothesline {
 
     @SubscribeEvent
     public void attachWorldCapabilities(AttachCapabilitiesEvent<World> event) {
-        event.addCapability(new ResourceLocation(MODID, "network_manager"), new NetworkManagerProvider(event.getObject()));
+        event.addCapability(new ResourceLocation(MODID, "network_manager"), new NetworkManagerProvider(proxy.createNetworkManager(event.getObject())));
     }
 
     @SubscribeEvent
@@ -117,7 +117,7 @@ public class Clothesline {
             EntityPlayerMP player = (EntityPlayerMP) event.getEntity();
             INetworkManager manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
-                networkWrapper.sendTo(new MessageSyncNetworks(manager.getNetworks().stream().map(
+                networkWrapper.sendTo(new MessageSetNetworks(manager.getNetworks().stream().map(
                         BasicNetwork::fromAbsolute
                 ).collect(Collectors.toList())), player);
             }
