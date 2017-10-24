@@ -1,7 +1,9 @@
 package com.jamieswhiteshirt.clothesline;
 
+import com.jamieswhiteshirt.clothesline.api.AbsoluteTree;
 import com.jamieswhiteshirt.clothesline.api.IAttacher;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
+import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineBlocks;
 import com.jamieswhiteshirt.clothesline.common.CommonProxy;
 import com.jamieswhiteshirt.clothesline.common.block.BlockClotheslineAnchor;
@@ -12,6 +14,7 @@ import com.jamieswhiteshirt.clothesline.common.item.ItemClothesline;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetNetworks;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
 import com.jamieswhiteshirt.clothesline.common.util.BasicNetwork;
+import com.jamieswhiteshirt.clothesline.core.event.MayPlaceBlockEvent;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -19,6 +22,8 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
@@ -27,11 +32,13 @@ import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -48,7 +55,7 @@ import java.util.stream.Collectors;
 )
 public class Clothesline {
     public static final String MODID = "clothesline";
-    public static final String VERSION = "0.0.0.0";
+    public static final String VERSION = "1.12-0.0.0.0";
 
     @CapabilityInject(INetworkManager.class)
     public static Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY;
@@ -132,5 +139,33 @@ public class Clothesline {
                 manager.update();
             }
         }
+    }
+
+    @SubscribeEvent
+    public void onMayPlaceBlock(MayPlaceBlockEvent event) {
+        AxisAlignedBB aabb = event.getState().getCollisionBoundingBox(event.getWorld(), event.getPos());
+        if (aabb != Block.NULL_AABB) {
+            INetworkManager manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
+            if (manager != null) {
+                for (Network network : manager.getNetworks()) {
+                    if (intersectsTree(aabb.offset(event.getPos()), network.getState().getTree())) {
+                        event.setCanceled(true);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean intersectsTree(AxisAlignedBB aabb, AbsoluteTree parent) {
+        Vec3d parentVec = new Vec3d(parent.getPos()).addVector(0.5D, 0.5D, 0.5D);
+        for (AbsoluteTree.Edge edge : parent.getEdges()) {
+            AbsoluteTree child = edge.getTree();
+            Vec3d childVec = new Vec3d(child.getPos()).addVector(0.5D, 0.5D, 0.5D);
+            if (aabb.calculateIntercept(parentVec, childVec) != null || intersectsTree(aabb, child)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
