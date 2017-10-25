@@ -6,6 +6,7 @@ import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineBlocks;
 import com.jamieswhiteshirt.clothesline.common.CommonProxy;
+import com.jamieswhiteshirt.clothesline.common.NetworkBreakWorldEventListener;
 import com.jamieswhiteshirt.clothesline.common.block.BlockClotheslineAnchor;
 import com.jamieswhiteshirt.clothesline.common.capability.*;
 import com.jamieswhiteshirt.clothesline.common.impl.Attacher;
@@ -33,6 +34,7 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -137,6 +139,17 @@ public class Clothesline {
             INetworkManager manager = event.world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 manager.update();
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onWorldLoad(WorldEvent.Load event) {
+        World world = event.getWorld();
+        if (!world.isRemote) {
+            INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
+            if (manager != null) {
+                world.addEventListener(new NetworkBreakWorldEventListener(manager));
             }
         }
     }

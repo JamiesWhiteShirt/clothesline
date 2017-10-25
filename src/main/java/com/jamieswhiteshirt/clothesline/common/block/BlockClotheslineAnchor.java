@@ -83,6 +83,10 @@ public class BlockClotheslineAnchor extends BlockDirectional {
         IBlockState state = world.getBlockState(otherPos);
         Block block = state.getBlock();
 
+        if (facing == EnumFacing.UP && state.getBlock().canPlaceTorchOnTop(state, world, otherPos)) {
+            return true;
+        }
+
         return !isExceptionBlockForAttaching(block) && state.getBlockFaceShape(world, otherPos, facing) == BlockFaceShape.SOLID || facing == EnumFacing.UP && state.isSideSolid(world, pos, facing);
     }
 
@@ -162,25 +166,5 @@ public class BlockClotheslineAnchor extends BlockDirectional {
         } else {
             return false;
         }
-    }
-
-    private void onDestroyed(World world, BlockPos pos) {
-        //TODO: This does not handle all cases by far, we need a world event listener.
-        if (!world.isRemote) {
-            INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
-            if (manager != null) {
-                manager.destroy(pos);
-            }
-        }
-    }
-
-    @Override
-    public void onBlockDestroyedByPlayer(World world, BlockPos pos, IBlockState state) {
-        onDestroyed(world, pos);
-    }
-
-    @Override
-    public void onBlockDestroyedByExplosion(World world, BlockPos pos, Explosion explosion) {
-        onDestroyed(world, pos);
     }
 }

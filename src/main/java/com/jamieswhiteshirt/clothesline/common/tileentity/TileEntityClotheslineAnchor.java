@@ -61,22 +61,23 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
                 return ITEM_HANDLER_CAPABILITY.cast(new IItemHandler() {
                     @Override
                     public int getSlots() {
-                        return tree.getChildren().size();
+                        return 1;
+                        //return tree.getChildren().size();
                     }
 
                     @Override
                     public ItemStack getStackInSlot(int slot) {
-                        return state.getAttachment(tree.getChildren().get(slot).getMinOffset());
+                        return state.getAttachment(Math.floorMod(tree.getMinOffset() - state.getOffset(), state.getLoopLength()));
                     }
 
                     @Override
                     public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-                        return manager.insertItem(network, tree.getEdges().get(slot).getPreMinOffset(), stack, simulate);
+                        return manager.insertItem(network, Math.floorMod(tree.getMinOffset() - state.getOffset(), state.getLoopLength()), stack, simulate);
                     }
 
                     @Override
                     public ItemStack extractItem(int slot, int amount, boolean simulate) {
-                        return manager.extractItem(network, tree.getChildren().get(slot).getMinOffset(), simulate);
+                        return manager.extractItem(network, Math.floorMod(tree.getMinOffset() - state.getOffset(), state.getLoopLength()), simulate);
                     }
 
                     @Override
