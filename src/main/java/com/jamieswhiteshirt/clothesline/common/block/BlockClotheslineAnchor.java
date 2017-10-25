@@ -83,11 +83,7 @@ public class BlockClotheslineAnchor extends BlockDirectional {
         IBlockState state = world.getBlockState(otherPos);
         Block block = state.getBlock();
 
-        if (facing == EnumFacing.UP && state.getBlock().canPlaceTorchOnTop(state, world, otherPos)) {
-            return true;
-        }
-
-        return !isExceptionBlockForAttaching(block) && state.getBlockFaceShape(world, otherPos, facing) == BlockFaceShape.SOLID || facing == EnumFacing.UP && state.isSideSolid(world, pos, facing);
+        return !isExceptionBlockForAttaching(block) && state.getBlockFaceShape(world, otherPos, facing) == BlockFaceShape.SOLID || facing == EnumFacing.UP && state.getBlock().canPlaceTorchOnTop(state, world, otherPos);
     }
 
     @Override
