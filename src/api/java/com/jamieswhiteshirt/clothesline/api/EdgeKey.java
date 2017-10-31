@@ -4,6 +4,8 @@ import net.minecraft.util.math.BlockPos;
 
 public final class EdgeKey implements Comparable<EdgeKey> {
     private final BlockPos pos;
+    // TODO: Use something other than atan2 to compare angles.
+    // The only requirement is that this is a periodic strictly increasing value for comparison
     private final float angle;
     private final int length;
 

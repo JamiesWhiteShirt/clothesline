@@ -4,6 +4,7 @@ import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,6 +44,10 @@ public final class AbsoluteNetworkState {
         this.momentum = momentum;
     }
 
+    private int offsetMod(int offset) {
+        return Math.floorMod(offset, getLoopLength());
+    }
+
     public AbsoluteTree getTree() {
         return tree;
     }
@@ -59,8 +64,12 @@ public final class AbsoluteNetworkState {
         return attachments;
     }
 
+    public List<MutableSortedIntMap.Entry<ItemStack>> getAttachmentsInRange(int minOffset, int maxOffset) {
+        return attachments.getInRange(offsetMod(minOffset), offsetMod(maxOffset));
+    }
+
     public ItemStack getAttachment(int offset) {
-        ItemStack result = attachments.get(offset);
+        ItemStack result = attachments.get(offsetMod(offset));
         if (result != null) {
             return result;
         } else {
@@ -70,9 +79,9 @@ public final class AbsoluteNetworkState {
 
     public void setAttachment(int offset, ItemStack stack) {
         if (stack.isEmpty()) {
-            attachments.remove(offset);
+            attachments.remove(offsetMod(offset));
         } else {
-            attachments.put(offset, stack);
+            attachments.put(offsetMod(offset), stack);
         }
     }
 

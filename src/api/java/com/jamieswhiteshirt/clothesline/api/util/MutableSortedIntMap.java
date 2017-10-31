@@ -85,6 +85,20 @@ public class MutableSortedIntMap<T> {
         }
     }
 
+    public List<Entry<T>> getInRange(int minKey, int maxKey) {
+        int minIndex = findKeyIndex(minKey);
+        int maxIndex = findKeyIndex(maxKey);
+
+        if (minKey <= maxKey) {
+            return entries.subList(minIndex, maxIndex);
+        } else {
+            ArrayList<Entry<T>> entries = new ArrayList<>(minIndex + entries().size() - maxIndex);
+            entries.addAll(this.entries.subList(minIndex, this.entries.size()));
+            entries.addAll(this.entries.subList(0, maxIndex));
+            return entries;
+        }
+    }
+
     public void put(int key, T value) {
         int keyIndex = findKeyIndex(key);
         Entry<T> entry = new Entry<>(key, value);
@@ -97,7 +111,7 @@ public class MutableSortedIntMap<T> {
 
     public void remove(int key) {
         int keyIndex = findKeyIndex(key);
-        if (keyIndex <= entries.size() && entries.get(keyIndex).key != key) {
+        if (keyIndex <= entries.size() && entries.get(keyIndex).key == key) {
             entries.remove(keyIndex);
         }
     }
