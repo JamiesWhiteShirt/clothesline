@@ -8,13 +8,19 @@ import java.util.Collection;
 import java.util.UUID;
 
 public interface INetworkManager {
+    interface INetworkNode {
+        Network getNetwork();
+
+        NetworkGraph.Node getGraphNode();
+    }
+
     Collection<Network> getNetworks();
 
     @Nullable
     Network getNetworkByUUID(UUID uuid);
 
     @Nullable
-    Network getNetworkByBlockPos(BlockPos pos);
+    INetworkNode getNetworkNodeByPos(BlockPos pos);
 
     void addNetwork(Network network);
 

@@ -19,6 +19,7 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @SideOnly(Side.CLIENT)
 public class RenderClotheslineNetwork {
@@ -66,34 +67,26 @@ public class RenderClotheslineNetwork {
 
             Vec3d normal = e.projectTangent(nr, ur);
             posNormal(bufferBuilder, e.projectVec(new Vec3d(
-                    (r1 - 4.0D) / 32.0D,
+                    (r1 + 4.0D) / 32.0D,
                     u1 / 32.0D,
                     0.0D
             )), normal).tex(0.0D, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
             posNormal(bufferBuilder, e.projectVec(new Vec3d(
-                    (r2 - 4.0D) / 32.0D,
+                    (r2 + 4.0D) / 32.0D,
                     u2 / 32.0D,
                     0.0D
             )), normal).tex(1.0D, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
             posNormal(bufferBuilder, e.projectVec(new Vec3d(
-                    (r2 - 4.0D) / 32.0D,
+                    (r2 + 4.0D) / 32.0D,
                     u2 / 32.0D,
                     1.0D
             )), normal).tex(1.0D, vTo).lightmap(lightTo1, lightTo2).endVertex();
             posNormal(bufferBuilder, e.projectVec(new Vec3d(
-                    (r1 - 4.0D) / 32.0D,
+                    (r1 + 4.0D) / 32.0D,
                     u1 / 32.0D,
                     1.0D
             )), normal).tex(0.0D, vTo).lightmap(lightTo1, lightTo2).endVertex();
         }
-    }
-
-    private List<RenderEdge> createRenderEdges(NodeLoop nodeLoop) {
-        RenderEdge[] renderEdges = new RenderEdge[nodeLoop.size()];
-        for (int i = 0; i < renderEdges.length; i++) {
-            renderEdges[i] = RenderEdge.create(nodeLoop.get(i), nodeLoop.get(i + 1));
-        }
-        return Arrays.asList(renderEdges);
     }
 
     private void renderTree(AbsoluteTree absoluteTree, double x, double y, double z) {
@@ -113,12 +106,11 @@ public class RenderClotheslineNetwork {
     }
 
     public void render(IBlockAccess world, RenderNetworkState state, double x, double y, double z, float partialTicks) {
-        NodeLoop nodeLoop = state.getNodeLoop();
         Vec3d viewPos = new Vec3d(x, y, z);
 
         double networkOffset = state.getOffset(partialTicks);
 
-        List<RenderEdge> renderEdges = createRenderEdges(nodeLoop);
+        List<RenderEdge> renderEdges = state.getEdges();
 
         renderManager.renderEngine.bindTexture(TEXTURE);
         RenderHelper.enableStandardItemLighting();
@@ -150,10 +142,10 @@ public class RenderClotheslineNetwork {
         renderTree(state.getTree(), x, y, z);
 
         for (MutableSortedIntMap.Entry<ItemStack> entry : state.getStacks().entries()) {
-            double attachmentOffset = (entry.getKey() + networkOffset) % nodeLoop.getLoopLength();
+            double attachmentOffset = (entry.getKey() + networkOffset) % state.getStacks().getMaxKey();
             RenderEdge edge = renderEdges.get(state.getMinNodeIndexForOffset((int)attachmentOffset));
             double d = (attachmentOffset - edge.getFromOffset()) / (edge.getToOffset() - edge.getFromOffset());
-            Vec3d pos = edge.projectVec(new Vec3d(2.0D / 16.0D, 0.0D, d));
+            Vec3d pos = edge.projectVec(new Vec3d(-2.0D / 16.0D, 0.0D, d));
 
             GlStateManager.pushMatrix();
             GlStateManager.translate(pos.x - viewPos.x, pos.y - 0.25D - viewPos.y, pos.z - viewPos.z);

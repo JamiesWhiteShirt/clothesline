@@ -12,9 +12,29 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public final class NetworkManager implements INetworkManager {
+    private static class NetworkNode implements INetworkNode {
+        private final Network network;
+        private final NetworkGraph.Node graphNode;
+
+        private NetworkNode(Network network, NetworkGraph.Node graphNode) {
+            this.network = network;
+            this.graphNode = graphNode;
+        }
+
+        @Override
+        public Network getNetwork() {
+            return network;
+        }
+
+        @Override
+        public NetworkGraph.Node getGraphNode() {
+            return graphNode;
+        }
+    }
+
     private final List<INetworkManagerEventListener> eventListeners = new ArrayList<>();
     private HashMap<UUID, Network> networksByUuid = new HashMap<>();
-    private HashMap<BlockPos, Network> networksByBlockPos = new HashMap<>();
+    private HashMap<BlockPos, NetworkNode> networkNodesByPos = new HashMap<>();
 
     @Override
     public final Collection<Network> getNetworks() {
@@ -29,14 +49,14 @@ public final class NetworkManager implements INetworkManager {
 
     @Nullable
     @Override
-    public final Network getNetworkByBlockPos(BlockPos pos) {
-        return networksByBlockPos.get(pos);
+    public final INetworkNode getNetworkNodeByPos(BlockPos pos) {
+        return networkNodesByPos.get(pos);
     }
 
     @Override
     public void addNetwork(Network network) {
         if (network != networksByUuid.put(network.getUuid(), network)) {
-            assignNetworkTree(network, network.getState().getTree());
+            assignNetworkGraph(network);
 
             for (INetworkManagerEventListener eventListener : eventListeners) {
                 eventListener.onNetworkAdded(network);
@@ -44,10 +64,9 @@ public final class NetworkManager implements INetworkManager {
         }
     }
 
-    private void assignNetworkTree(Network network, AbsoluteTree tree) {
-        networksByBlockPos.put(tree.getPos(), network);
-        for (AbsoluteTree child : tree.getChildren()) {
-            assignNetworkTree(network, child);
+    private void assignNetworkGraph(Network network) {
+        for (NetworkGraph.Node graphNode : network.getState().getGraph().getNodes()) {
+            networkNodesByPos.put(graphNode.getKey(), new NetworkNode(network, graphNode));
         }
     }
 
@@ -55,7 +74,7 @@ public final class NetworkManager implements INetworkManager {
     public void removeNetwork(UUID networkUuid) {
         Network network = networksByUuid.remove(networkUuid);
         if (network != null) {
-            unassignTree(network, network.getState().getTree());
+            unassignNetworkGraph(network);
 
             for (INetworkManagerEventListener eventListener : eventListeners) {
                 eventListener.onNetworkRemoved(network);
@@ -63,10 +82,9 @@ public final class NetworkManager implements INetworkManager {
         }
     }
 
-    private void unassignTree(Network network, AbsoluteTree tree) {
-        networksByBlockPos.remove(tree.getPos(), network);
-        for (AbsoluteTree child : tree.getChildren()) {
-            unassignTree(network, child);
+    private void unassignNetworkGraph(Network network) {
+        for (NetworkGraph.Node graphNode : network.getState().getGraph().getNodes()) {
+            networkNodesByPos.remove(graphNode.getKey());
         }
     }
 
@@ -76,9 +94,9 @@ public final class NetworkManager implements INetworkManager {
                 Network::getUuid,
                 network -> network
         )));
-        this.networksByBlockPos = new HashMap<>();
+        this.networkNodesByPos = new HashMap<>();
         for (Network network : networks) {
-            assignNetworkTree(network, network.getState().getTree());
+            assignNetworkGraph(network);
         }
 
         for (INetworkManagerEventListener eventListener : eventListeners) {
@@ -100,8 +118,9 @@ public final class NetworkManager implements INetworkManager {
     @Override
     public final boolean connect(BlockPos posA, BlockPos posB) {
         if (posA.equals(posB)) {
-            Network network = getNetworkByBlockPos(posA);
-            if (network != null) {
+            INetworkNode node = getNetworkNodeByPos(posA);
+            if (node != null) {
+                Network network = node.getNetwork();
                 RelativeNetworkState relativeState = RelativeNetworkState.fromAbsolute(network.getState());
                 relativeState.reroot(posB);
                 setNetworkState(network, relativeState.toAbsolute());
@@ -110,11 +129,14 @@ public final class NetworkManager implements INetworkManager {
             return false;
         }
 
-        Network networkA = getNetworkByBlockPos(posA);
-        Network networkB = getNetworkByBlockPos(posB);
+        INetworkNode nodeA = getNetworkNodeByPos(posA);
+        INetworkNode nodeB = getNetworkNodeByPos(posB);
 
-        if (networkA != null) {
-            if (networkB != null) {
+        if (nodeA != null) {
+            Network networkA = nodeA.getNetwork();
+            if (nodeB != null) {
+                Network networkB = nodeB.getNetwork();
+
                 if (networkA == networkB) {
                     //TODO: Look into circular networks
                     return false;
@@ -134,7 +156,8 @@ public final class NetworkManager implements INetworkManager {
                 extend(networkA, posA, posB);
             }
         } else {
-            if (networkB != null) {
+            if (nodeB != null) {
+                Network networkB = nodeB.getNetwork();
                 extend(networkB, posB, posA);
             } else {
                 AbsoluteNetworkState state = AbsoluteNetworkState.createInitial(BasicTree.createInitial(posA, posB).toAbsolute());
@@ -150,8 +173,9 @@ public final class NetworkManager implements INetworkManager {
 
     @Override
     public final void destroy(BlockPos pos) {
-        Network network = getNetworkByBlockPos(pos);
-        if (network != null) {
+        INetworkNode node = getNetworkNodeByPos(pos);
+        if (node != null) {
+            Network network = node.getNetwork();
             removeNetwork(network.getUuid());
             RelativeNetworkState state = RelativeNetworkState.fromAbsolute(network.getState());
             state.reroot(pos);
@@ -165,9 +189,9 @@ public final class NetworkManager implements INetworkManager {
 
     @Override
     public void setNetworkState(Network network, AbsoluteNetworkState state) {
-        unassignTree(network, network.getState().getTree());
+        unassignNetworkGraph(network);
         network.setState(state);
-        assignNetworkTree(network, network.getState().getTree());
+        assignNetworkGraph(network);
 
         for (INetworkManagerEventListener eventListener : eventListeners) {
             eventListener.onNetworkStateChanged(network, state);

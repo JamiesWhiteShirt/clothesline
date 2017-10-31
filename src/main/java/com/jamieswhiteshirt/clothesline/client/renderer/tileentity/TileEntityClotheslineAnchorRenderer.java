@@ -1,5 +1,6 @@
 package com.jamieswhiteshirt.clothesline.client.renderer.tileentity;
 
+import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
@@ -24,11 +25,12 @@ public class TileEntityClotheslineAnchorRenderer extends TileEntitySpecialRender
 
     @Override
     public void render(TileEntityClotheslineAnchor te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
-        Network network = te.getNetwork();
+        INetworkManager.INetworkNode node = te.getNetworkNode();
         float crankRotation = 0.0F;
-        if (network != null) {
+        if (node != null) {
+            Network network = node.getNetwork();
             float offset = network.getState().getOffset() * partialTicks + network.getState().getPreviousOffset() * (1.0F - partialTicks);
-            crankRotation = (offset) * 360.0F / Measurements.UNIT_LENGTH;
+            crankRotation = -offset * 360.0F / Measurements.UNIT_LENGTH;
         }
         GlStateManager.pushMatrix();
         GlStateManager.translate(x + 0.5D, y + 0.5D, z + 0.5D);

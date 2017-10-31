@@ -1,6 +1,7 @@
 package com.jamieswhiteshirt.clothesline.client.renderer;
 
 import com.jamieswhiteshirt.clothesline.api.Measurements;
+import com.jamieswhiteshirt.clothesline.api.NetworkGraph;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -37,9 +38,9 @@ public class RenderEdge {
         return right.scale(r).add(up.scale(u));
     }
 
-    public static RenderEdge create(Node from, Node to) {
-        BlockPos fromPos = from.getTree().getPos();
-        BlockPos toPos = to.getTree().getPos();
+    public static RenderEdge create(NetworkGraph.Edge edge) {
+        BlockPos fromPos = edge.getFromKey();
+        BlockPos toPos = edge.getToKey();
         Vec3d fromVec = new Vec3d(fromPos).addVector(0.5D, 0.5D, 0.5D);
         Vec3d toVec = new Vec3d(toPos).addVector(0.5D, 0.5D, 0.5D);
         Vec3d forward = toVec.subtract(fromVec);
@@ -60,7 +61,7 @@ public class RenderEdge {
         return new RenderEdge(
                 fromPos, toPos,
                 fromVec,
-                from.getOffset(), to.getOffset(),
+                edge.getFromOffset(), edge.getToOffset(),
                 rightNormal, upNormal, forward,
                 Measurements.calculateGlobalAngle(fromPos, toPos)
         );

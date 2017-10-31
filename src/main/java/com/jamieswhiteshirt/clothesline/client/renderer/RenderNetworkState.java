@@ -2,6 +2,7 @@ package com.jamieswhiteshirt.clothesline.client.renderer;
 
 import com.jamieswhiteshirt.clothesline.api.AbsoluteNetworkState;
 import com.jamieswhiteshirt.clothesline.api.AbsoluteTree;
+import com.jamieswhiteshirt.clothesline.api.NetworkGraph;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.api.util.RangeLookup;
 import net.minecraft.item.ItemStack;
@@ -14,32 +15,24 @@ import java.util.stream.Collectors;
 
 @SideOnly(Side.CLIENT)
 public class RenderNetworkState {
-    private static List<RenderEdge> createRenderEdges(NodeLoop nodeLoop) {
-        RenderEdge[] renderEdges = new RenderEdge[nodeLoop.size()];
-        for (int i = 0; i < renderEdges.length; i++) {
-            renderEdges[i] = RenderEdge.create(nodeLoop.get(i), nodeLoop.get(i + 1));
-        }
-        return Arrays.asList(renderEdges);
+    private static List<RenderEdge> createRenderEdges(NetworkGraph graph) {
+        return graph.getAllEdges().stream().map(RenderEdge::create).collect(Collectors.toList());
     }
 
     public static RenderNetworkState fromNetworkState(AbsoluteNetworkState state) {
-        NodeLoop nodeLoop = NodeLoop.fromTree(state.getTree());
         return new RenderNetworkState(
                 state,
-                nodeLoop,
-                RangeLookup.build(0, nodeLoop.getNodes().stream().map(Node::getOffset).collect(Collectors.toList())),
-                createRenderEdges(nodeLoop)
+                RangeLookup.build(0, state.getGraph().getAllEdges().stream().map(NetworkGraph.Edge::getFromOffset).collect(Collectors.toList())),
+                createRenderEdges(state.getGraph())
         );
     }
 
     private final AbsoluteNetworkState state;
-    private final NodeLoop nodeLoop;
     private final RangeLookup offsetLookup;
     private final List<RenderEdge> edges;
 
-    private RenderNetworkState(AbsoluteNetworkState state, NodeLoop nodeLoop, RangeLookup offsetLookup, List<RenderEdge> edges) {
+    private RenderNetworkState(AbsoluteNetworkState state, RangeLookup offsetLookup, List<RenderEdge> edges) {
         this.state = state;
-        this.nodeLoop = nodeLoop;
         this.offsetLookup = offsetLookup;
         this.edges = edges;
     }
@@ -54,14 +47,6 @@ public class RenderNetworkState {
 
     public int getMinNodeIndexForOffset(int offset) {
         return offsetLookup.getMinIndex(offset);
-    }
-
-    public NodeLoop getNodeLoop() {
-        return nodeLoop;
-    }
-
-    public RangeLookup getOffsetLookup() {
-        return offsetLookup;
     }
 
     public List<RenderEdge> getEdges() {

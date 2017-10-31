@@ -2,6 +2,7 @@ package com.jamieswhiteshirt.clothesline.common.tileentity;
 
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.common.Util;
+import com.jamieswhiteshirt.clothesline.common.impl.NetworkItemHandler;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -24,18 +25,18 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     private INetworkManager manager;
 
     @Nullable
-    public Network getNetwork() {
+    public INetworkManager.INetworkNode getNetworkNode() {
         if (manager != null) {
-            return manager.getNetworkByBlockPos(pos);
+            return manager.getNetworkNodeByPos(pos);
         } else {
             return null;
         }
     }
 
     public void crank(int amount) {
-        Network network = getNetwork();
-        if (network != null) {
-            manager.addMomentum(network, amount);
+        INetworkManager.INetworkNode node = getNetworkNode();
+        if (node != null) {
+            manager.addMomentum(node.getNetwork(), amount);
         }
     }
 
@@ -53,38 +54,14 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     @Nullable
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
-        if (capability == ITEM_HANDLER_CAPABILITY) {
-            Network network = getNetwork();
-            if (network != null) {
+        if (capability == ITEM_HANDLER_CAPABILITY && facing != null) {
+            INetworkManager.INetworkNode node = getNetworkNode();
+            if (node != null) {
+                Network network = node.getNetwork();
+                EdgeKey edgeKey = new EdgeKey(pos, pos.offset(facing));
                 AbsoluteNetworkState state = network.getState();
-                AbsoluteTree tree = state.getSubTree(pos);
-                return ITEM_HANDLER_CAPABILITY.cast(new IItemHandler() {
-                    @Override
-                    public int getSlots() {
-                        return 1;
-                        //return tree.getChildren().size();
-                    }
-
-                    @Override
-                    public ItemStack getStackInSlot(int slot) {
-                        return state.getAttachment(Math.floorMod(tree.getMinOffset() - state.getOffset(), state.getLoopLength()));
-                    }
-
-                    @Override
-                    public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-                        return manager.insertItem(network, Math.floorMod(tree.getMinOffset() - state.getOffset(), state.getLoopLength()), stack, simulate);
-                    }
-
-                    @Override
-                    public ItemStack extractItem(int slot, int amount, boolean simulate) {
-                        return manager.extractItem(network, Math.floorMod(tree.getMinOffset() - state.getOffset(), state.getLoopLength()), simulate);
-                    }
-
-                    @Override
-                    public int getSlotLimit(int slot) {
-                        return 1;
-                    }
-                });
+                int offset = Math.floorMod(node.getGraphNode().getCornerOffset(edgeKey) - state.getOffset(), state.getLoopLength());
+                return ITEM_HANDLER_CAPABILITY.cast(new NetworkItemHandler(manager, network, offset));
             }
         }
         return null;
@@ -92,9 +69,9 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
 
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
-        if (capability == ITEM_HANDLER_CAPABILITY) {
-            Network network = getNetwork();
-            if (network != null) {
+        if (capability == ITEM_HANDLER_CAPABILITY && facing != null) {
+            INetworkManager.INetworkNode node = getNetworkNode();
+            if (node != null) {
                 return true;
             }
         }
