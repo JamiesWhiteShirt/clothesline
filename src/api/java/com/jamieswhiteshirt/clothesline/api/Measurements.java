@@ -18,11 +18,14 @@ public class Measurements {
     }
 
     public static float calculateGlobalAngle(BlockPos from, BlockPos to) {
-        return floorModAngle((float)Math.toDegrees(Math.atan2(to.getZ() - from.getZ(), to.getX() - from.getX())));
+        return floorModAngle((float)StrictMath.toDegrees(Math.atan2(to.getZ() - from.getZ(), to.getX() - from.getX())));
     }
 
     public static int calculateDistance(BlockPos from, BlockPos to) {
-        return (int)(UNIT_LENGTH * from.getDistance(to.getX(), to.getY(), to.getZ()));
+        double dx = to.getX() - from.getX();
+        double dy = to.getY() - from.getY();
+        double dz = to.getZ() - from.getZ();
+        return (int)(UNIT_LENGTH * StrictMath.sqrt(dx * dx + dy * dy + dz * dz));
     }
 
     /**

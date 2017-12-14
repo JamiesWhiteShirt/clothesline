@@ -56,4 +56,8 @@ public class RenderNetworkState {
     public double getOffset(float partialTicks) {
         return state.getOffset() * partialTicks + state.getPreviousOffset() * (1.0F - partialTicks);
     }
+
+    public double getMomentum(float partialTicks) {
+        return state.getMomentum() * partialTicks + state.getPreviousMomentum() * (1.0F - partialTicks);
+    }
 }

@@ -13,9 +13,10 @@ import java.util.Map;
  * Performant for manipulation of attachments on the network.
  */
 public final class AbsoluteNetworkState {
-    private static final int MAX_MOMENTUM = 40;
+    public static final int MAX_MOMENTUM = 30;
 
     private int previousOffset;
+    private int previousMomentum;
     private int offset;
     private int momentum;
 
@@ -86,6 +87,7 @@ public final class AbsoluteNetworkState {
     }
 
     public void update() {
+        previousMomentum = momentum;
         if (momentum > 0) {
             momentum -= 1;
         } else if (momentum < 0) {
@@ -110,6 +112,10 @@ public final class AbsoluteNetworkState {
 
     public int getMomentum() {
         return momentum;
+    }
+
+    public int getPreviousMomentum() {
+        return previousMomentum;
     }
 
     public int getLoopLength() {

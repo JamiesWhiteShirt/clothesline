@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.fml.relauncher.Side;
@@ -141,16 +142,30 @@ public class RenderClotheslineNetwork {
 
         renderTree(state.getTree(), x, y, z);
 
+        double speedRatio = state.getMomentum(partialTicks) / AbsoluteNetworkState.MAX_MOMENTUM;
+
         for (MutableSortedIntMap.Entry<ItemStack> entry : state.getStacks().entries()) {
             double attachmentOffset = (entry.getKey() + networkOffset) % state.getStacks().getMaxKey();
-            RenderEdge edge = renderEdges.get(state.getMinNodeIndexForOffset((int)attachmentOffset));
-            double d = (attachmentOffset - edge.getFromOffset()) / (edge.getToOffset() - edge.getFromOffset());
-            Vec3d pos = edge.projectVec(new Vec3d(-2.0D / 16.0D, 0.0D, d));
+            int edgeIndex = state.getMinNodeIndexForOffset((int)attachmentOffset);
+            RenderEdge edge = renderEdges.get(edgeIndex);
+            double offsetOnEdge = attachmentOffset - edge.getFromOffset();
+            double edgePosScalar = offsetOnEdge / (edge.getToOffset() - edge.getFromOffset());
+            Vec3d pos = edge.projectVec(new Vec3d(-2.0D / 16.0D, 0.0D, edgePosScalar));
+
+            RenderEdge previousEdge = renderEdges.get(Math.floorMod(edgeIndex - 1, renderEdges.size()));
+            float angleDiff = (edge.getAngleY() - previousEdge.getAngleY() + 360.0F) % 360.0F;
 
             GlStateManager.pushMatrix();
-            GlStateManager.translate(pos.x - viewPos.x, pos.y - 0.25D - viewPos.y, pos.z - viewPos.z);
+            GlStateManager.translate(pos.x - viewPos.x, pos.y - viewPos.y, pos.z - viewPos.z);
             GlStateManager.scale(0.5D, 0.5D, 0.5D);
             GlStateManager.rotate(-edge.getAngleY(), 0.0f, 1.0f, 0.0f);
+            GlStateManager.rotate(
+                    (angleDiff / 4.0F) *
+                    (float)(speedRatio * speedRatio) *
+                    (float)(Math.exp(-offsetOnEdge / (Measurements.UNIT_LENGTH * 2.0D))) *
+                    MathHelper.sin((float)(offsetOnEdge / (AbsoluteNetworkState.MAX_MOMENTUM * 2.0D)))
+                    , 1.0F, 0.0F, 0.0F);
+            GlStateManager.translate(0.0f, -0.5f, 0.0f);
 
             renderItem.renderItem(entry.getValue(), ItemCameraTransforms.TransformType.FIXED);
 
