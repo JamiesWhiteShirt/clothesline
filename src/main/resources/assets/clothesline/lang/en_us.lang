@@ -2,3 +2,6 @@ item.clothesline.clothesline.name=Clothesline
 item.clothesline.clotheslineCrank.name=Clothesline Crank
 
 tile.clothesline.clotheslineAnchor.name=Clothesline Anchor
+
+subtitles.block.clothesline.clothesline_anchor.squeak=Pulley squeaks
+subtitles.block.clothesline.clothesline_anchor.rope=Clothesline runs

@@ -4,14 +4,10 @@ import com.jamieswhiteshirt.clothesline.api.AbsoluteTree;
 import com.jamieswhiteshirt.clothesline.api.IAttacher;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.api.Network;
-import com.jamieswhiteshirt.clothesline.common.ClotheslineBlocks;
-import com.jamieswhiteshirt.clothesline.common.CommonProxy;
-import com.jamieswhiteshirt.clothesline.common.NetworkBreakWorldEventListener;
-import com.jamieswhiteshirt.clothesline.common.block.BlockClotheslineAnchor;
+import com.jamieswhiteshirt.clothesline.common.*;
 import com.jamieswhiteshirt.clothesline.common.capability.*;
 import com.jamieswhiteshirt.clothesline.common.impl.Attacher;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
-import com.jamieswhiteshirt.clothesline.common.item.ItemClothesline;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetNetworks;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
 import com.jamieswhiteshirt.clothesline.common.util.BasicNetwork;
@@ -21,8 +17,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -33,14 +29,12 @@ import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -91,21 +85,19 @@ public class Clothesline {
 
     @SubscribeEvent
     public void registerBlocks(RegistryEvent.Register<Block> event) {
-        event.getRegistry().register(
-                new BlockClotheslineAnchor().setUnlocalizedName("clothesline.clotheslineAnchor").setRegistryName(MODID, "clothesline_anchor")
-        );
+        ClotheslineBlocks.registerBlocks(event);
 
         GameRegistry.registerTileEntity(TileEntityClotheslineAnchor.class, "clothesline:clothesline_anchor");
     }
 
     @SubscribeEvent
     public void registerItems(RegistryEvent.Register<Item> event) {
-        event.getRegistry().registerAll(
-                new ItemClothesline().setUnlocalizedName("clothesline.clothesline").setRegistryName(MODID, "clothesline"),
-                new ItemBlock(ClotheslineBlocks.CLOTHESLINE_ANCHOR).setRegistryName(MODID, "clothesline_anchor"),
-                new Item().setUnlocalizedName("clothesline.clotheslineCrank").setRegistryName(MODID, "clothesline_crank"),
-                new Item().setUnlocalizedName("clothesline.pulleyWheel").setRegistryName(MODID, "pulley_wheel")
-        );
+        ClotheslineItems.registerItems(event);
+    }
+
+    @SubscribeEvent
+    public void registerSoundEvents(RegistryEvent.Register<SoundEvent> event) {
+        ClotheslineSoundEvents.registerSoundEvents(event);
     }
 
     @SubscribeEvent

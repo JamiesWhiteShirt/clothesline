@@ -1,7 +1,10 @@
 package com.jamieswhiteshirt.clothesline.common.block;
 
+import com.jamieswhiteshirt.clothesline.api.AbsoluteNetworkState;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
+import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
+import com.jamieswhiteshirt.clothesline.common.ClotheslineSoundEvents;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirectional;
@@ -9,6 +12,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -16,25 +20,27 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
+import java.util.Random;
 
 public class BlockClotheslineAnchor extends BlockDirectional {
     @CapabilityInject(INetworkManager.class)
     private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = null;
 
-    private static final AxisAlignedBB AABB_DOWN  = new AxisAlignedBB(7.0D / 16.0D,         0.0D, 7.0D / 16.0D, 9.0D / 16.0D, 11.0D / 16.0D, 9.0D / 16.0D);
-    private static final AxisAlignedBB AABB_UP    = new AxisAlignedBB(7.0D / 16.0D, 5.0D / 16.0D, 7.0D / 16.0D, 9.0D / 16.0D,          1.0D, 9.0D / 16.0D);
-    private static final AxisAlignedBB AABB_NORTH = new AxisAlignedBB(7.0D / 16.0D,         0.0D, 7.0D / 16.0D, 9.0D / 16.0D, 11.0D / 16.0D,         1.0D);
-    private static final AxisAlignedBB AABB_SOUTH = new AxisAlignedBB(7.0D / 16.0D,         0.0D,         0.0D, 9.0D / 16.0D, 11.0D / 16.0D, 9.0D / 16.0D);
-    private static final AxisAlignedBB AABB_WEST  = new AxisAlignedBB(7.0D / 16.0D,         0.0D, 7.0D / 16.0D,         1.0D, 11.0D / 16.0D, 9.0D / 16.0D);
-    private static final AxisAlignedBB AABB_EAST  = new AxisAlignedBB(        0.0D,         0.0D, 7.0D / 16.0D, 9.0D / 16.0D, 11.0D / 16.0D, 9.0D / 16.0D);
-    private static final AxisAlignedBB[] AABB_ARRAY = new AxisAlignedBB[] { AABB_UP, AABB_DOWN, AABB_NORTH, AABB_SOUTH, AABB_WEST, AABB_EAST };
+    private static final AxisAlignedBB AABB_DOWN  = new AxisAlignedBB(6.0D / 16.0D,         0.0D, 6.0D / 16.0D, 10.0D / 16.0D, 12.0D / 16.0D, 10.0D / 16.0D);
+    private static final AxisAlignedBB AABB_UP    = new AxisAlignedBB(6.0D / 16.0D, 4.0D / 16.0D, 6.0D / 16.0D, 10.0D / 16.0D,          1.0D, 10.0D / 16.0D);
+    private static final AxisAlignedBB AABB_NORTH = new AxisAlignedBB(6.0D / 16.0D,         0.0D, 6.0D / 16.0D, 10.0D / 16.0D, 12.0D / 16.0D,          1.0D);
+    private static final AxisAlignedBB AABB_SOUTH = new AxisAlignedBB(6.0D / 16.0D,         0.0D,         0.0D, 10.0D / 16.0D, 12.0D / 16.0D, 10.0D / 16.0D);
+    private static final AxisAlignedBB AABB_WEST  = new AxisAlignedBB(6.0D / 16.0D,         0.0D, 6.0D / 16.0D,          1.0D, 12.0D / 16.0D, 10.0D / 16.0D);
+    private static final AxisAlignedBB AABB_EAST  = new AxisAlignedBB(        0.0D,         0.0D, 6.0D / 16.0D, 10.0D / 16.0D, 12.0D / 16.0D, 10.0D / 16.0D);
+    private static final AxisAlignedBB[] AABB_BY_FACING = new AxisAlignedBB[] { AABB_UP, AABB_DOWN, AABB_NORTH, AABB_SOUTH, AABB_WEST, AABB_EAST };
 
     public BlockClotheslineAnchor() {
         super(Material.WOOD);
@@ -44,7 +50,7 @@ public class BlockClotheslineAnchor extends BlockDirectional {
     @SuppressWarnings("deprecation")
     @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
-        return AABB_ARRAY[state.getValue(FACING).getIndex()];
+        return AABB_BY_FACING[state.getValue(FACING).getIndex()];
     }
 
     @SuppressWarnings("deprecation")
@@ -156,11 +162,33 @@ public class BlockClotheslineAnchor extends BlockDirectional {
         if (stack.getItem() != ClotheslineItems.CLOTHESLINE) {
             TileEntityClotheslineAnchor tileEntity = (TileEntityClotheslineAnchor)world.getTileEntity(pos);
             if (tileEntity != null) {
-                tileEntity.crank(8);
+                tileEntity.crank(6);
+                //world.playSound(player, pos, ClotheslineSoundEvents.PULLEY, SoundCategory.BLOCKS, 0.5F, 0.9F + world.rand.nextFloat() * 0.2F);
             }
             return true;
         } else {
             return false;
+        }
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void randomDisplayTick(IBlockState state, World world, BlockPos pos, Random rand) {
+        TileEntity tileEntity = world.getTileEntity(pos);
+        if (tileEntity instanceof TileEntityClotheslineAnchor) {
+            INetworkManager.INetworkNode networkNode = ((TileEntityClotheslineAnchor) tileEntity).getNetworkNode();
+            if (networkNode != null) {
+                AbsoluteNetworkState networkState = networkNode.getNetwork().getState();
+                int momentum = networkState.getMomentum();
+                float pitch = 0.2F + 0.6F * ((float)momentum / AbsoluteNetworkState.MAX_MOMENTUM) + rand.nextFloat() * 0.1F;
+                if (rand.nextInt(8 * AbsoluteNetworkState.MAX_MOMENTUM) < momentum) {
+                    float volume = 0.5F + Measurements.UNIT_LENGTH * (float)networkState.getAttachments().size() / networkState.getLoopLength();
+                    world.playSound(Minecraft.getMinecraft().player, pos, ClotheslineSoundEvents.BLOCK_CLOTHESLINE_ANCHOR_ROPE, SoundCategory.BLOCKS, volume, pitch);
+                }
+                if (rand.nextInt(12 * AbsoluteNetworkState.MAX_MOMENTUM) < momentum) {
+                    world.playSound(Minecraft.getMinecraft().player, pos, ClotheslineSoundEvents.BLOCK_CLOTHESLINE_ANCHOR_SQUEAK, SoundCategory.BLOCKS, 0.1F, pitch);
+                }
+            }
         }
     }
 }
