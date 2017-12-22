@@ -64,7 +64,17 @@ public class RelativeNetworkState {
     }
 
     public SplitResult splitRoot() {
-        RelativeTree.SplitResult result = treeRoot.split();
+        RelativeTree.SplitResult result = treeRoot.splitNode();
+        return new SplitResult(
+                new RelativeNetworkState(momentum, result.getTree()),
+                result.getSubTrees().stream().filter(tree -> !tree.isEmpty()).map(
+                        tree -> new RelativeNetworkState(momentum, tree)
+                ).collect(Collectors.toList())
+        );
+    }
+
+    public SplitResult splitEdge(BlockPos pos) {
+        RelativeTree.SplitResult result = treeRoot.splitEdge(pos);
         return new SplitResult(
                 new RelativeNetworkState(momentum, result.getTree()),
                 result.getSubTrees().stream().filter(tree -> !tree.isEmpty()).map(

@@ -176,13 +176,32 @@ public final class NetworkManager implements INetworkManager {
         INetworkNode node = getNetworkNodeByPos(pos);
         if (node != null) {
             Network network = node.getNetwork();
-            removeNetwork(network.getUuid());
             RelativeNetworkState state = RelativeNetworkState.fromAbsolute(network.getState());
             state.reroot(pos);
             RelativeNetworkState.SplitResult splitResult = state.splitRoot();
+            removeNetwork(network.getUuid());
             for (RelativeNetworkState subState : splitResult.getSubStates()) {
                 Network newNetwork = new Network(UUID.randomUUID(), subState.toAbsolute());
                 addNetwork(newNetwork);
+            }
+        }
+    }
+
+    @Override
+    public void disconnect(BlockPos posA, BlockPos posB) {
+        INetworkNode nodeA = getNetworkNodeByPos(posA);
+        INetworkNode nodeB = getNetworkNodeByPos(posB);
+        if (nodeA != null && nodeB != null) {
+            Network network = nodeA.getNetwork();
+            if (network == nodeB.getNetwork()) {
+                RelativeNetworkState state = RelativeNetworkState.fromAbsolute(network.getState());
+                state.reroot(posA);
+                RelativeNetworkState.SplitResult splitResult = state.splitEdge(posB);
+                removeNetwork(network.getUuid());
+                for (RelativeNetworkState subState : splitResult.getSubStates()) {
+                    Network newNetwork = new Network(UUID.randomUUID(), subState.toAbsolute());
+                    addNetwork(newNetwork);
+                }
             }
         }
     }

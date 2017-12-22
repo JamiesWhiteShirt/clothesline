@@ -55,10 +55,6 @@ public class RelativeTree {
             this.postAttachments = postAttachments;
         }
 
-        private int getLoopLength() {
-            return key.getLength() * 2 + tree.getLoopLength();
-        }
-
         private Edge reverse(RelativeTree parent) {
             return new Edge(key.reverse(parent.pos), postAttachments, parent, preAttachments);
         }
@@ -76,11 +72,11 @@ public class RelativeTree {
         edges.sort(Comparator.comparing(a -> a.key));
         return new RelativeTree(absoluteTree.getPos(), absoluteTree.getEdges().stream().map(
                 edge -> Edge.fromAbsolute(edge, attachments)
-        ).collect(Collectors.toList()), absoluteTree.getLoopLength());
+        ).collect(Collectors.toList()));
     }
 
     public static RelativeTree empty(BlockPos pos) {
-        return new RelativeTree(pos, Collections.emptyList(), 0);
+        return new RelativeTree(pos, Collections.emptyList());
     }
 
     private int findEdgeKeyIndex(EdgeKey edgeKey, int minIndex, int maxIndex) {
@@ -105,16 +101,10 @@ public class RelativeTree {
 
     private final BlockPos pos;
     private final List<Edge> edges;
-    private final int loopLength;
 
-    private RelativeTree(BlockPos pos, List<Edge> edges, int loopLength) {
+    private RelativeTree(BlockPos pos, List<Edge> edges) {
         this.pos = pos;
         this.edges = edges;
-        this.loopLength = loopLength;
-    }
-
-    public int getLoopLength() {
-        return loopLength;
     }
 
     public BlockPos getPos() {
@@ -181,12 +171,39 @@ public class RelativeTree {
         }
     }
 
-    public SplitResult split() {
+    public SplitResult splitNode() {
         List<Edge> edges = this.edges.stream().map(
                 edge -> new Edge(edge.key, edge.preAttachments, empty(edge.tree.pos), edge.postAttachments)
         ).collect(Collectors.toList());
-        RelativeTree tree = new RelativeTree(pos, edges, edges.stream().mapToInt(Edge::getLoopLength).sum());
+        RelativeTree tree = new RelativeTree(pos, edges);
         return new SplitResult(tree, this.edges.stream().map(edge -> edge.tree).collect(Collectors.toList()));
+    }
+
+    public SplitResult splitEdge(BlockPos edgePos) {
+        for (int i = 0; i < this.edges.size(); i++) {
+            Edge edge = this.edges.get(i);
+            if (edge.key.getPos().equals(edgePos)) {
+                RelativeTree edgeTree = new RelativeTree(
+                        this.pos,
+                        new ArrayList<>(Collections.singletonList(new Edge(
+                                edge.key,
+                                edge.preAttachments,
+                                empty(edge.tree.pos),
+                                edge.postAttachments
+                        )))
+                );
+
+                RelativeTree pastEdgeTree = edge.tree;
+
+                List<Edge> restEdges = new ArrayList<>(this.edges.size() - 1);
+                restEdges.addAll(this.edges.subList(0, i));
+                restEdges.addAll(this.edges.subList(i + 1, this.edges.size()));
+                RelativeTree restTree = new RelativeTree(this.pos, restEdges);
+
+                return new SplitResult(edgeTree, Arrays.asList(restTree, pastEdgeTree));
+            }
+        }
+        throw new IllegalArgumentException("Position is not in RelativeTree");
     }
 
     public AbsoluteTree toAbsolute(List<MutableSortedIntMap<ItemStack>> stacksList, int fromOffset) {

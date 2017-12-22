@@ -34,6 +34,8 @@ public interface INetworkManager {
 
     void destroy(BlockPos pos);
 
+    void disconnect(BlockPos posA, BlockPos posB);
+
     void setNetworkState(Network network, AbsoluteNetworkState state);
 
     ItemStack insertItem(Network network, int offset, ItemStack stack, boolean simulate);
