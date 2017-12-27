@@ -108,13 +108,18 @@ public class ClientProxy extends CommonProxy {
         if (world != null && player != null) {
             INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
+                boolean showDebugInfo = Minecraft.getMinecraft().gameSettings.showDebugInfo;
                 float partialTicks = event.getPartialTicks();
                 double x = player.posX * partialTicks + player.prevPosX * (1.0F - partialTicks);
                 double y = player.posY * partialTicks + player.prevPosY * (1.0F - partialTicks);
                 double z = player.posZ * partialTicks + player.prevPosZ * (1.0F - partialTicks);
                 for (Network network : manager.getNetworks()) {
                     //TODO: Cache the RenderNetworkStates
-                    renderClotheslineNetwork.render(world, RenderNetworkState.fromNetworkState(network.getState()), x, y, z, partialTicks);
+                    RenderNetworkState renderNetworkState = RenderNetworkState.fromNetworkState(network.getState());
+                    renderClotheslineNetwork.render(world, renderNetworkState, x, y, z, partialTicks);
+                    if (showDebugInfo) {
+                        renderClotheslineNetwork.debugRender(renderNetworkState, x, y, z, partialTicks);
+                    }
                 }
             }
         }
