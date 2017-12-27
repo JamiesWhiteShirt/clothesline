@@ -26,7 +26,7 @@ public class MessageHitNetworkHandler implements IMessageHandler<MessageHitNetwo
             INetworkManager manager = world.getCapability(CLOTHESLINE_NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 //TODO: Validate this edge position
-                manager.disconnect(message.posA, message.posB);
+                manager.disconnect(message.fromPos, message.toPos);
             }
         });
         return null;

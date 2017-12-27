@@ -45,6 +45,10 @@ public class RenderClotheslineNetwork {
         this.renderItem = renderItem;
     }
 
+    private static BufferBuilder pos(BufferBuilder bufferBuilder, Vec3d pos) {
+        return bufferBuilder.pos(pos.x, pos.y, pos.z);
+    }
+
     private static BufferBuilder posNormal(BufferBuilder bufferBuilder, Vec3d pos, Vec3d normal) {
         return bufferBuilder.pos(pos.x, pos.y, pos.z).normal((float)normal.x, (float)normal.y, (float)normal.z);
     }
@@ -146,6 +150,22 @@ public class RenderClotheslineNetwork {
         }
 
         Minecraft.getMinecraft().entityRenderer.disableLightmap();
+    }
+
+    public void renderOutline(RenderEdge edge, double x, double y, double z) {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.getBuffer();
+        bufferBuilder.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
+
+        for (int i = 0; i < 4; i++) {
+            double up = (UP_MULTIPLIERS[i] * 1.01D) / 32.0D;
+            double right = (4.0D + RIGHT_MULTIPLIERS[i] * 1.01D) / 32.0D;
+
+            pos(bufferBuilder, edge.projectVec(new Vec3d(right, up, 0.0D)).subtract(x, y, z)).color(0, 0, 0, 0).endVertex();
+            pos(bufferBuilder, edge.projectVec(new Vec3d(right, up, 1.0D)).subtract(x, y, z)).color(0, 0, 0, 0).endVertex();
+        }
+
+        tessellator.draw();
     }
 
     private void debugRenderText(String msg, double x, double y, double z, float yaw, float pitch, FontRenderer fontRenderer) {

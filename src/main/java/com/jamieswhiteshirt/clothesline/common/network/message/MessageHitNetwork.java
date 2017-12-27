@@ -5,25 +5,25 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 public class MessageHitNetwork implements IMessage {
-    public BlockPos posA;
-    public BlockPos posB;
+    public BlockPos fromPos;
+    public BlockPos toPos;
 
     public MessageHitNetwork() { }
 
-    public MessageHitNetwork(BlockPos posA, BlockPos posB) {
-        this.posA = posA;
-        this.posB = posB;
+    public MessageHitNetwork(BlockPos from, BlockPos to) {
+        this.fromPos = from;
+        this.toPos = to;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        posA = BlockPos.fromLong(buf.readLong());
-        posB = BlockPos.fromLong(buf.readLong());
+        fromPos = BlockPos.fromLong(buf.readLong());
+        toPos = BlockPos.fromLong(buf.readLong());
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
-        buf.writeLong(posA.toLong());
-        buf.writeLong(posB.toLong());
+        buf.writeLong(fromPos.toLong());
+        buf.writeLong(toPos.toLong());
     }
 }
