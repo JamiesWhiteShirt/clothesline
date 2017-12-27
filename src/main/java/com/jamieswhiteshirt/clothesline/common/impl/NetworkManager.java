@@ -3,8 +3,10 @@ package com.jamieswhiteshirt.clothesline.common.impl;
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.common.util.BasicTree;
 import com.jamieswhiteshirt.clothesline.common.util.RelativeNetworkState;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
@@ -255,6 +257,18 @@ public final class NetworkManager implements INetworkManager {
     @Override
     public void addMomentum(Network network, int momentum) {
         network.getState().addMomentum(momentum);
+    }
+
+    @Override
+    public boolean useItem(Network network, EntityPlayer player, EnumHand hand, int offset) {
+        ItemStack stack = player.getHeldItem(hand);
+        if (!stack.isEmpty()) {
+            if (network.getState().getAttachment(offset).isEmpty()) {
+                player.setHeldItem(hand, insertItem(network, offset, stack, false));
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

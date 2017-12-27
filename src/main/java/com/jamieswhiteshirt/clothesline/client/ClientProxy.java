@@ -215,7 +215,7 @@ public class ClientProxy extends CommonProxy {
 
                 NetworkHit hit = raytraceNetworks(manager, ray, ray.lengthSq);
                 if (hit != null) {
-                    EntityClotheslineHit pointedEntity = new EntityClotheslineHit(world, hit.graphHit.edge, hit.graphHit.offset);
+                    EntityClotheslineHit pointedEntity = new EntityClotheslineHit(world, manager, hit.network, hit.graphHit.edge, hit.graphHit.offset);
                     mc.objectMouseOver = new RayTraceResult(pointedEntity);
                     mc.pointedEntity = pointedEntity;
                 }
@@ -242,7 +242,7 @@ public class ClientProxy extends CommonProxy {
 
     @Nullable
     private GraphRaytraceHit hitEdge(Ray viewRay, RenderEdge edge, double maxDistanceSq) {
-        Ray edgeRay = new Ray(edge.projectVec(new Vec3d(2.0D / 16.0D, 0.0D, 0.0D)), edge.projectVec(new Vec3d(2.0D / 16.0D, 0.0D, 1.0D)));
+        Ray edgeRay = new Ray(edge.projectVec(new Vec3d(-2.0D / 16.0D, 0.0D, 0.0D)), edge.projectVec(new Vec3d(-2.0D / 16.0D, 0.0D, 1.0D)));
 
         double b = viewRay.delta.dotProduct(edgeRay.delta);
         Vec3d w0 = viewRay.from.subtract(edgeRay.from);

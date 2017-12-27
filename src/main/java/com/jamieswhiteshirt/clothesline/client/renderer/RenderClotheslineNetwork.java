@@ -62,8 +62,8 @@ public class RenderClotheslineNetwork {
             double nr = NORMAL_RIGHT_MULTIPLIERS[j];
             double ur = NORMAL_UP_MULTIPLIERS[j];
 
-            double vFrom = (e.getFromOffset() + networkOffset) / Measurements.UNIT_LENGTH;
-            double vTo = (e.getToOffset() + networkOffset) / Measurements.UNIT_LENGTH;
+            double vFrom = (e.getFromOffset() - networkOffset) / Measurements.UNIT_LENGTH;
+            double vTo = (e.getToOffset() - networkOffset) / Measurements.UNIT_LENGTH;
 
             int combinedLightFrom = world.getCombinedLight(e.getFromPos(), 0);
             int lightFrom1 = combinedLightFrom >> 16 & 0xFFFF;
@@ -74,22 +74,22 @@ public class RenderClotheslineNetwork {
 
             Vec3d normal = e.projectTangent(nr, ur);
             posNormal(bufferBuilder, e.projectVec(new Vec3d(
-                    (r1 + 4.0D) / 32.0D,
+                    (r1 - 4.0D) / 32.0D,
                     u1 / 32.0D,
                     0.0D
             )), normal).tex(0.0D, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
             posNormal(bufferBuilder, e.projectVec(new Vec3d(
-                    (r2 + 4.0D) / 32.0D,
+                    (r2 - 4.0D) / 32.0D,
                     u2 / 32.0D,
                     0.0D
             )), normal).tex(1.0D, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
             posNormal(bufferBuilder, e.projectVec(new Vec3d(
-                    (r2 + 4.0D) / 32.0D,
+                    (r2 - 4.0D) / 32.0D,
                     u2 / 32.0D,
                     1.0D
             )), normal).tex(1.0D, vTo).lightmap(lightTo1, lightTo2).endVertex();
             posNormal(bufferBuilder, e.projectVec(new Vec3d(
-                    (r1 + 4.0D) / 32.0D,
+                    (r1 - 4.0D) / 32.0D,
                     u1 / 32.0D,
                     1.0D
             )), normal).tex(0.0D, vTo).lightmap(lightTo1, lightTo2).endVertex();
@@ -159,7 +159,7 @@ public class RenderClotheslineNetwork {
 
         for (int i = 0; i < 4; i++) {
             double up = (UP_MULTIPLIERS[i] * 1.01D) / 32.0D;
-            double right = (4.0D + RIGHT_MULTIPLIERS[i] * 1.01D) / 32.0D;
+            double right = (RIGHT_MULTIPLIERS[i] * 1.01D - 4.0D) / 32.0D;
 
             pos(bufferBuilder, edge.projectVec(new Vec3d(right, up, 0.0D)).subtract(x, y, z)).color(0, 0, 0, 0).endVertex();
             pos(bufferBuilder, edge.projectVec(new Vec3d(right, up, 1.0D)).subtract(x, y, z)).color(0, 0, 0, 0).endVertex();
