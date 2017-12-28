@@ -161,8 +161,8 @@ public class RenderClotheslineNetwork {
             double up = (UP_MULTIPLIERS[i] * 1.01D) / 32.0D;
             double right = (RIGHT_MULTIPLIERS[i] * 1.01D - 4.0D) / 32.0D;
 
-            pos(bufferBuilder, edge.projectVec(new Vec3d(right, up, 0.0D)).subtract(x, y, z)).color(0, 0, 0, 0).endVertex();
-            pos(bufferBuilder, edge.projectVec(new Vec3d(right, up, 1.0D)).subtract(x, y, z)).color(0, 0, 0, 0).endVertex();
+            pos(bufferBuilder, edge.projectVec(new Vec3d(right, up, 0.0D)).subtract(x, y, z)).color(0, 0, 0, 255).endVertex();
+            pos(bufferBuilder, edge.projectVec(new Vec3d(right, up, 1.0D)).subtract(x, y, z)).color(0, 0, 0, 255).endVertex();
         }
 
         tessellator.draw();

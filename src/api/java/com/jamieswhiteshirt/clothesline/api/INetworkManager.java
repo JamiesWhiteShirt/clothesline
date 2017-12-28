@@ -48,6 +48,8 @@ public interface INetworkManager {
 
     boolean useItem(Network network, EntityPlayer player, EnumHand hand, int offset);
 
+    void hitAttachment(Network network, EntityPlayer player, int offset);
+
     void addMomentum(Network network, int momentum);
 
     void addEventListener(INetworkManagerEventListener eventListener);

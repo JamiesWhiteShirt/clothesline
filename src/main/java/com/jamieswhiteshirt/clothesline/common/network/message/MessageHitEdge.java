@@ -4,13 +4,13 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
-public class MessageHitNetwork implements IMessage {
+public class MessageHitEdge implements IMessage {
     public BlockPos fromPos;
     public BlockPos toPos;
 
-    public MessageHitNetwork() { }
+    public MessageHitEdge() { }
 
-    public MessageHitNetwork(BlockPos from, BlockPos to) {
+    public MessageHitEdge(BlockPos from, BlockPos to) {
         this.fromPos = from;
         this.toPos = to;
     }

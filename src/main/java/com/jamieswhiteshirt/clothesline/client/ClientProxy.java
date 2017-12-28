@@ -3,7 +3,8 @@ package com.jamieswhiteshirt.clothesline.client;
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
-import com.jamieswhiteshirt.clothesline.client.entity.EntityClotheslineHit;
+import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
+import com.jamieswhiteshirt.clothesline.client.entity.EntityNetworkRaytraceHit;
 import com.jamieswhiteshirt.clothesline.client.network.messagehandler.*;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderEdge;
@@ -18,11 +19,15 @@ import com.jamieswhiteshirt.clothesline.core.event.GetMouseOverEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -43,6 +48,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @SideOnly(Side.CLIENT)
 public class ClientProxy extends CommonProxy {
@@ -105,6 +111,7 @@ public class ClientProxy extends CommonProxy {
 
     @SubscribeEvent
     public void onRenderWorldLast(RenderWorldLastEvent event) {
+        // TODO: Have this somehow fire before block highlights are rendered
         WorldClient world = Minecraft.getMinecraft().world;
         EntityPlayerSP player = Minecraft.getMinecraft().player;
         if (world != null && player != null) {
@@ -112,9 +119,9 @@ public class ClientProxy extends CommonProxy {
             if (manager != null) {
                 boolean showDebugInfo = Minecraft.getMinecraft().gameSettings.showDebugInfo;
                 float partialTicks = event.getPartialTicks();
-                double x = player.posX * partialTicks + player.prevPosX * (1.0F - partialTicks);
-                double y = player.posY * partialTicks + player.prevPosY * (1.0F - partialTicks);
-                double z = player.posZ * partialTicks + player.prevPosZ * (1.0F - partialTicks);
+                double x = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
+                double y = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks;
+                double z = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks;
                 for (Network network : manager.getNetworks()) {
                     //TODO: Cache the RenderNetworkStates
                     RenderNetworkState renderNetworkState = RenderNetworkState.fromNetworkState(network.getState());
@@ -131,17 +138,26 @@ public class ClientProxy extends CommonProxy {
     public void onDrawBlockHighlight(DrawBlockHighlightEvent event) {
         RayTraceResult target = event.getTarget();
         if (target.typeOfHit == RayTraceResult.Type.ENTITY) {
-            if (target.entityHit instanceof EntityClotheslineHit) {
-                EntityClotheslineHit entity = (EntityClotheslineHit) target.entityHit;
-                RenderEdge edge = entity.getEdge();
+            if (target.entityHit instanceof EntityNetworkRaytraceHit) {
+                EntityNetworkRaytraceHit entity = (EntityNetworkRaytraceHit) target.entityHit;
                 EntityPlayer player = event.getPlayer();
                 float partialTicks = event.getPartialTicks();
 
-                double x = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double)partialTicks;
-                double y = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double)partialTicks;
-                double z = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double)partialTicks;
+                double x = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
+                double y = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks;
+                double z = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks;
 
-                renderClotheslineNetwork.renderOutline(edge, x, y, z);
+                GlStateManager.enableBlend();
+                GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+                GlStateManager.glLineWidth(2.0F);
+                GlStateManager.disableTexture2D();
+                GlStateManager.depthMask(false);
+
+                entity.getHit().graphHit.renderHighlight(renderClotheslineNetwork, partialTicks, x, y, z);
+
+                GlStateManager.depthMask(true);
+                GlStateManager.enableTexture2D();
+                GlStateManager.disableBlend();
             }
         }
     }
@@ -159,7 +175,8 @@ public class ClientProxy extends CommonProxy {
         }
     }
 
-    private class Ray {
+    @SideOnly(Side.CLIENT)
+    private static class Ray {
         public final Vec3d from;
         public final Vec3d to;
         public final Vec3d delta;
@@ -177,23 +194,86 @@ public class ClientProxy extends CommonProxy {
         }
     }
 
-    private class GraphRaytraceHit {
+    @SideOnly(Side.CLIENT)
+    public abstract static class GraphRaytraceHit {
         public final double distanceSq;
-        public final RenderEdge edge;
-        public final double offset;
 
-        public GraphRaytraceHit(double distanceSq, RenderEdge edge, double offset) {
+        public GraphRaytraceHit(double distanceSq) {
             this.distanceSq = distanceSq;
+        }
+
+        public abstract boolean hitByEntity(INetworkManager manager, Network network, EntityPlayer player);
+
+        public abstract boolean useItem(INetworkManager manager, Network network, EntityPlayer player, EnumHand hand);
+
+        public abstract void renderHighlight(RenderClotheslineNetwork renderClotheslineNetwork, float partialTicks, double x, double y, double z);
+    }
+
+    @SideOnly(Side.CLIENT)
+    public static class EdgeRaytraceHit extends GraphRaytraceHit {
+        private final RenderEdge edge;
+        private final double offset;
+
+        public EdgeRaytraceHit(double distanceSq, RenderEdge edge, double offset) {
+            super(distanceSq);
             this.edge = edge;
             this.offset = offset;
         }
+
+        @Override
+        public boolean hitByEntity(INetworkManager manager, Network network, EntityPlayer player) {
+            Clothesline.instance.networkWrapper.sendToServer(new MessageHitEdge(edge.getFromPos(), edge.getToPos()));
+            return true;
+        }
+
+        @Override
+        public boolean useItem(INetworkManager manager, Network network, EntityPlayer player, EnumHand hand) {
+            int offset = (int)this.offset - network.getState().getOffset();
+            Clothesline.instance.networkWrapper.sendToServer(new MessageTryUseItemOnNetwork(hand, network.getUuid(), offset));
+            return manager.useItem(network, player, hand, offset);
+        }
+
+        @Override
+        public void renderHighlight(RenderClotheslineNetwork renderClotheslineNetwork, float partialTicks, double x, double y, double z) {
+            renderClotheslineNetwork.renderOutline(edge, x, y, z);
+        }
     }
 
-    private class NetworkHit {
+    @SideOnly(Side.CLIENT)
+    public static class AttachmentRaytraceHit extends GraphRaytraceHit {
+        private final int offset;
+        private final AxisAlignedBB attachmentBB;
+
+        public AttachmentRaytraceHit(double distanceSq, int offset, AxisAlignedBB attachmentBB) {
+            super(distanceSq);
+            this.offset = offset;
+            this.attachmentBB = attachmentBB;
+        }
+
+        @Override
+        public boolean hitByEntity(INetworkManager manager, Network network, EntityPlayer player) {
+            Clothesline.instance.networkWrapper.sendToServer(new MessageHitAttachment(network.getUuid(), offset));
+            manager.hitAttachment(network, player, offset);
+            return true;
+        }
+
+        @Override
+        public boolean useItem(INetworkManager manager, Network network, EntityPlayer player, EnumHand hand) {
+            return false;
+        }
+
+        @Override
+        public void renderHighlight(RenderClotheslineNetwork renderClotheslineNetwork, float partialTicks, double x, double y, double z) {
+            RenderGlobal.drawSelectionBoundingBox(attachmentBB.offset(-x, -y, -z), 0.0F, 0.0F, 0.0F, 1.0F);
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    public static final class NetworkRaytraceHit {
         public final GraphRaytraceHit graphHit;
         public final Network network;
 
-        public NetworkHit(GraphRaytraceHit graphHit, Network network) {
+        public NetworkRaytraceHit(GraphRaytraceHit graphHit, Network network) {
             this.graphHit = graphHit;
             this.network = network;
         }
@@ -213,9 +293,9 @@ public class ClientProxy extends CommonProxy {
 
                 Ray ray = new Ray(rayFrom, rayTo);
 
-                NetworkHit hit = raytraceNetworks(manager, ray, ray.lengthSq);
+                NetworkRaytraceHit hit = raytraceNetworks(manager, ray, ray.lengthSq, partialTicks);
                 if (hit != null) {
-                    EntityClotheslineHit pointedEntity = new EntityClotheslineHit(world, manager, hit.network, hit.graphHit.edge, hit.graphHit.offset);
+                    EntityNetworkRaytraceHit pointedEntity = new EntityNetworkRaytraceHit(world, manager, hit);
                     mc.objectMouseOver = new RayTraceResult(pointedEntity);
                     mc.pointedEntity = pointedEntity;
                 }
@@ -224,16 +304,51 @@ public class ClientProxy extends CommonProxy {
     }
 
     @Nullable
-    private NetworkHit raytraceNetworks(INetworkManager manager, Ray ray, double maxDistanceSq) {
-        NetworkHit hit = null;
+    private NetworkRaytraceHit raytraceNetworks(INetworkManager manager, Ray ray, double maxDistanceSq, float partialTicks) {
+        NetworkRaytraceHit hit = null;
         for (Network network : manager.getNetworks()) {
             //TODO: Cache the RenderNetworkStates
-            RenderNetworkState renderNetworkState = RenderNetworkState.fromNetworkState(network.getState());
-            for (RenderEdge edge : renderNetworkState.getEdges()) {
-                GraphRaytraceHit treeHit = hitEdge(ray, edge, maxDistanceSq);
-                if (treeHit != null) {
-                    maxDistanceSq = treeHit.distanceSq;
-                    hit = new NetworkHit(treeHit, network);
+            RenderNetworkState state = RenderNetworkState.fromNetworkState(network.getState());
+            GraphRaytraceHit graphHit = raytraceNetwork(state, ray, maxDistanceSq, partialTicks);
+            if (graphHit != null && graphHit.distanceSq < maxDistanceSq) {
+                maxDistanceSq = graphHit.distanceSq;
+                hit = new NetworkRaytraceHit(graphHit, network);
+            }
+        }
+        return hit;
+    }
+
+    @Nullable
+    private GraphRaytraceHit raytraceNetwork(RenderNetworkState state, Ray ray, double maxDistanceSq, float partialTicks) {
+        GraphRaytraceHit hit = null;
+
+        List<RenderEdge> renderEdges = state.getEdges();
+        for (RenderEdge edge : renderEdges) {
+            GraphRaytraceHit treeHit = raytraceEdge(ray, edge, maxDistanceSq);
+            if (treeHit != null) {
+                maxDistanceSq = treeHit.distanceSq;
+                hit = treeHit;
+            }
+        }
+
+        double networkOffset = state.getOffset(partialTicks);
+        AxisAlignedBB basicBB = new AxisAlignedBB(-0.25D, -0.5D, -0.25D, 0.25D, 0.0D, 0.25D);
+
+        for (MutableSortedIntMap.Entry<ItemStack> entry : state.getStacks().entries()) {
+            double attachmentOffset = (entry.getKey() + networkOffset) % state.getStacks().getMaxKey();
+            int edgeIndex = state.getMinNodeIndexForOffset((int)attachmentOffset);
+            RenderEdge edge = renderEdges.get(edgeIndex);
+            double offsetOnEdge = attachmentOffset - edge.getFromOffset();
+            double edgePosScalar = offsetOnEdge / (edge.getToOffset() - edge.getFromOffset());
+            Vec3d pos = edge.projectVec(new Vec3d(-2.0D / 16.0D, 0.0D, edgePosScalar));
+            AxisAlignedBB attachmentBB = basicBB.offset(pos);
+
+            RayTraceResult result = attachmentBB.calculateIntercept(ray.from, ray.to);
+            if (result != null) {
+                double distanceSq = result.hitVec.squareDistanceTo(ray.from);
+                if (distanceSq < maxDistanceSq) {
+                    maxDistanceSq = distanceSq;
+                    hit = new AttachmentRaytraceHit(distanceSq, entry.getKey(), attachmentBB);
                 }
             }
         }
@@ -241,7 +356,7 @@ public class ClientProxy extends CommonProxy {
     }
 
     @Nullable
-    private GraphRaytraceHit hitEdge(Ray viewRay, RenderEdge edge, double maxDistanceSq) {
+    private EdgeRaytraceHit raytraceEdge(Ray viewRay, RenderEdge edge, double maxDistanceSq) {
         Ray edgeRay = new Ray(edge.projectVec(new Vec3d(-2.0D / 16.0D, 0.0D, 0.0D)), edge.projectVec(new Vec3d(-2.0D / 16.0D, 0.0D, 1.0D)));
 
         double b = viewRay.delta.dotProduct(edgeRay.delta);
@@ -260,7 +375,7 @@ public class ClientProxy extends CommonProxy {
             if (nearDelta.lengthSquared() < (1.0D / 16.0D) * (1.0D / 16.0D)) {
                 double rayLengthSquared = (viewNear.subtract(viewRay.from)).lengthSquared();
                 if (rayLengthSquared < maxDistanceSq) {
-                    return new GraphRaytraceHit(rayLengthSquared, edge, edge.getFromOffset() * (1.0D - edgeDeltaScalar) + edge.getToOffset() * edgeDeltaScalar);
+                    return new EdgeRaytraceHit(rayLengthSquared, edge, edge.getFromOffset() * (1.0D - edgeDeltaScalar) + edge.getToOffset() * edgeDeltaScalar);
                 }
             }
         }

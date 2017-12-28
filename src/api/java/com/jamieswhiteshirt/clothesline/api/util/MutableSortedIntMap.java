@@ -111,7 +111,7 @@ public class MutableSortedIntMap<T> {
 
     public void remove(int key) {
         int keyIndex = findKeyIndex(key);
-        if (keyIndex <= entries.size() && entries.get(keyIndex).key == key) {
+        if (keyIndex < entries.size() && entries.get(keyIndex).key == key) {
             entries.remove(keyIndex);
         }
     }

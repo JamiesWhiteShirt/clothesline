@@ -2,6 +2,7 @@ package com.jamieswhiteshirt.clothesline.api;
 
 import net.minecraft.util.math.BlockPos;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,6 +43,16 @@ public final class AbsoluteTree {
 
         public int getPostMaxOffset() {
             return tree.maxOffset + key.getLength();
+        }
+
+        private NetworkGraph.Edge findGraphEdge(AbsoluteTree fromTree, int offset) {
+            if (offset < getPreMaxOffset()) {
+                return new NetworkGraph.Edge(key, fromTree.pos, tree.pos, getPreMinOffset(), getPreMaxOffset());
+            } else if (offset < getPostMinOffset()) {
+                return tree.findGraphEdge(offset);
+            } else {
+                return new NetworkGraph.Edge(key.reverse(fromTree.pos), tree.pos, fromTree.pos, getPostMinOffset(), getPostMaxOffset());
+            }
         }
     }
 
@@ -145,5 +156,16 @@ public final class AbsoluteTree {
         NetworkGraph graph = new NetworkGraph();
         buildGraph(graph);
         return graph;
+    }
+
+    public NetworkGraph.Edge findGraphEdge(int offset) {
+        if (offset >= minOffset) {
+            for (Edge edge : edges) {
+                if (offset < edge.getPostMaxOffset()) {
+                    return edge.findGraphEdge(this, offset);
+                }
+            }
+        }
+        throw new IllegalArgumentException("Offset is not in AbsoluteTree");
     }
 }

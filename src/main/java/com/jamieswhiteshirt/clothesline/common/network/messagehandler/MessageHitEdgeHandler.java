@@ -2,7 +2,7 @@ package com.jamieswhiteshirt.clothesline.common.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.common.Util;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageHitNetwork;
+import com.jamieswhiteshirt.clothesline.common.network.message.MessageHitEdge;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
@@ -13,13 +13,13 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 import javax.annotation.Nullable;
 
-public class MessageHitNetworkHandler implements IMessageHandler<MessageHitNetwork, IMessage> {
+public class MessageHitEdgeHandler implements IMessageHandler<MessageHitEdge, IMessage> {
     @CapabilityInject(INetworkManager.class)
     private static final Capability<INetworkManager> CLOTHESLINE_NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
 
     @Nullable
     @Override
-    public IMessage onMessage(MessageHitNetwork message, MessageContext ctx) {
+    public IMessage onMessage(MessageHitEdge message, MessageContext ctx) {
         EntityPlayerMP player = ctx.getServerHandler().player;
         WorldServer world = player.getServerWorld();
         world.addScheduledTask(() -> {

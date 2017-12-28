@@ -1,13 +1,17 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.*;
+import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.common.util.BasicTree;
 import com.jamieswhiteshirt.clothesline.common.util.RelativeNetworkState;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -34,9 +38,34 @@ public final class NetworkManager implements INetworkManager {
         }
     }
 
+    private final World world;
     private final List<INetworkManagerEventListener> eventListeners = new ArrayList<>();
     private HashMap<UUID, Network> networksByUuid = new HashMap<>();
     private HashMap<BlockPos, NetworkNode> networkNodesByPos = new HashMap<>();
+
+    public NetworkManager(World world) {
+        this.world = world;
+    }
+
+    private Vec3d getEdgePosition(NetworkGraph.Edge edge, int offset) {
+        double scalar = (double)(offset - edge.getFromOffset()) / (edge.getToOffset() - edge.getFromOffset());
+        return new Vec3d(edge.getFromKey()).scale(1.0D - scalar).add(new Vec3d(edge.getToKey()).scale(scalar)).add(new Vec3d(0.5D, 0.5D, 0.5D));
+    }
+
+    private void dropTreeItem(ItemStack stack, AbsoluteTree tree, int offset) {
+        if (!world.isRemote && !stack.isEmpty() && world.getGameRules().getBoolean("doTileDrops")) {
+            Vec3d pos = getEdgePosition(tree.findGraphEdge(offset), offset);
+            EntityItem entityitem = new EntityItem(world, pos.x, pos.y - 0.5D, pos.z, stack);
+            entityitem.setDefaultPickupDelay();
+            world.spawnEntity(entityitem);
+        }
+    }
+
+    private void dropNetworkItems(AbsoluteNetworkState state) {
+        for (MutableSortedIntMap.Entry<ItemStack> entry : state.getAttachments().entries()) {
+            dropTreeItem(entry.getValue(), state.getTree(), entry.getKey());
+        }
+    }
 
     @Override
     public final Collection<Network> getNetworks() {
@@ -173,6 +202,14 @@ public final class NetworkManager implements INetworkManager {
         return true;
     }
 
+    private void applySplitResult(RelativeNetworkState.SplitResult splitResult) {
+        for (RelativeNetworkState subState : splitResult.getSubStates()) {
+            Network newNetwork = new Network(UUID.randomUUID(), subState.toAbsolute());
+            addNetwork(newNetwork);
+        }
+        dropNetworkItems(splitResult.getState().toAbsolute());
+    }
+
     @Override
     public final void destroy(BlockPos pos) {
         INetworkNode node = getNetworkNodeByPos(pos);
@@ -180,12 +217,8 @@ public final class NetworkManager implements INetworkManager {
             Network network = node.getNetwork();
             RelativeNetworkState state = RelativeNetworkState.fromAbsolute(network.getState());
             state.reroot(pos);
-            RelativeNetworkState.SplitResult splitResult = state.splitRoot();
             removeNetwork(network.getUuid());
-            for (RelativeNetworkState subState : splitResult.getSubStates()) {
-                Network newNetwork = new Network(UUID.randomUUID(), subState.toAbsolute());
-                addNetwork(newNetwork);
-            }
+            applySplitResult(state.splitRoot());
         }
     }
 
@@ -198,12 +231,8 @@ public final class NetworkManager implements INetworkManager {
             if (network == nodeB.getNetwork()) {
                 RelativeNetworkState state = RelativeNetworkState.fromAbsolute(network.getState());
                 state.reroot(posA);
-                RelativeNetworkState.SplitResult splitResult = state.splitEdge(posB);
                 removeNetwork(network.getUuid());
-                for (RelativeNetworkState subState : splitResult.getSubStates()) {
-                    Network newNetwork = new Network(UUID.randomUUID(), subState.toAbsolute());
-                    addNetwork(newNetwork);
-                }
+                applySplitResult(state.splitEdge(posB));
             }
         }
     }
@@ -225,7 +254,7 @@ public final class NetworkManager implements INetworkManager {
             if (!simulate) {
                 ItemStack insertedItem = stack.copy();
                 insertedItem.setCount(1);
-                setAttachment(network, offset, stack);
+                setAttachment(network, offset, insertedItem);
             }
 
             ItemStack returnedStack = stack.copy();
@@ -251,6 +280,15 @@ public final class NetworkManager implements INetworkManager {
 
         for (INetworkManagerEventListener eventListener : eventListeners) {
             eventListener.onAttachmentChanged(network, offset, previousStack, stack);
+        }
+    }
+
+    @Override
+    public void hitAttachment(Network network, EntityPlayer player, int offset) {
+        ItemStack stack = network.getState().getAttachment(offset);
+        if (!stack.isEmpty()) {
+            setAttachment(network, offset, ItemStack.EMPTY);
+            dropTreeItem(stack, network.getState().getTree(), Math.floorMod(offset + network.getState().getOffset(), network.getState().getLoopLength()));
         }
     }
 
