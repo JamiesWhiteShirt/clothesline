@@ -193,7 +193,6 @@ public final class NetworkManager implements INetworkManager {
             } else {
                 AbsoluteNetworkState state = AbsoluteNetworkState.createInitial(BasicTree.createInitial(posA, posB).toAbsolute());
                 Network network = new Network(UUID.randomUUID(), state);
-                network.getState().setAttachment(0, new ItemStack(Items.LEATHER_CHESTPLATE));
 
                 addNetwork(network);
             }
