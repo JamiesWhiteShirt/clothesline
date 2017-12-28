@@ -16,6 +16,7 @@ import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
 import com.jamieswhiteshirt.clothesline.common.network.message.*;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
 import com.jamieswhiteshirt.clothesline.core.event.GetMouseOverEvent;
+import com.jamieswhiteshirt.clothesline.core.event.RenderEntitiesEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -32,6 +33,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -110,24 +112,25 @@ public class ClientProxy extends CommonProxy {
     }
 
     @SubscribeEvent
-    public void onRenderWorldLast(RenderWorldLastEvent event) {
-        // TODO: Have this somehow fire before block highlights are rendered
-        WorldClient world = Minecraft.getMinecraft().world;
-        EntityPlayerSP player = Minecraft.getMinecraft().player;
-        if (world != null && player != null) {
-            INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
-            if (manager != null) {
-                boolean showDebugInfo = Minecraft.getMinecraft().gameSettings.showDebugInfo;
-                float partialTicks = event.getPartialTicks();
-                double x = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
-                double y = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks;
-                double z = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks;
-                for (Network network : manager.getNetworks()) {
-                    //TODO: Cache the RenderNetworkStates
-                    RenderNetworkState renderNetworkState = RenderNetworkState.fromNetworkState(network.getState());
-                    renderClotheslineNetwork.render(world, renderNetworkState, x, y, z, partialTicks);
-                    if (showDebugInfo) {
-                        renderClotheslineNetwork.debugRender(renderNetworkState, x, y, z, partialTicks);
+    public void onRenderEntities(RenderEntitiesEvent event) {
+        if (MinecraftForgeClient.getRenderPass() == 0) {
+            WorldClient world = Minecraft.getMinecraft().world;
+            EntityPlayerSP player = Minecraft.getMinecraft().player;
+            if (world != null && player != null) {
+                INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
+                if (manager != null) {
+                    boolean showDebugInfo = Minecraft.getMinecraft().gameSettings.showDebugInfo;
+                    float partialTicks = event.getPartialTicks();
+                    double x = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
+                    double y = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks;
+                    double z = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks;
+                    for (Network network : manager.getNetworks()) {
+                        //TODO: Cache the RenderNetworkStates
+                        RenderNetworkState renderNetworkState = RenderNetworkState.fromNetworkState(network.getState());
+                        renderClotheslineNetwork.render(world, renderNetworkState, x, y, z, partialTicks);
+                        if (showDebugInfo) {
+                            renderClotheslineNetwork.debugRender(renderNetworkState, x, y, z, partialTicks);
+                        }
                     }
                 }
             }

@@ -13,6 +13,8 @@ public class ClassTransformer implements IClassTransformer {
             return transformWorld(basicClass);
         } else if (transformedName.equals("net.minecraft.client.renderer.EntityRenderer")) {
             return transformEntityRenderer(basicClass);
+        } else if (transformedName.equals("net.minecraft.client.renderer.RenderGlobal")) {
+            return transformRenderGlobal(basicClass);
         }
         return basicClass;
     }
@@ -89,6 +91,49 @@ public class ClassTransformer implements IClassTransformer {
                 ));
                 i += insnList.size();
                 methodNode.instructions.insertBefore(insnNode, insnList);
+            }
+        }
+    }
+
+    private byte[] transformRenderGlobal(byte[] basicClass) {
+        ClassReader reader = new ClassReader(basicClass);
+        ClassNode classNode = new ClassNode();
+        reader.accept(classNode, 0);
+
+        for (MethodNode methodNode : classNode.methods) {
+            if (equalsEither(methodNode.name, "func_180446_a", "renderEntities") && methodNode.desc.equals("(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;F)V")) {
+                transformRenderEntities(methodNode);
+            }
+        }
+
+        ClassWriter writer = new SafeClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+        classNode.accept(writer);
+        return writer.toByteArray();
+    }
+
+    private void transformRenderEntities(MethodNode methodNode) {
+        for (int i = 0; i < methodNode.instructions.size(); i++) {
+            AbstractInsnNode insnNode = methodNode.instructions.get(i);
+            if (insnNode instanceof MethodInsnNode) {
+                MethodInsnNode mInsnNode = (MethodInsnNode) insnNode;
+                if (
+                        mInsnNode.getOpcode() == Opcodes.INVOKESPECIAL &&
+                        mInsnNode.owner.equals("net/minecraft/client/renderer/RenderGlobal") &&
+                        equalsEither(mInsnNode.name, "func_180443_s", "preRenderDamagedBlocks") &&
+                        mInsnNode.desc.equals("()V")
+                ) {
+                    InsnList insnList = new InsnList();
+                    insnList.add(new VarInsnNode(Opcodes.FLOAD, 3));
+                    insnList.add(new MethodInsnNode(
+                            Opcodes.INVOKESTATIC,
+                            "com/jamieswhiteshirt/clothesline/core/ClientHooks",
+                            "onRenderEntities",
+                            "(F)V",
+                            false
+                    ));
+                    i += insnList.size();
+                    methodNode.instructions.insertBefore(insnNode, insnList);
+                }
             }
         }
     }
