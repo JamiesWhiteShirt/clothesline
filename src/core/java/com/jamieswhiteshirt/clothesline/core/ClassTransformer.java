@@ -10,10 +10,29 @@ public class ClassTransformer implements IClassTransformer {
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
         if (transformedName.equals("net.minecraft.world.World")) {
+            /*
+             * This mod disallows placement of blocks that intersect with clotheslines.
+             * This hook is needed to be able to properly prevent placement of blocks that intersect with clotheslines.
+             * BlockEvent.PlaceEvent only runs on the server, and therefore results in an uncanny interaction where
+             * block is visible until the server responds.
+             * As a bonus, this ensures that falling blocks will never land in a spot intersecting with a clothesline.
+             * Adding unreplaceable blocks intersecting with the clotheslines would be extremely fragile.
+             */
             return transformWorld(basicClass);
         } else if (transformedName.equals("net.minecraft.client.renderer.EntityRenderer")) {
+            /*
+             * Traditionally, the object the mouse is over may only be a block, an entity, or nothing. This mod allows
+             * it to be a clothesline or an attachment as well.
+             * This hook is needed to reliably insert the potential clothesline or attachment the mouse may be over.
+             */
             return transformEntityRenderer(basicClass);
         } else if (transformedName.equals("net.minecraft.client.renderer.RenderGlobal")) {
+            /*
+             * Clotheslines are neither Entities or TileEntities, but they are very much like them. Clotheslines
+             * should therefore be rendered around the time Entities and TileEntities are rendered. This should increase
+             * compatibility and also makes outline rendering possible.
+             * This hook allows rendering things right after tile entities are rendered.
+             */
             return transformRenderGlobal(basicClass);
         }
         return basicClass;
