@@ -2,6 +2,7 @@ package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
+import com.jamieswhiteshirt.clothesline.common.Util;
 import com.jamieswhiteshirt.clothesline.common.util.BasicTree;
 import com.jamieswhiteshirt.clothesline.common.util.RelativeNetworkState;
 import net.minecraft.entity.item.EntityItem;
@@ -49,7 +50,7 @@ public final class NetworkManager implements INetworkManager {
 
     private Vec3d getEdgePosition(NetworkGraph.Edge edge, int offset) {
         double scalar = (double)(offset - edge.getFromOffset()) / (edge.getToOffset() - edge.getFromOffset());
-        return new Vec3d(edge.getFromKey()).scale(1.0D - scalar).add(new Vec3d(edge.getToKey()).scale(scalar)).add(new Vec3d(0.5D, 0.5D, 0.5D));
+        return Util.midVec(edge.getFromKey()).scale(1.0D - scalar).add(Util.midVec(edge.getToKey()).scale(scalar));
     }
 
     private void dropTreeItem(ItemStack stack, AbsoluteTree tree, int offset) {

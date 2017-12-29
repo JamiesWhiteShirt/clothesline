@@ -4,11 +4,9 @@ import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineBlocks;
 import com.jamieswhiteshirt.clothesline.common.Util;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
@@ -27,7 +25,7 @@ public class ItemClothesline extends ItemConnector {
         INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
         if (manager != null) {
             if (world.getBlockState(to).getBlock() == ClotheslineBlocks.CLOTHESLINE_ANCHOR) {
-                RayTraceResult result = world.rayTraceBlocks(new Vec3d(from).addVector(0.5D, 0.5D, 0.5D), new Vec3d(to).addVector(0.5D, 0.5D, 0.5D), false, true, false);
+                RayTraceResult result = world.rayTraceBlocks(Util.midVec(from), Util.midVec(to), false, true, false);
                 if (result == null || result.typeOfHit == RayTraceResult.Type.MISS) {
                     if (!world.isRemote) {
                         manager.connect(from, to);

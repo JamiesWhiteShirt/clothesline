@@ -2,6 +2,7 @@ package com.jamieswhiteshirt.clothesline.client.renderer;
 
 import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.api.NetworkGraph;
+import com.jamieswhiteshirt.clothesline.common.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.relauncher.Side;
@@ -44,8 +45,8 @@ public class RenderEdge {
     public static RenderEdge create(NetworkGraph.Edge edge) {
         BlockPos fromPos = edge.getFromKey();
         BlockPos toPos = edge.getToKey();
-        Vec3d fromVec = new Vec3d(fromPos).addVector(0.5D, 0.5D, 0.5D);
-        Vec3d toVec = new Vec3d(toPos).addVector(0.5D, 0.5D, 0.5D);
+        Vec3d fromVec = Util.midVec(fromPos);
+        Vec3d toVec = Util.midVec(toPos);
         Vec3d forward = toVec.subtract(fromVec);
 
         // The normal vector facing from the from pos to the to pos

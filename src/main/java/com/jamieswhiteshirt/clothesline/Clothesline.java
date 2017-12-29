@@ -1,9 +1,6 @@
 package com.jamieswhiteshirt.clothesline;
 
-import com.jamieswhiteshirt.clothesline.api.AbsoluteTree;
-import com.jamieswhiteshirt.clothesline.api.IConnectionHolder;
-import com.jamieswhiteshirt.clothesline.api.INetworkManager;
-import com.jamieswhiteshirt.clothesline.api.Network;
+import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.common.*;
 import com.jamieswhiteshirt.clothesline.common.capability.*;
 import com.jamieswhiteshirt.clothesline.common.impl.ConnectionHolder;
@@ -163,10 +160,10 @@ public class Clothesline {
     }
 
     private boolean intersectsTree(AxisAlignedBB aabb, AbsoluteTree parent) {
-        Vec3d parentVec = new Vec3d(parent.getPos()).addVector(0.5D, 0.5D, 0.5D);
+        Vec3d parentVec = Util.midVec(parent.getPos());
         for (AbsoluteTree.Edge edge : parent.getEdges()) {
             AbsoluteTree child = edge.getTree();
-            Vec3d childVec = new Vec3d(child.getPos()).addVector(0.5D, 0.5D, 0.5D);
+            Vec3d childVec = Util.midVec(child.getPos());
             if (aabb.calculateIntercept(parentVec, childVec) != null || intersectsTree(aabb, child)) {
                 return true;
             }
