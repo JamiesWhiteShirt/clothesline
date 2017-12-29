@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.capability;
 
-import com.jamieswhiteshirt.clothesline.api.IAttacher;
+import com.jamieswhiteshirt.clothesline.api.IConnectionHolder;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -10,12 +10,12 @@ import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
 
-public class AttacherStorage implements Capability.IStorage<IAttacher> {
+public class AttacherStorage implements Capability.IStorage<IConnectionHolder> {
     @Nullable
     @Override
-    public NBTBase writeNBT(Capability<IAttacher> capability, IAttacher instance, EnumFacing side) {
+    public NBTBase writeNBT(Capability<IConnectionHolder> capability, IConnectionHolder instance, EnumFacing side) {
         NBTTagCompound compound = new NBTTagCompound();
-        BlockPos attachPosition = instance.getAttachPosition();
+        BlockPos attachPosition = instance.getFromPos();
         if (attachPosition != null) {
             NBTTagCompound attachPositionCompound = new NBTTagCompound();
             attachPositionCompound.setInteger("x", attachPosition.getX());
@@ -27,12 +27,12 @@ public class AttacherStorage implements Capability.IStorage<IAttacher> {
     }
 
     @Override
-    public void readNBT(Capability<IAttacher> capability, IAttacher instance, EnumFacing side, NBTBase nbt) {
+    public void readNBT(Capability<IConnectionHolder> capability, IConnectionHolder instance, EnumFacing side, NBTBase nbt) {
         if (nbt instanceof NBTTagCompound) {
             NBTTagCompound compound = (NBTTagCompound) nbt;
             if (compound.hasKey("AttachPosition", Constants.NBT.TAG_COMPOUND)) {
                 NBTTagCompound attachPositionCompound = compound.getCompoundTag("AttachPosition");
-                instance.setAttachPosition(new BlockPos(
+                instance.setFromPos(new BlockPos(
                         attachPositionCompound.getInteger("x"),
                         attachPositionCompound.getInteger("y"),
                         attachPositionCompound.getInteger("z")

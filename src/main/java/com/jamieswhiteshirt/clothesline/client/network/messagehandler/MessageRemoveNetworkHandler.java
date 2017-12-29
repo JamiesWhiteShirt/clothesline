@@ -16,14 +16,14 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class MessageRemoveNetworkHandler implements IMessageHandler<MessageRemoveNetwork, IMessage> {
     @CapabilityInject(INetworkManager.class)
-    private static final Capability<INetworkManager> CLOTHESLINE_NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
 
     @Override
     public IMessage onMessage(MessageRemoveNetwork message, MessageContext ctx) {
         Minecraft.getMinecraft().addScheduledTask(() -> {
             WorldClient world = Minecraft.getMinecraft().world;
             if (world != null) {
-                INetworkManager manager = world.getCapability(CLOTHESLINE_NETWORK_MANAGER_CAPABILITY, null);
+                INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
                 if (manager != null) {
                     manager.removeNetwork(message.networkUuid);
                 }

@@ -18,14 +18,14 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class MessageRemoveAttachmentHandler implements IMessageHandler<MessageRemoveAttachment, IMessage> {
     @CapabilityInject(INetworkManager.class)
-    private static final Capability<INetworkManager> CLOTHESLINE_NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
 
     @Override
     public IMessage onMessage(MessageRemoveAttachment message, MessageContext ctx) {
         Minecraft.getMinecraft().addScheduledTask(() -> {
             WorldClient world = Minecraft.getMinecraft().world;
             if (world != null) {
-                INetworkManager manager = world.getCapability(CLOTHESLINE_NETWORK_MANAGER_CAPABILITY, null);
+                INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
                 if (manager != null) {
                     Network network = manager.getNetworkByUUID(message.networkUuid);
                     if (network != null) {

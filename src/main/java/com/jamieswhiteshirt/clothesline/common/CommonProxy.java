@@ -3,9 +3,11 @@ package com.jamieswhiteshirt.clothesline.common;
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
 import com.jamieswhiteshirt.clothesline.common.impl.SynchronizationListener;
+import com.jamieswhiteshirt.clothesline.common.network.message.MessageStopUsingItemOn;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageHitAttachment;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageHitEdge;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageTryUseItemOnNetwork;
+import com.jamieswhiteshirt.clothesline.common.network.messagehandler.MessageStopUsingItemOnHandler;
 import com.jamieswhiteshirt.clothesline.common.network.messagehandler.MessageHitAttachmentHandler;
 import com.jamieswhiteshirt.clothesline.common.network.messagehandler.MessageHitEdgeHandler;
 import com.jamieswhiteshirt.clothesline.common.network.messagehandler.MessageTryUseItemOnNetworkHandler;
@@ -23,6 +25,7 @@ public abstract class CommonProxy {
         Clothesline.instance.networkWrapper.registerMessage(new MessageHitEdgeHandler(), MessageHitEdge.class, 6, Side.SERVER);
         Clothesline.instance.networkWrapper.registerMessage(new MessageTryUseItemOnNetworkHandler(), MessageTryUseItemOnNetwork.class, 7, Side.SERVER);
         Clothesline.instance.networkWrapper.registerMessage(new MessageHitAttachmentHandler(), MessageHitAttachment.class, 8, Side.SERVER);
+        Clothesline.instance.networkWrapper.registerMessage(new MessageStopUsingItemOnHandler(), MessageStopUsingItemOn.class, 9, Side.SERVER);
     }
 
     public NetworkManager createNetworkManager(World world) {

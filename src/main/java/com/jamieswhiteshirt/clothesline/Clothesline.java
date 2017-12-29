@@ -1,12 +1,12 @@
 package com.jamieswhiteshirt.clothesline;
 
 import com.jamieswhiteshirt.clothesline.api.AbsoluteTree;
-import com.jamieswhiteshirt.clothesline.api.IAttacher;
+import com.jamieswhiteshirt.clothesline.api.IConnectionHolder;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.common.*;
 import com.jamieswhiteshirt.clothesline.common.capability.*;
-import com.jamieswhiteshirt.clothesline.common.impl.Attacher;
+import com.jamieswhiteshirt.clothesline.common.impl.ConnectionHolder;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetNetworks;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
@@ -74,7 +74,7 @@ public class Clothesline {
         logger = event.getModLog();
         MinecraftForge.EVENT_BUS.register(this);
         CapabilityManager.INSTANCE.register(INetworkManager.class, new NetworkManagerStorage(), NetworkManager.class);
-        CapabilityManager.INSTANCE.register(IAttacher.class, new AttacherStorage(), Attacher::new);
+        CapabilityManager.INSTANCE.register(IConnectionHolder.class, new AttacherStorage(), ConnectionHolder::new);
         proxy.preInit(event);
     }
 

@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 
 public class MessageHitAttachmentHandler implements IMessageHandler<MessageHitAttachment, IMessage> {
     @CapabilityInject(INetworkManager.class)
-    private static final Capability<INetworkManager> CLOTHESLINE_NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
 
     @Nullable
     @Override
@@ -24,7 +24,7 @@ public class MessageHitAttachmentHandler implements IMessageHandler<MessageHitAt
         EntityPlayerMP player = ctx.getServerHandler().player;
         WorldServer world = player.getServerWorld();
         world.addScheduledTask(() -> {
-            INetworkManager manager = world.getCapability(CLOTHESLINE_NETWORK_MANAGER_CAPABILITY, null);
+            INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 Network network = manager.getNetworkByUUID(message.networkUuid);
                 if (network != null) {

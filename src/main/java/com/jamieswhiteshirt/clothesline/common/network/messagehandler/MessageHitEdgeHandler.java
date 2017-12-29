@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 
 public class MessageHitEdgeHandler implements IMessageHandler<MessageHitEdge, IMessage> {
     @CapabilityInject(INetworkManager.class)
-    private static final Capability<INetworkManager> CLOTHESLINE_NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
 
     @Nullable
     @Override
@@ -23,7 +23,7 @@ public class MessageHitEdgeHandler implements IMessageHandler<MessageHitEdge, IM
         EntityPlayerMP player = ctx.getServerHandler().player;
         WorldServer world = player.getServerWorld();
         world.addScheduledTask(() -> {
-            INetworkManager manager = world.getCapability(CLOTHESLINE_NETWORK_MANAGER_CAPABILITY, null);
+            INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 //TODO: Validate this edge position
                 manager.disconnect(message.fromPos, message.toPos);

@@ -10,13 +10,17 @@ import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderEdge;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderNetworkState;
 import com.jamieswhiteshirt.clothesline.client.renderer.tileentity.TileEntityClotheslineAnchorRenderer;
+import com.jamieswhiteshirt.clothesline.common.ClotheslineBlocks;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
 import com.jamieswhiteshirt.clothesline.common.CommonProxy;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
+import com.jamieswhiteshirt.clothesline.common.item.ItemConnector;
 import com.jamieswhiteshirt.clothesline.common.network.message.*;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
 import com.jamieswhiteshirt.clothesline.core.event.GetMouseOverEvent;
+import com.jamieswhiteshirt.clothesline.core.event.ClientStoppedUsingItemEvent;
 import com.jamieswhiteshirt.clothesline.core.event.RenderEntitiesEvent;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -28,15 +32,11 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
@@ -92,6 +92,38 @@ public class ClientProxy extends CommonProxy {
             return manager;
         } else {
             return manager;
+        }
+    }
+
+    @Nullable
+    public BlockPos getMouseOverClotheslineAnchor() {
+        RayTraceResult result = Minecraft.getMinecraft().objectMouseOver;
+        WorldClient world = Minecraft.getMinecraft().world;
+        if (result != null && world != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
+            IBlockState state = world.getBlockState(result.getBlockPos());
+            if (state.getBlock() == ClotheslineBlocks.CLOTHESLINE_ANCHOR) {
+                return result.getBlockPos();
+            }
+        }
+        return null;
+    }
+
+    @SubscribeEvent
+    public void onClientStoppedUsingItem(ClientStoppedUsingItemEvent event) {
+        RayTraceResult objectMouseOver = Minecraft.getMinecraft().objectMouseOver;
+        WorldClient world = Minecraft.getMinecraft().world;
+        if (objectMouseOver != null && world != null && objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK) {
+            EntityPlayerSP player = Minecraft.getMinecraft().player;
+            if (player != null && player.getActiveItemStack().getItem() instanceof ItemConnector) {
+                // This is a connector item, we must therefore tell the server which block position where the connection
+                // will end.
+                Clothesline.instance.networkWrapper.sendToServer(new MessageStopUsingItemOn(objectMouseOver.getBlockPos()));
+
+                ItemConnector itemConnector = (ItemConnector) player.getActiveItemStack().getItem();
+                itemConnector.stopActiveHandWithToPos(player, objectMouseOver.getBlockPos());
+
+                event.setCanceled(true);
+            }
         }
     }
 
