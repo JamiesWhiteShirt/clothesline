@@ -32,10 +32,10 @@ public class RelativeNetworkState {
 
     public static RelativeNetworkState fromAbsolute(AbsoluteNetworkState state) {
         MutableSortedIntMap<ItemStack> attachments = state.getAttachments();
-        int midOffset = Math.floorMod(-state.getOffset(), attachments.getMaxKey());
+        int midAttachmentKey = state.offsetToAttachmentKey(0);
         MutableSortedIntMap<ItemStack> shiftedItemStacks = MutableSortedIntMap.concatenate(Arrays.asList(
-                attachments.shiftedSubMap(midOffset, attachments.getMaxKey()),
-                attachments.shiftedSubMap(0, midOffset)
+                attachments.shiftedSubMap(midAttachmentKey, attachments.getMaxKey()),
+                attachments.shiftedSubMap(0, midAttachmentKey)
         ));
         RelativeTree tree = RelativeTree.fromAbsolute(state.getTree(), shiftedItemStacks);
         return new RelativeNetworkState(state.getMomentum(), tree);
@@ -86,6 +86,6 @@ public class RelativeNetworkState {
     public AbsoluteNetworkState toAbsolute() {
         LinkedList<MutableSortedIntMap<ItemStack>> attachmentsList = new LinkedList<>();
         AbsoluteTree absoluteTree = treeRoot.toAbsolute(attachmentsList, 0);
-        return new AbsoluteNetworkState(0, 0, momentum, absoluteTree, MutableSortedIntMap.concatenate(attachmentsList));
+        return new AbsoluteNetworkState(0, 0, momentum, momentum, absoluteTree, MutableSortedIntMap.concatenate(attachmentsList));
     }
 }

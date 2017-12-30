@@ -1,6 +1,7 @@
 package com.jamieswhiteshirt.clothesline.api;
 
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
 
@@ -96,6 +97,11 @@ public class NetworkGraph {
 
         public int getToOffset() {
             return toOffset;
+        }
+
+        public Vec3d getPositionForOffset(int offset) {
+            double scalar = (double)(offset - getFromOffset()) / (getToOffset() - getFromOffset());
+            return Measurements.midVec(getFromKey()).scale(1.0D - scalar).add(Measurements.midVec(getToKey()).scale(scalar));
         }
     }
 

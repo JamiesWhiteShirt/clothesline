@@ -9,15 +9,15 @@ import java.util.Map;
 
 /**
  * State container for a network.
- * The structure of the network is immutable, while the attachments and their offsets are mutable.
+ * The structure of the network is immutable, while the attachments and their keys are mutable.
  * Performant for manipulation of attachments on the network.
  */
 public final class AbsoluteNetworkState {
     public static final int MAX_MOMENTUM = 30;
 
-    private int previousOffset;
+    private int previousShift;
+    private int shift;
     private int previousMomentum;
-    private int offset;
     private int momentum;
 
     private final AbsoluteTree tree;
@@ -30,23 +30,25 @@ public final class AbsoluteNetworkState {
                 0,
                 0,
                 0,
+                0,
                 tree,
                 MutableSortedIntMap.empty(tree.getMaxOffset())
         );
     }
 
-    public AbsoluteNetworkState(int previousOffset, int offset, int momentum, AbsoluteTree tree, MutableSortedIntMap<ItemStack> attachments) {
+    public AbsoluteNetworkState(int previousShift, int shift, int previousMomentum, int momentum, AbsoluteTree tree, MutableSortedIntMap<ItemStack> attachments) {
         this.tree = tree;
         this.graph = tree.toGraph();
         this.posLookup = tree.createPositionLookup();
         this.attachments = attachments;
-        this.previousOffset = previousOffset;
-        this.offset = offset;
+        this.previousShift = previousShift;
+        this.previousMomentum = previousMomentum;
+        this.shift = shift;
         this.momentum = momentum;
     }
 
-    private int offsetMod(int offset) {
-        return Math.floorMod(offset, getLoopLength());
+    private int lengthMod(int i) {
+        return Math.floorMod(i, getLoopLength());
     }
 
     public AbsoluteTree getTree() {
@@ -65,12 +67,12 @@ public final class AbsoluteNetworkState {
         return attachments;
     }
 
-    public List<MutableSortedIntMap.Entry<ItemStack>> getAttachmentsInRange(int minOffset, int maxOffset) {
-        return attachments.getInRange(offsetMod(minOffset), offsetMod(maxOffset));
+    public List<MutableSortedIntMap.Entry<ItemStack>> getAttachmentsInRange(int minAttachmentKey, int maxAttachmentKey) {
+        return attachments.getInRange(lengthMod(minAttachmentKey), lengthMod(maxAttachmentKey));
     }
 
-    public ItemStack getAttachment(int offset) {
-        ItemStack result = attachments.get(offsetMod(offset));
+    public ItemStack getAttachment(int attachmentKey) {
+        ItemStack result = attachments.get(lengthMod(attachmentKey));
         if (result != null) {
             return result;
         } else {
@@ -78,36 +80,37 @@ public final class AbsoluteNetworkState {
         }
     }
 
-    public void setAttachment(int offset, ItemStack stack) {
+    public void setAttachment(int attachmentKey, ItemStack stack) {
         if (stack.isEmpty()) {
-            attachments.remove(offsetMod(offset));
+            attachments.remove(lengthMod(attachmentKey));
         } else {
-            attachments.put(offsetMod(offset), stack);
+            attachments.put(lengthMod(attachmentKey), stack);
         }
     }
 
     public void update() {
         previousMomentum = momentum;
+        previousShift = shift;
+
         if (momentum > 0) {
             momentum -= 1;
         } else if (momentum < 0) {
             momentum += 1;
         }
 
-        previousOffset = offset;
-        offset += momentum;
+        shift += momentum;
     }
 
     public void addMomentum(int momentum) {
         this.momentum = Math.min(Math.max(this.momentum + momentum, -MAX_MOMENTUM), MAX_MOMENTUM);
     }
 
-    public int getOffset() {
-        return offset;
+    public int getShift() {
+        return shift;
     }
 
-    public int getPreviousOffset() {
-        return previousOffset;
+    public int getPreviousShift() {
+        return previousShift;
     }
 
     public int getMomentum() {
@@ -120,5 +123,13 @@ public final class AbsoluteNetworkState {
 
     public int getLoopLength() {
         return tree.getLoopLength();
+    }
+
+    public int offsetToAttachmentKey(int offset) {
+        return Math.floorMod(offset - shift, getLoopLength());
+    }
+
+    public int attachmentKeyToOffset(int attachmentKey) {
+        return Math.floorMod(attachmentKey + shift, getLoopLength());
     }
 }

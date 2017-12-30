@@ -257,15 +257,18 @@ public class ClientProxy extends CommonProxy {
 
         @Override
         public boolean hitByEntity(INetworkManager manager, Network network, EntityPlayer player) {
-            Clothesline.instance.networkWrapper.sendToServer(new MessageHitEdge(edge.getFromPos(), edge.getToPos()));
+            int offset = (int) Math.round(this.offset);
+            int attachmentKey = network.getState().offsetToAttachmentKey(offset);
+            Clothesline.instance.networkWrapper.sendToServer(new MessageHitNetwork(network.getUuid(), attachmentKey, offset));
             return true;
         }
 
         @Override
         public boolean useItem(INetworkManager manager, Network network, EntityPlayer player, EnumHand hand) {
-            int offset = (int)this.offset - network.getState().getOffset();
-            Clothesline.instance.networkWrapper.sendToServer(new MessageTryUseItemOnNetwork(hand, network.getUuid(), offset));
-            return manager.useItem(network, player, hand, offset);
+            int offset = (int) Math.round(this.offset);
+            int attachmentKey = network.getState().offsetToAttachmentKey(offset);
+            Clothesline.instance.networkWrapper.sendToServer(new MessageTryUseItemOnNetwork(hand, network.getUuid(), attachmentKey));
+            return manager.useItem(network, player, hand, attachmentKey);
         }
 
         @Override
@@ -276,19 +279,19 @@ public class ClientProxy extends CommonProxy {
 
     @SideOnly(Side.CLIENT)
     public static class AttachmentRaytraceHit extends GraphRaytraceHit {
-        private final int offset;
+        private final int attachmentKey;
         private final AxisAlignedBB attachmentBB;
 
-        public AttachmentRaytraceHit(double distanceSq, int offset, AxisAlignedBB attachmentBB) {
+        public AttachmentRaytraceHit(double distanceSq, int attachmentKey, AxisAlignedBB attachmentBB) {
             super(distanceSq);
-            this.offset = offset;
+            this.attachmentKey = attachmentKey;
             this.attachmentBB = attachmentBB;
         }
 
         @Override
         public boolean hitByEntity(INetworkManager manager, Network network, EntityPlayer player) {
-            Clothesline.instance.networkWrapper.sendToServer(new MessageHitAttachment(network.getUuid(), offset));
-            manager.hitAttachment(network, player, offset);
+            Clothesline.instance.networkWrapper.sendToServer(new MessageHitAttachment(network.getUuid(), attachmentKey));
+            manager.hitAttachment(network, player, attachmentKey);
             return true;
         }
 
@@ -366,15 +369,15 @@ public class ClientProxy extends CommonProxy {
             }
         }
 
-        double networkOffset = state.getOffset(partialTicks);
+        double networkOffset = state.getShift(partialTicks);
         AxisAlignedBB basicBB = new AxisAlignedBB(-0.25D, -0.5D, -0.25D, 0.25D, 0.0D, 0.25D);
 
         for (MutableSortedIntMap.Entry<ItemStack> entry : state.getStacks().entries()) {
             double attachmentOffset = (entry.getKey() + networkOffset) % state.getStacks().getMaxKey();
-            int edgeIndex = state.getMinNodeIndexForOffset((int)attachmentOffset);
+            int edgeIndex = state.getEdgeIndexForOffset((int)attachmentOffset);
             RenderEdge edge = renderEdges.get(edgeIndex);
-            double offsetOnEdge = attachmentOffset - edge.getFromOffset();
-            double edgePosScalar = offsetOnEdge / (edge.getToOffset() - edge.getFromOffset());
+            double relativeOffset = attachmentOffset - edge.getFromOffset();
+            double edgePosScalar = relativeOffset / (edge.getToOffset() - edge.getFromOffset());
             Vec3d pos = edge.projectVec(new Vec3d(-2.0D / 16.0D, 0.0D, edgePosScalar));
             AxisAlignedBB attachmentBB = basicBB.offset(pos);
 

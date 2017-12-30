@@ -45,8 +45,8 @@ public class RenderEdge {
     public static RenderEdge create(NetworkGraph.Edge edge) {
         BlockPos fromPos = edge.getFromKey();
         BlockPos toPos = edge.getToKey();
-        Vec3d fromVec = Util.midVec(fromPos);
-        Vec3d toVec = Util.midVec(toPos);
+        Vec3d fromVec = Measurements.midVec(fromPos);
+        Vec3d toVec = Measurements.midVec(toPos);
         Vec3d forward = toVec.subtract(fromVec);
 
         // The normal vector facing from the from pos to the to pos

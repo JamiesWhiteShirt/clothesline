@@ -1,8 +1,8 @@
 package com.jamieswhiteshirt.clothesline.api;
 
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,11 +45,11 @@ public final class AbsoluteTree {
             return tree.maxOffset + key.getLength();
         }
 
-        private NetworkGraph.Edge findGraphEdge(AbsoluteTree fromTree, int offset) {
+        private NetworkGraph.Edge getGraphEdgeForOffset(AbsoluteTree fromTree, int offset) {
             if (offset < getPreMaxOffset()) {
                 return new NetworkGraph.Edge(key, fromTree.pos, tree.pos, getPreMinOffset(), getPreMaxOffset());
             } else if (offset < getPostMinOffset()) {
-                return tree.findGraphEdge(offset);
+                return tree.getGraphEdgeForOffset(offset);
             } else {
                 return new NetworkGraph.Edge(key.reverse(fromTree.pos), tree.pos, fromTree.pos, getPostMinOffset(), getPostMaxOffset());
             }
@@ -158,14 +158,18 @@ public final class AbsoluteTree {
         return graph;
     }
 
-    public NetworkGraph.Edge findGraphEdge(int offset) {
+    public NetworkGraph.Edge getGraphEdgeForOffset(int offset) {
         if (offset >= minOffset) {
             for (Edge edge : edges) {
                 if (offset < edge.getPostMaxOffset()) {
-                    return edge.findGraphEdge(this, offset);
+                    return edge.getGraphEdgeForOffset(this, offset);
                 }
             }
         }
         throw new IllegalArgumentException("Offset is not in AbsoluteTree");
+    }
+
+    public Vec3d getPositionForOffset(int offset) {
+        return getGraphEdgeForOffset(offset).getPositionForOffset(offset);
     }
 }

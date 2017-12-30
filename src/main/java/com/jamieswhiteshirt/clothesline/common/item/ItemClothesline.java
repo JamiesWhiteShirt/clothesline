@@ -1,6 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common.item;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
+import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineBlocks;
 import com.jamieswhiteshirt.clothesline.common.Util;
 import net.minecraft.entity.EntityLivingBase;
@@ -25,7 +26,7 @@ public class ItemClothesline extends ItemConnector {
         INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
         if (manager != null) {
             if (world.getBlockState(to).getBlock() == ClotheslineBlocks.CLOTHESLINE_ANCHOR) {
-                RayTraceResult result = world.rayTraceBlocks(Util.midVec(from), Util.midVec(to), false, true, false);
+                RayTraceResult result = world.rayTraceBlocks(Measurements.midVec(from), Measurements.midVec(to), false, true, false);
                 if (result == null || result.typeOfHit == RayTraceResult.Type.MISS) {
                     if (!world.isRemote) {
                         manager.connect(from, to);

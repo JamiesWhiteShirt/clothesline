@@ -40,15 +40,15 @@ public interface INetworkManager {
 
     void setNetworkState(Network network, AbsoluteNetworkState state);
 
-    ItemStack insertItem(Network network, int offset, ItemStack stack, boolean simulate);
+    ItemStack insertItem(Network network, int attachmentKey, ItemStack stack, boolean simulate);
 
-    ItemStack extractItem(Network network, int offset, boolean simulate);
+    ItemStack extractItem(Network network, int attachmentKey, boolean simulate);
 
-    void setAttachment(Network network, int offset, ItemStack stack);
+    void setAttachment(Network network, int attachmentKey, ItemStack stack);
 
-    boolean useItem(Network network, EntityPlayer player, EnumHand hand, int offset);
+    boolean useItem(Network network, EntityPlayer player, EnumHand hand, int attachmentKey);
 
-    void hitAttachment(Network network, EntityPlayer player, int offset);
+    void hitAttachment(Network network, EntityPlayer player, int attachmentKey);
 
     void addMomentum(Network network, int momentum);
 

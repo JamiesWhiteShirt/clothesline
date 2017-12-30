@@ -3,7 +3,6 @@ package com.jamieswhiteshirt.clothesline.common.tileentity;
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.common.Util;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkItemHandler;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
@@ -59,9 +58,8 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
             if (node != null) {
                 Network network = node.getNetwork();
                 EdgeKey edgeKey = new EdgeKey(pos, pos.offset(facing));
-                AbsoluteNetworkState state = network.getState();
-                int offset = Math.floorMod(node.getGraphNode().getCornerOffset(edgeKey) - state.getOffset(), state.getLoopLength());
-                return ITEM_HANDLER_CAPABILITY.cast(new NetworkItemHandler(manager, network, offset));
+                int attachmentKey = network.getState().offsetToAttachmentKey(node.getGraphNode().getCornerOffset(edgeKey));
+                return ITEM_HANDLER_CAPABILITY.cast(new NetworkItemHandler(manager, network, attachmentKey));
             }
         }
         return null;

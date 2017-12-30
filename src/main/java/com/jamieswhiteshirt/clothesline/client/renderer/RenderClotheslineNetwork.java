@@ -20,9 +20,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @SideOnly(Side.CLIENT)
 public class RenderClotheslineNetwork {
@@ -53,7 +51,7 @@ public class RenderClotheslineNetwork {
         return bufferBuilder.pos(pos.x, pos.y, pos.z).normal((float)normal.x, (float)normal.y, (float)normal.z);
     }
 
-    private void renderEdge(IBlockAccess world, RenderEdge e, double x, double y, double z, double networkOffset, BufferBuilder bufferBuilder) {
+    private void renderEdge(IBlockAccess world, RenderEdge e, double x, double y, double z, double shift, BufferBuilder bufferBuilder) {
         for (int j = 0; j < 4; j++) {
             double r1 = RIGHT_MULTIPLIERS[j];
             double r2 = RIGHT_MULTIPLIERS[j + 1];
@@ -62,8 +60,8 @@ public class RenderClotheslineNetwork {
             double nr = NORMAL_RIGHT_MULTIPLIERS[j];
             double ur = NORMAL_UP_MULTIPLIERS[j];
 
-            double vFrom = (e.getFromOffset() - networkOffset) / Measurements.UNIT_LENGTH;
-            double vTo = (e.getToOffset() - networkOffset) / Measurements.UNIT_LENGTH;
+            double vFrom = (e.getFromOffset() - shift) / Measurements.UNIT_LENGTH;
+            double vTo = (e.getToOffset() - shift) / Measurements.UNIT_LENGTH;
 
             int combinedLightFrom = world.getCombinedLight(e.getFromPos(), 0);
             int lightFrom1 = combinedLightFrom >> 16 & 0xFFFF;
@@ -99,7 +97,7 @@ public class RenderClotheslineNetwork {
     public void render(IBlockAccess world, RenderNetworkState state, double x, double y, double z, float partialTicks) {
         Vec3d viewPos = new Vec3d(x, y, z);
 
-        double networkOffset = state.getOffset(partialTicks);
+        double shift = state.getShift(partialTicks);
 
         List<RenderEdge> renderEdges = state.getEdges();
 
@@ -114,7 +112,7 @@ public class RenderClotheslineNetwork {
         GlStateManager.translate(-x, -y, -z);
         bufferBuilder.begin(GL11.GL_QUADS, VERTEX_FORMAT);
         for (RenderEdge edge : renderEdges) {
-            renderEdge(world, edge, x, y, z, networkOffset, bufferBuilder);
+            renderEdge(world, edge, x, y, z, shift, bufferBuilder);
         }
         tessellator.draw();
         GlStateManager.popMatrix();
@@ -122,11 +120,11 @@ public class RenderClotheslineNetwork {
         double speedRatio = state.getMomentum(partialTicks) / AbsoluteNetworkState.MAX_MOMENTUM;
 
         for (MutableSortedIntMap.Entry<ItemStack> entry : state.getStacks().entries()) {
-            double attachmentOffset = (entry.getKey() + networkOffset) % state.getStacks().getMaxKey();
-            int edgeIndex = state.getMinNodeIndexForOffset((int)attachmentOffset);
+            double attachmentOffset = (entry.getKey() + shift) % state.getStacks().getMaxKey();
+            int edgeIndex = state.getEdgeIndexForOffset((int)attachmentOffset);
             RenderEdge edge = renderEdges.get(edgeIndex);
-            double offsetOnEdge = attachmentOffset - edge.getFromOffset();
-            double edgePosScalar = offsetOnEdge / (edge.getToOffset() - edge.getFromOffset());
+            double relativeOffset = attachmentOffset - edge.getFromOffset();
+            double edgePosScalar = relativeOffset / (edge.getToOffset() - edge.getFromOffset());
             Vec3d pos = edge.projectVec(new Vec3d(-2.0D / 16.0D, 0.0D, edgePosScalar));
 
             RenderEdge previousEdge = renderEdges.get(Math.floorMod(edgeIndex - 1, renderEdges.size()));
@@ -139,8 +137,8 @@ public class RenderClotheslineNetwork {
             GlStateManager.rotate(
                     (angleDiff / 4.0F) *
                     (float)(speedRatio * speedRatio) *
-                    (float)(Math.exp(-offsetOnEdge / (Measurements.UNIT_LENGTH * 2.0D))) *
-                    MathHelper.sin((float)(offsetOnEdge / (AbsoluteNetworkState.MAX_MOMENTUM * 2.0D)))
+                    (float)(Math.exp(-relativeOffset / (Measurements.UNIT_LENGTH * 2.0D))) *
+                    MathHelper.sin((float)(relativeOffset / (AbsoluteNetworkState.MAX_MOMENTUM * 2.0D)))
                     , 1.0F, 0.0F, 0.0F);
             GlStateManager.translate(0.0f, -0.5f, 0.0f);
 
@@ -199,13 +197,13 @@ public class RenderClotheslineNetwork {
 
         debugRenderTree(state.getTree(), x, y, z, yaw, pitch, fontRenderer);
 
-        double networkOffset = state.getOffset(partialTicks);
+        double shift = state.getShift(partialTicks);
         for (MutableSortedIntMap.Entry<ItemStack> entry : state.getStacks().entries()) {
-            double attachmentOffset = (entry.getKey() + networkOffset) % state.getStacks().getMaxKey();
-            int edgeIndex = state.getMinNodeIndexForOffset((int)attachmentOffset);
+            double attachmentOffset = (entry.getKey() + shift) % state.getStacks().getMaxKey();
+            int edgeIndex = state.getEdgeIndexForOffset((int)attachmentOffset);
             RenderEdge edge = renderEdges.get(edgeIndex);
-            double offsetOnEdge = attachmentOffset - edge.getFromOffset();
-            double edgePosScalar = offsetOnEdge / (edge.getToOffset() - edge.getFromOffset());
+            double relativeOffset = attachmentOffset - edge.getFromOffset();
+            double edgePosScalar = relativeOffset / (edge.getToOffset() - edge.getFromOffset());
             Vec3d pos = edge.projectVec(new Vec3d(-2.0D / 16.0D, 0.0D, edgePosScalar));
             debugRenderText(Integer.toString(entry.getKey()), pos.x - x, pos.y - y, pos.z - z, yaw, pitch, fontRenderer);
         }

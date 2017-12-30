@@ -28,7 +28,7 @@ public class MessageSetAttachmentHandler implements IMessageHandler<MessageSetAt
                 if (manager != null) {
                     Network network = manager.getNetworkByUUID(message.networkUuid);
                     if (network != null) {
-                        manager.setAttachment(network, message.attachment.getOffset(), message.attachment.getStack());
+                        manager.setAttachment(network, message.attachment.getKey(), message.attachment.getStack());
                     }
                 }
             }

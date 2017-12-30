@@ -30,11 +30,11 @@ public class ByteBufSerialization {
 
     public static void writeNetworkState(ByteBuf buf, BasicNetworkState state) {
         writeTree(buf, state.getTree());
-        buf.writeInt(state.getOffset());
+        buf.writeInt(state.getShift());
         buf.writeInt(state.getMomentum());
         buf.writeShort(state.getAttachments().size());
         for (BasicAttachment attachment : state.getAttachments()) {
-            buf.writeInt(attachment.getOffset());
+            buf.writeInt(attachment.getKey());
             writeItemStack(buf, attachment.getStack());
         }
     }
@@ -75,7 +75,7 @@ public class ByteBufSerialization {
     }
 
     public static void writeAttachment(ByteBuf buf, BasicAttachment attachment) {
-        buf.writeInt(attachment.getOffset());
+        buf.writeInt(attachment.getKey());
         writeItemStack(buf, attachment.getStack());
     }
 

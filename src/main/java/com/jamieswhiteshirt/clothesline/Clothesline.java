@@ -160,10 +160,10 @@ public class Clothesline {
     }
 
     private boolean intersectsTree(AxisAlignedBB aabb, AbsoluteTree parent) {
-        Vec3d parentVec = Util.midVec(parent.getPos());
+        Vec3d parentVec = Measurements.midVec(parent.getPos());
         for (AbsoluteTree.Edge edge : parent.getEdges()) {
             AbsoluteTree child = edge.getTree();
-            Vec3d childVec = Util.midVec(child.getPos());
+            Vec3d childVec = Measurements.midVec(child.getPos());
             if (aabb.calculateIntercept(parentVec, childVec) != null || intersectsTree(aabb, child)) {
                 return true;
             }

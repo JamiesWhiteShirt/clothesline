@@ -4,12 +4,11 @@ import com.jamieswhiteshirt.clothesline.api.AbsoluteNetworkState;
 import com.jamieswhiteshirt.clothesline.api.AbsoluteTree;
 import com.jamieswhiteshirt.clothesline.api.NetworkGraph;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
-import com.jamieswhiteshirt.clothesline.api.util.RangeLookup;
+import com.jamieswhiteshirt.clothesline.api.util.KeyRangeIndexLookup;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,18 +21,18 @@ public class RenderNetworkState {
     public static RenderNetworkState fromNetworkState(AbsoluteNetworkState state) {
         return new RenderNetworkState(
                 state,
-                RangeLookup.build(0, state.getGraph().getAllEdges().stream().map(NetworkGraph.Edge::getFromOffset).collect(Collectors.toList())),
+                KeyRangeIndexLookup.build(state.getGraph().getAllEdges().stream().map(NetworkGraph.Edge::getFromOffset).collect(Collectors.toList())),
                 createRenderEdges(state.getGraph())
         );
     }
 
     private final AbsoluteNetworkState state;
-    private final RangeLookup offsetLookup;
+    private final KeyRangeIndexLookup edgeIndexLookup;
     private final List<RenderEdge> edges;
 
-    private RenderNetworkState(AbsoluteNetworkState state, RangeLookup offsetLookup, List<RenderEdge> edges) {
+    private RenderNetworkState(AbsoluteNetworkState state, KeyRangeIndexLookup edgeIndexLookup, List<RenderEdge> edges) {
         this.state = state;
-        this.offsetLookup = offsetLookup;
+        this.edgeIndexLookup = edgeIndexLookup;
         this.edges = edges;
     }
 
@@ -45,16 +44,16 @@ public class RenderNetworkState {
         return state.getAttachments();
     }
 
-    public int getMinNodeIndexForOffset(int offset) {
-        return offsetLookup.getMinIndex(offset);
+    public int getEdgeIndexForOffset(int offset) {
+        return edgeIndexLookup.getMinIndex(offset);
     }
 
     public List<RenderEdge> getEdges() {
         return edges;
     }
 
-    public double getOffset(float partialTicks) {
-        return state.getOffset() * partialTicks + state.getPreviousOffset() * (1.0F - partialTicks);
+    public double getShift(float partialTicks) {
+        return state.getShift() * partialTicks + state.getPreviousShift() * (1.0F - partialTicks);
     }
 
     public double getMomentum(float partialTicks) {

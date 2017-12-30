@@ -1,5 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.network.messagehandler;
 
+import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.common.item.ItemConnector;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageStopUsingItemOn;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -17,10 +18,13 @@ public class MessageStopUsingItemOnHandler implements IMessageHandler<MessageSto
         EntityPlayerMP player = ctx.getServerHandler().player;
         WorldServer world = player.getServerWorld();
         world.addScheduledTask(() -> {
-            //TODO: Validate this position
             if (player.getActiveItemStack().getItem() instanceof ItemConnector) {
                 ItemConnector itemConnector = (ItemConnector) player.getActiveItemStack().getItem();
-                itemConnector.stopActiveHandWithToPos(player, message.pos);
+                if (Validation.canReachPos(player, Measurements.midVec(message.pos))) {
+                    itemConnector.stopActiveHandWithToPos(player, message.pos);
+                } else {
+                    player.stopActiveHand();
+                }
             } else {
                 player.stopActiveHand();
             }

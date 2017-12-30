@@ -1,9 +1,14 @@
 package com.jamieswhiteshirt.clothesline.api;
 
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 public class Measurements {
     public static final int UNIT_LENGTH = 160;
+
+    public static Vec3d midVec(BlockPos pos) {
+        return new Vec3d(pos).addVector(0.5D, 0.5D, 0.5D);
+    }
 
     public static float floorModAngle(float angle) {
         if (angle >= 0.0F) {

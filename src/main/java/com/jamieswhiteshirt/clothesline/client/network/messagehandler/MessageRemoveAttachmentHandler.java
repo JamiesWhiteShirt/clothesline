@@ -29,7 +29,7 @@ public class MessageRemoveAttachmentHandler implements IMessageHandler<MessageRe
                 if (manager != null) {
                     Network network = manager.getNetworkByUUID(message.networkUuid);
                     if (network != null) {
-                        manager.setAttachment(network, message.offset, ItemStack.EMPTY);
+                        manager.setAttachment(network, message.attachmentKey, ItemStack.EMPTY);
                     }
                 }
             }

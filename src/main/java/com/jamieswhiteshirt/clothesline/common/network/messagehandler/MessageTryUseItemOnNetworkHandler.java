@@ -31,18 +31,19 @@ public class MessageTryUseItemOnNetworkHandler implements IMessageHandler<Messag
         world.addScheduledTask(() -> {
             INetworkManager manager = world.getCapability(CLOTHESLINE_NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
-                //TODO: Validate this edge position
                 Network network = manager.getNetworkByUUID(message.networkUuid);
                 if (network != null) {
-                    manager.useItem(network, player, message.hand, message.offset);
+                    if (Validation.canReachAttachment(player, network, message.attachmentKey)) {
+                        manager.useItem(network, player, message.hand, message.attachmentKey);
+                    }
 
                     // The client may have made an incorrect assumption.
                     // Send the current attachment to make sure the client keeps up.
-                    ItemStack stack = network.getState().getAttachment(message.offset);
+                    ItemStack stack = network.getState().getAttachment(message.attachmentKey);
                     if (!stack.isEmpty()) {
-                        Clothesline.instance.networkWrapper.sendTo(new MessageSetAttachment(network.getUuid(), new BasicAttachment(message.offset, stack)), player);
+                        Clothesline.instance.networkWrapper.sendTo(new MessageSetAttachment(network.getUuid(), new BasicAttachment(message.attachmentKey, stack)), player);
                     } else {
-                        Clothesline.instance.networkWrapper.sendTo(new MessageRemoveAttachment(network.getUuid(), message.offset), player);
+                        Clothesline.instance.networkWrapper.sendTo(new MessageRemoveAttachment(network.getUuid(), message.attachmentKey), player);
                     }
                 }
             }

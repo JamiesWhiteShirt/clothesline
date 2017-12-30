@@ -42,7 +42,7 @@ public class NBTSerialization {
 
     public static NBTTagCompound writeNetworkState(BasicNetworkState state) {
         NBTTagCompound nbt = new NBTTagCompound();
-        nbt.setInteger("Offset", state.getOffset());
+        nbt.setInteger("Shift", state.getShift());
         nbt.setInteger("Momentum", state.getMomentum());
         nbt.setTag("Tree", writeTree(state.getTree()));
         nbt.setTag("Attachments", writeAttachments(state.getAttachments()));
@@ -51,7 +51,7 @@ public class NBTSerialization {
 
     public static BasicNetworkState readNetworkState(NBTTagCompound nbt) {
         return new BasicNetworkState(
-                nbt.getInteger("Offset"),
+                nbt.getInteger("Shift"),
                 nbt.getInteger("Momentum"),
                 readTree(nbt.getCompoundTag("Tree")),
                 readAttachments(nbt.getTagList("Attachments", Constants.NBT.TAG_COMPOUND))
@@ -112,7 +112,7 @@ public class NBTSerialization {
 
     public static NBTTagCompound writeAttachment(BasicAttachment attachment) {
         NBTTagCompound nbt = new NBTTagCompound();
-        nbt.setInteger("Offset", attachment.getOffset());
+        nbt.setInteger("Offset", attachment.getKey());
         nbt.setTag("Stack", attachment.getStack().serializeNBT());
         return nbt;
     }

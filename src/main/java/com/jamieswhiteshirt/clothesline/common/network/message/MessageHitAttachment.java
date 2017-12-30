@@ -2,31 +2,30 @@ package com.jamieswhiteshirt.clothesline.common.network.message;
 
 import com.jamieswhiteshirt.clothesline.common.util.ByteBufSerialization;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 import java.util.UUID;
 
 public class MessageHitAttachment implements IMessage {
     public UUID networkUuid;
-    public int offset;
+    public int attachmentKey;
 
     public MessageHitAttachment() { }
 
-    public MessageHitAttachment(UUID networkUuid, int offset) {
+    public MessageHitAttachment(UUID networkUuid, int attachmentKey) {
         this.networkUuid = networkUuid;
-        this.offset = offset;
+        this.attachmentKey = attachmentKey;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
         this.networkUuid = ByteBufSerialization.readNetworkUuid(buf);
-        this.offset = buf.readInt();
+        this.attachmentKey = buf.readInt();
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         ByteBufSerialization.writeNetworkUuid(buf, networkUuid);
-        buf.writeInt(offset);
+        buf.writeInt(attachmentKey);
     }
 }

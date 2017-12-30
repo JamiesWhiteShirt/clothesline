@@ -8,26 +8,26 @@ import java.util.UUID;
 
 public class MessageRemoveAttachment implements IMessage {
     public UUID networkUuid;
-    public int offset;
+    public int attachmentKey;
 
     public MessageRemoveAttachment() {
 
     }
 
-    public MessageRemoveAttachment(UUID networkUuid, int offset) {
+    public MessageRemoveAttachment(UUID networkUuid, int attachmentKey) {
         this.networkUuid = networkUuid;
-        this.offset = offset;
+        this.attachmentKey = attachmentKey;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
         this.networkUuid = ByteBufSerialization.readNetworkUuid(buf);
-        this.offset = buf.readInt();
+        this.attachmentKey = buf.readInt();
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         ByteBufSerialization.writeNetworkUuid(buf, networkUuid);
-        buf.writeInt(offset);
+        buf.writeInt(attachmentKey);
     }
 }

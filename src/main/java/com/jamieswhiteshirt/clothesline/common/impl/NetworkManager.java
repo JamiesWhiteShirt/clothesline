@@ -2,12 +2,10 @@ package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
-import com.jamieswhiteshirt.clothesline.common.Util;
 import com.jamieswhiteshirt.clothesline.common.util.BasicTree;
 import com.jamieswhiteshirt.clothesline.common.util.RelativeNetworkState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
@@ -48,14 +46,9 @@ public final class NetworkManager implements INetworkManager {
         this.world = world;
     }
 
-    private Vec3d getEdgePosition(NetworkGraph.Edge edge, int offset) {
-        double scalar = (double)(offset - edge.getFromOffset()) / (edge.getToOffset() - edge.getFromOffset());
-        return Util.midVec(edge.getFromKey()).scale(1.0D - scalar).add(Util.midVec(edge.getToKey()).scale(scalar));
-    }
-
-    private void dropTreeItem(ItemStack stack, AbsoluteTree tree, int offset) {
+    private void dropAttachment(AbsoluteNetworkState state, ItemStack stack, int attachmentKey) {
         if (!world.isRemote && !stack.isEmpty() && world.getGameRules().getBoolean("doTileDrops")) {
-            Vec3d pos = getEdgePosition(tree.findGraphEdge(offset), offset);
+            Vec3d pos = state.getTree().getPositionForOffset(state.attachmentKeyToOffset(attachmentKey));
             EntityItem entityitem = new EntityItem(world, pos.x, pos.y - 0.5D, pos.z, stack);
             entityitem.setDefaultPickupDelay();
             world.spawnEntity(entityitem);
@@ -64,7 +57,7 @@ public final class NetworkManager implements INetworkManager {
 
     private void dropNetworkItems(AbsoluteNetworkState state) {
         for (MutableSortedIntMap.Entry<ItemStack> entry : state.getAttachments().entries()) {
-            dropTreeItem(entry.getValue(), state.getTree(), entry.getKey());
+            dropAttachment(state, entry.getValue(), entry.getKey());
         }
     }
 
@@ -249,12 +242,12 @@ public final class NetworkManager implements INetworkManager {
     }
 
     @Override
-    public ItemStack insertItem(Network network, int offset, ItemStack stack, boolean simulate) {
-        if (!stack.isEmpty() && network.getState().getAttachment(offset).isEmpty()) {
+    public ItemStack insertItem(Network network, int attachmentKey, ItemStack stack, boolean simulate) {
+        if (!stack.isEmpty() && network.getState().getAttachment(attachmentKey).isEmpty()) {
             if (!simulate) {
                 ItemStack insertedItem = stack.copy();
                 insertedItem.setCount(1);
-                setAttachment(network, offset, insertedItem);
+                setAttachment(network, attachmentKey, insertedItem);
             }
 
             ItemStack returnedStack = stack.copy();
@@ -265,30 +258,30 @@ public final class NetworkManager implements INetworkManager {
     }
 
     @Override
-    public ItemStack extractItem(Network network, int offset, boolean simulate) {
-        ItemStack result = network.getState().getAttachment(offset);
+    public ItemStack extractItem(Network network, int attachmentKey, boolean simulate) {
+        ItemStack result = network.getState().getAttachment(attachmentKey);
         if (!result.isEmpty() && !simulate) {
-            setAttachment(network, offset, ItemStack.EMPTY);
+            setAttachment(network, attachmentKey, ItemStack.EMPTY);
         }
         return result;
     }
 
     @Override
-    public void setAttachment(Network network, int offset, ItemStack stack) {
-        ItemStack previousStack = network.getState().getAttachment(offset);
-        network.getState().setAttachment(offset, stack);
+    public void setAttachment(Network network, int attachmentKey, ItemStack stack) {
+        ItemStack previousStack = network.getState().getAttachment(attachmentKey);
+        network.getState().setAttachment(attachmentKey, stack);
 
         for (INetworkManagerEventListener eventListener : eventListeners) {
-            eventListener.onAttachmentChanged(network, offset, previousStack, stack);
+            eventListener.onAttachmentChanged(network, attachmentKey, previousStack, stack);
         }
     }
 
     @Override
-    public void hitAttachment(Network network, EntityPlayer player, int offset) {
-        ItemStack stack = network.getState().getAttachment(offset);
+    public void hitAttachment(Network network, EntityPlayer player, int attachmentKey) {
+        ItemStack stack = network.getState().getAttachment(attachmentKey);
         if (!stack.isEmpty()) {
-            setAttachment(network, offset, ItemStack.EMPTY);
-            dropTreeItem(stack, network.getState().getTree(), Math.floorMod(offset + network.getState().getOffset(), network.getState().getLoopLength()));
+            setAttachment(network, attachmentKey, ItemStack.EMPTY);
+            dropAttachment(network.getState(), stack, attachmentKey);
         }
     }
 
@@ -298,11 +291,11 @@ public final class NetworkManager implements INetworkManager {
     }
 
     @Override
-    public boolean useItem(Network network, EntityPlayer player, EnumHand hand, int offset) {
+    public boolean useItem(Network network, EntityPlayer player, EnumHand hand, int attachmentKey) {
         ItemStack stack = player.getHeldItem(hand);
         if (!stack.isEmpty()) {
-            if (network.getState().getAttachment(offset).isEmpty()) {
-                player.setHeldItem(hand, insertItem(network, offset, stack, false));
+            if (network.getState().getAttachment(attachmentKey).isEmpty()) {
+                player.setHeldItem(hand, insertItem(network, attachmentKey, stack, false));
                 return true;
             }
         }

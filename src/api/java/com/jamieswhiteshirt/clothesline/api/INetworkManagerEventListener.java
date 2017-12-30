@@ -13,5 +13,5 @@ public interface INetworkManagerEventListener {
 
     void onNetworkStateChanged(Network network, AbsoluteNetworkState state);
 
-    void onAttachmentChanged(Network network, int offset, ItemStack previousStack, ItemStack newStack);
+    void onAttachmentChanged(Network network, int attachmentKey, ItemStack previousStack, ItemStack newStack);
 }

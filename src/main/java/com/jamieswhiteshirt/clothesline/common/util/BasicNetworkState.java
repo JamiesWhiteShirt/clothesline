@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class BasicNetworkState {
     public static BasicNetworkState fromAbsolute(AbsoluteNetworkState state) {
         return new BasicNetworkState(
-                state.getOffset(),
+                state.getShift(),
                 state.getMomentum(),
                 BasicTree.fromAbsolute(state.getTree()),
                 state.getAttachments().entries().stream().map(
@@ -21,20 +21,20 @@ public class BasicNetworkState {
         );
     }
 
-    private final int offset;
+    private final int shift;
     private final int momentum;
     private final BasicTree tree;
     private final List<BasicAttachment> attachments;
 
-    public BasicNetworkState(int offset, int momentum, BasicTree tree, List<BasicAttachment> attachments) {
-        this.offset = offset;
+    public BasicNetworkState(int shift, int momentum, BasicTree tree, List<BasicAttachment> attachments) {
+        this.shift = shift;
         this.momentum = momentum;
         this.tree = tree;
         this.attachments = attachments;
     }
 
-    public int getOffset() {
-        return offset;
+    public int getShift() {
+        return shift;
     }
 
     public int getMomentum() {
@@ -51,18 +51,19 @@ public class BasicNetworkState {
 
     public AbsoluteNetworkState toAbsolute() {
         AbsoluteTree tree = this.tree.toAbsolute();
-        MutableSortedIntMap<ItemStack> stacks = new MutableSortedIntMap<>(
-                new ArrayList<>(attachments.stream().map(
-                        attachment -> new MutableSortedIntMap.Entry<>(attachment.getOffset(), attachment.getStack())
+        MutableSortedIntMap<ItemStack> attachments = new MutableSortedIntMap<>(
+                new ArrayList<>(this.attachments.stream().map(
+                        attachment -> new MutableSortedIntMap.Entry<>(attachment.getKey(), attachment.getStack())
                 ).collect(Collectors.toList())),
                 tree.getLoopLength()
         );
         return new AbsoluteNetworkState(
-                offset,
-                offset,
+                shift,
+                shift,
+                momentum,
                 momentum,
                 tree,
-                stacks
+                attachments
         );
     }
 }
