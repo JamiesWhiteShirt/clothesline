@@ -3,8 +3,9 @@ package com.jamieswhiteshirt.clothesline;
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.common.*;
 import com.jamieswhiteshirt.clothesline.common.capability.*;
-import com.jamieswhiteshirt.clothesline.common.impl.ConnectionHolder;
+import com.jamieswhiteshirt.clothesline.common.impl.Connector;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
+import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetConnectorPos;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetNetworks;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
 import com.jamieswhiteshirt.clothesline.common.util.BasicNetwork;
@@ -26,6 +27,7 @@ import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -51,7 +53,9 @@ public class Clothesline {
     public static final String VERSION = "1.12-0.0.0.0";
 
     @CapabilityInject(INetworkManager.class)
-    public static Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY;
+    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    @CapabilityInject(IConnector.class)
+    private static final Capability<IConnector> CONNECTOR_CAPABILITY = Util.nonNullInjected();
 
     @Mod.Instance
     public static Clothesline instance;
@@ -71,7 +75,7 @@ public class Clothesline {
         logger = event.getModLog();
         MinecraftForge.EVENT_BUS.register(this);
         CapabilityManager.INSTANCE.register(INetworkManager.class, new NetworkManagerStorage(), NetworkManager.class);
-        CapabilityManager.INSTANCE.register(IConnectionHolder.class, new AttacherStorage(), ConnectionHolder::new);
+        CapabilityManager.INSTANCE.register(IConnector.class, new ConnectorStorage(), Connector::new);
         proxy.preInit(event);
     }
 
@@ -105,7 +109,16 @@ public class Clothesline {
     @SubscribeEvent
     public void attachEntityCapabilities(AttachCapabilitiesEvent<Entity> event) {
         if (event.getObject() instanceof EntityPlayer) {
-            event.addCapability(new ResourceLocation(MODID, "attacher"), new AttacherProvider());
+            event.addCapability(new ResourceLocation(MODID, "connector"), new ConnectorProvider());
+        }
+    }
+
+    @SubscribeEvent
+    public void onPlayerStartTracking(PlayerEvent.StartTracking event) {
+        Entity target = event.getTarget();
+        IConnector connector = target.getCapability(CONNECTOR_CAPABILITY, null);
+        if (connector != null) {
+            networkWrapper.sendTo(new MessageSetConnectorPos(target.getEntityId(), connector.getPos()), (EntityPlayerMP) event.getEntityPlayer());
         }
     }
 

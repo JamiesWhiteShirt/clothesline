@@ -4,9 +4,9 @@ import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
 
-public interface IConnectionHolder {
+public interface IConnector {
     @Nullable
-    BlockPos getFromPos();
+    BlockPos getPos();
 
-    void setFromPos(@Nullable BlockPos pos);
+    void setPos(@Nullable BlockPos pos);
 }

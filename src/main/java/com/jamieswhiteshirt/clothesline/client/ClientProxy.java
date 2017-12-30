@@ -83,6 +83,7 @@ public class ClientProxy extends CommonProxy {
         Clothesline.instance.networkWrapper.registerMessage(new MessageSetAttachmentHandler(), MessageSetAttachment.class, 3, Side.CLIENT);
         Clothesline.instance.networkWrapper.registerMessage(new MessageRemoveAttachmentHandler(), MessageRemoveAttachment.class, 4, Side.CLIENT);
         Clothesline.instance.networkWrapper.registerMessage(new MessageSetNetworkStateHandler(), MessageSetNetworkState.class, 5, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new MessageSetConnectorPosHandler(), MessageSetConnectorPos.class, 10, Side.CLIENT);
     }
 
     @Override
