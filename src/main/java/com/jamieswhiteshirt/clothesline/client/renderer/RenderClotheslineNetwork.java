@@ -75,22 +75,22 @@ public class RenderClotheslineNetwork {
                     (r1 - 4.0D) / 32.0D,
                     u1 / 32.0D,
                     0.0D
-            )), normal).tex(0.0D, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
+            )).subtract(x, y, z), normal).tex(0.0D, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
             posNormal(bufferBuilder, e.projectVec(new Vec3d(
                     (r2 - 4.0D) / 32.0D,
                     u2 / 32.0D,
                     0.0D
-            )), normal).tex(1.0D, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
+            )).subtract(x, y, z), normal).tex(1.0D, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
             posNormal(bufferBuilder, e.projectVec(new Vec3d(
                     (r2 - 4.0D) / 32.0D,
                     u2 / 32.0D,
                     1.0D
-            )), normal).tex(1.0D, vTo).lightmap(lightTo1, lightTo2).endVertex();
+            )).subtract(x, y, z), normal).tex(1.0D, vTo).lightmap(lightTo1, lightTo2).endVertex();
             posNormal(bufferBuilder, e.projectVec(new Vec3d(
                     (r1 - 4.0D) / 32.0D,
                     u1 / 32.0D,
                     1.0D
-            )), normal).tex(0.0D, vTo).lightmap(lightTo1, lightTo2).endVertex();
+            )).subtract(x, y, z), normal).tex(0.0D, vTo).lightmap(lightTo1, lightTo2).endVertex();
         }
     }
 
@@ -108,14 +108,11 @@ public class RenderClotheslineNetwork {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
 
-        GlStateManager.pushMatrix();
-        GlStateManager.translate(-x, -y, -z);
         bufferBuilder.begin(GL11.GL_QUADS, VERTEX_FORMAT);
         for (RenderEdge edge : renderEdges) {
             renderEdge(world, edge, x, y, z, shift, bufferBuilder);
         }
         tessellator.draw();
-        GlStateManager.popMatrix();
 
         double speedRatio = state.getMomentum(partialTicks) / AbsoluteNetworkState.MAX_MOMENTUM;
 
