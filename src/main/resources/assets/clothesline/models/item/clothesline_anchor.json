@@ -1,3 +1,6 @@
 {
-    "parent": "clothesline:block/clothesline_pole"
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "clothesline:blocks/clothesline_pole"
+    }
 }
