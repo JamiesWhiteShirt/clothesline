@@ -12,6 +12,8 @@ import net.minecraft.util.ITickable;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
@@ -69,9 +71,7 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
         if (capability == ITEM_HANDLER_CAPABILITY && facing != null) {
             INetworkManager.INetworkNode node = getNetworkNode();
-            if (node != null) {
-                return true;
-            }
+            return node != null;
         }
         return false;
     }
@@ -107,6 +107,7 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
         return new SPacketUpdateTileEntity(pos, 0, getUpdateTag());
     }
 
+    @SideOnly(Side.CLIENT)
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
         readFromNBT(pkt.getNbtCompound());

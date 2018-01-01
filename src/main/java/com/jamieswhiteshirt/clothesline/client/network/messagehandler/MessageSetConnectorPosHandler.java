@@ -14,12 +14,15 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import javax.annotation.Nullable;
+
 @SideOnly(Side.CLIENT)
 public class MessageSetConnectorPosHandler implements IMessageHandler<MessageSetConnectorPos, IMessage> {
     @CapabilityInject(IConnector.class)
     private static final Capability<IConnector> CONNECTOR_CAPABILITY = Util.nonNullInjected();
 
     @Override
+    @Nullable
     public IMessage onMessage(MessageSetConnectorPos message, MessageContext ctx) {
         Minecraft.getMinecraft().addScheduledTask(() -> {
             WorldClient world = Minecraft.getMinecraft().world;

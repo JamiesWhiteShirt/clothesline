@@ -17,6 +17,7 @@ import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,7 @@ public class MessageSetNetworksHandler implements IMessageHandler<MessageSetNetw
     private static final Field clientWorldController = ReflectionHelper.findField(NetHandlerPlayClient.class, "field_147300_g", "clientWorldController");
 
     @Override
+    @Nullable
     public IMessage onMessage(MessageSetNetworks message, MessageContext ctx) {
         Minecraft.getMinecraft().addScheduledTask(() -> {
             WorldClient world = null;

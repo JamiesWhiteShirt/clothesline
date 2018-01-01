@@ -1,7 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.util;
 
 import com.jamieswhiteshirt.clothesline.api.EdgeKey;
-import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.api.AbsoluteTree;
 import net.minecraft.util.math.BlockPos;
 

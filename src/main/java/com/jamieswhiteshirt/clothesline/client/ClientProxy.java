@@ -13,7 +13,6 @@ import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderEdge;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderNetworkState;
 import com.jamieswhiteshirt.clothesline.client.renderer.tileentity.TileEntityClotheslineAnchorRenderer;
-import com.jamieswhiteshirt.clothesline.common.ClotheslineBlocks;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
 import com.jamieswhiteshirt.clothesline.common.CommonProxy;
 import com.jamieswhiteshirt.clothesline.common.Util;
@@ -24,13 +23,11 @@ import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineA
 import com.jamieswhiteshirt.clothesline.core.event.GetMouseOverEvent;
 import com.jamieswhiteshirt.clothesline.core.event.ClientStoppedUsingItemEvent;
 import com.jamieswhiteshirt.clothesline.core.event.RenderEntitiesEvent;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
