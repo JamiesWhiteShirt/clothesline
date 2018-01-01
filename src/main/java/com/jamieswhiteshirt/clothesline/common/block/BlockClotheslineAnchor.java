@@ -172,6 +172,14 @@ public class BlockClotheslineAnchor extends BlockDirectional {
     }
 
     @Override
+    public void breakBlock(World world, BlockPos pos, IBlockState state) {
+        INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
+        if (manager != null) {
+            manager.destroy(pos);
+        }
+    }
+
+    @Override
     @SideOnly(Side.CLIENT)
     public void randomDisplayTick(IBlockState state, World world, BlockPos pos, Random rand) {
         TileEntity tileEntity = world.getTileEntity(pos);
