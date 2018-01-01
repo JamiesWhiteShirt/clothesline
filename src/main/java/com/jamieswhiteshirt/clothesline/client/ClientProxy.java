@@ -1,11 +1,14 @@
 package com.jamieswhiteshirt.clothesline.client;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
+import com.jamieswhiteshirt.clothesline.api.IConnector;
+import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.client.entity.EntityNetworkRaytraceHit;
 import com.jamieswhiteshirt.clothesline.client.network.messagehandler.*;
+import com.jamieswhiteshirt.clothesline.client.renderer.LineProjection;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderEdge;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderNetworkState;
@@ -13,6 +16,7 @@ import com.jamieswhiteshirt.clothesline.client.renderer.tileentity.TileEntityClo
 import com.jamieswhiteshirt.clothesline.common.ClotheslineBlocks;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
 import com.jamieswhiteshirt.clothesline.common.CommonProxy;
+import com.jamieswhiteshirt.clothesline.common.Util;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
 import com.jamieswhiteshirt.clothesline.common.item.ItemConnector;
 import com.jamieswhiteshirt.clothesline.common.network.message.*;
@@ -26,17 +30,20 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
@@ -55,7 +62,9 @@ import java.util.List;
 @SideOnly(Side.CLIENT)
 public class ClientProxy extends CommonProxy {
     @CapabilityInject(INetworkManager.class)
-    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = null;
+    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    @CapabilityInject(IConnector.class)
+    private static final Capability<IConnector> CONNECTOR_CAPABILITY = Util.nonNullInjected();
 
     private RenderClotheslineNetwork renderClotheslineNetwork;
 
@@ -96,19 +105,6 @@ public class ClientProxy extends CommonProxy {
         }
     }
 
-    @Nullable
-    public BlockPos getMouseOverClotheslineAnchor() {
-        RayTraceResult result = Minecraft.getMinecraft().objectMouseOver;
-        WorldClient world = Minecraft.getMinecraft().world;
-        if (result != null && world != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
-            IBlockState state = world.getBlockState(result.getBlockPos());
-            if (state.getBlock() == ClotheslineBlocks.CLOTHESLINE_ANCHOR) {
-                return result.getBlockPos();
-            }
-        }
-        return null;
-    }
-
     @SubscribeEvent
     public void onClientStoppedUsingItem(ClientStoppedUsingItemEvent event) {
         RayTraceResult objectMouseOver = Minecraft.getMinecraft().objectMouseOver;
@@ -144,19 +140,92 @@ public class ClientProxy extends CommonProxy {
         );
     }
 
+    private void renderHeldClothesline(BlockPos posA, Vec3d vecB, World world, double x, double y, double z) {
+        Vec3d vecA = Measurements.midVec(posA);
+        BlockPos posB = new BlockPos(vecB);
+        int combinedLightA = world.getCombinedLight(posA, 0);
+        int combinedLightB = world.getCombinedLight(posB, 0);
+        double length = Measurements.UNIT_LENGTH * vecB.distanceTo(vecA);
+
+        renderClotheslineNetwork.buildAndDrawEdgeQuads(bufferBuilder -> {
+            renderClotheslineNetwork.renderEdge(-length, 0.0D, combinedLightA, combinedLightB, LineProjection.create(vecA, vecB), bufferBuilder, x, y, z);
+            renderClotheslineNetwork.renderEdge(0.0D, length, combinedLightB, combinedLightA, LineProjection.create(vecB, vecA), bufferBuilder, x, y, z);
+        });
+    }
+
+    private void renderThirdPersonPlayerHeldClothesline(EntityPlayer player, double x, double y, double z, float partialTicks) {
+        IConnector connector = player.getCapability(CONNECTOR_CAPABILITY, null);
+        if (connector != null) {
+            BlockPos posA = connector.getPos();
+            if (posA != null) {
+                double posX = player.prevPosX + (player.posX - player.prevPosX) * partialTicks;
+                double posY = player.prevPosY + (player.posY - player.prevPosY) * partialTicks;
+                double posZ = player.prevPosZ + (player.posZ - player.prevPosZ) * partialTicks;
+
+                float yaw = (player.prevRenderYawOffset + (player.renderYawOffset - player.prevRenderYawOffset) * partialTicks) * 0.017453292F;
+                int k = player.getPrimaryHand() == EnumHandSide.RIGHT ? 1 : -1;
+                double d0 = MathHelper.sin(yaw) * 0.35D;
+                double d1 = MathHelper.cos(yaw) * 0.35D;
+                Vec3d vecB = new Vec3d(
+                        posX - d0 - d1 * k,
+                        posY + (player.isSneaking() ? 0.4D : 0.9D),
+                        posZ - d0 * k + d1
+                );
+
+                renderHeldClothesline(posA, vecB, player.world, x, y, z);
+            }
+        }
+    }
+
+    private void renderFirstPersonPlayerHeldClothesline(EntityPlayer player, double x, double y, double z, float partialTicks) {
+        IConnector connector = player.getCapability(CONNECTOR_CAPABILITY, null);
+        if (connector != null) {
+            BlockPos posA = connector.getPos();
+            if (posA != null) {
+                double posX = player.prevPosX + (player.posX - player.prevPosX) * partialTicks;
+                double posY = player.prevPosY + (player.posY - player.prevPosY) * partialTicks;
+                double posZ = player.prevPosZ + (player.posZ - player.prevPosZ) * partialTicks;
+
+                float pitch = (player.prevRotationPitch + (player.rotationPitch - player.prevRotationPitch) * partialTicks) * 0.017453292F;
+                float yaw = (player.prevRotationYaw + (player.rotationYaw - player.prevRotationYaw) * partialTicks) * 0.017453292F;
+                int k = player.getPrimaryHand() == EnumHandSide.RIGHT ? 1 : -1;
+                float f10 = Minecraft.getMinecraft().gameSettings.fovSetting / 100.0F;
+                Vec3d vecB = new Vec3d(posX, posY + player.getEyeHeight(), posZ).add(new Vec3d(k * -0.36D * f10, -0.045D * f10, 0.4D).rotatePitch(-pitch).rotateYaw(-yaw));
+
+                renderHeldClothesline(posA, vecB, player.world, x, y, z);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onRenderPlayerPost(RenderPlayerEvent.Post event) {
+        EntityPlayer player = event.getEntityPlayer();
+        float partialTicks = event.getPartialRenderTick();
+        double posX = player.prevPosX + (player.posX - player.prevPosX) * partialTicks;
+        double posY = player.prevPosY + (player.posY - player.prevPosY) * partialTicks;
+        double posZ = player.prevPosZ + (player.posZ - player.prevPosZ) * partialTicks;
+
+        double x = posX + event.getX();
+        double y = posY + event.getY();
+        double z = posZ + event.getZ();
+
+        renderThirdPersonPlayerHeldClothesline(player, x, y, z, partialTicks);
+    }
+
     @SubscribeEvent
     public void onRenderEntities(RenderEntitiesEvent event) {
         if (MinecraftForgeClient.getRenderPass() == 0) {
             WorldClient world = Minecraft.getMinecraft().world;
             EntityPlayerSP player = Minecraft.getMinecraft().player;
             if (world != null && player != null) {
+                float partialTicks = event.getPartialTicks();
+                double x = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
+                double y = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks;
+                double z = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks;
+
                 INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
                 if (manager != null) {
                     boolean showDebugInfo = Minecraft.getMinecraft().gameSettings.showDebugInfo;
-                    float partialTicks = event.getPartialTicks();
-                    double x = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
-                    double y = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks;
-                    double z = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks;
                     for (Network network : manager.getNetworks()) {
                         //TODO: Cache the RenderNetworkStates
                         RenderNetworkState renderNetworkState = RenderNetworkState.fromNetworkState(network.getState());
@@ -165,6 +234,10 @@ public class ClientProxy extends CommonProxy {
                             renderClotheslineNetwork.debugRender(renderNetworkState, x, y, z, partialTicks);
                         }
                     }
+                }
+
+                if (Minecraft.getMinecraft().gameSettings.thirdPersonView <= 0) {
+                    renderFirstPersonPlayerHeldClothesline(player, x, y, z, partialTicks);
                 }
             }
         }
@@ -189,7 +262,7 @@ public class ClientProxy extends CommonProxy {
                 GlStateManager.disableTexture2D();
                 GlStateManager.depthMask(false);
 
-                entity.getHit().graphHit.renderHighlight(renderClotheslineNetwork, partialTicks, x, y, z);
+                entity.getHit().graphHit.renderHighlight(renderClotheslineNetwork, partialTicks, x, y, z, 0.0F, 0.0F, 0.0F, 0.4F);
 
                 GlStateManager.depthMask(true);
                 GlStateManager.enableTexture2D();
@@ -242,7 +315,7 @@ public class ClientProxy extends CommonProxy {
 
         public abstract boolean useItem(INetworkManager manager, Network network, EntityPlayer player, EnumHand hand);
 
-        public abstract void renderHighlight(RenderClotheslineNetwork renderClotheslineNetwork, float partialTicks, double x, double y, double z);
+        public abstract void renderHighlight(RenderClotheslineNetwork renderClotheslineNetwork, float partialTicks, double x, double y, double z, float r, float g, float b, float a);
     }
 
     @SideOnly(Side.CLIENT)
@@ -273,8 +346,8 @@ public class ClientProxy extends CommonProxy {
         }
 
         @Override
-        public void renderHighlight(RenderClotheslineNetwork renderClotheslineNetwork, float partialTicks, double x, double y, double z) {
-            renderClotheslineNetwork.renderOutline(edge, x, y, z);
+        public void renderHighlight(RenderClotheslineNetwork renderClotheslineNetwork, float partialTicks, double x, double y, double z, float r, float g, float b, float a) {
+            renderClotheslineNetwork.renderOutline(edge.getProjection(), x, y, z, r, g, b, a);
         }
     }
 
@@ -302,8 +375,8 @@ public class ClientProxy extends CommonProxy {
         }
 
         @Override
-        public void renderHighlight(RenderClotheslineNetwork renderClotheslineNetwork, float partialTicks, double x, double y, double z) {
-            RenderGlobal.drawSelectionBoundingBox(attachmentBB.offset(-x, -y, -z), 0.0F, 0.0F, 0.0F, 1.0F);
+        public void renderHighlight(RenderClotheslineNetwork renderClotheslineNetwork, float partialTicks, double x, double y, double z, float r, float g, float b, float a) {
+            RenderGlobal.drawSelectionBoundingBox(attachmentBB.offset(-x, -y, -z), r, g, b, a);
         }
     }
 
@@ -379,7 +452,7 @@ public class ClientProxy extends CommonProxy {
             RenderEdge edge = renderEdges.get(edgeIndex);
             double relativeOffset = attachmentOffset - edge.getFromOffset();
             double edgePosScalar = relativeOffset / (edge.getToOffset() - edge.getFromOffset());
-            Vec3d pos = edge.projectVec(new Vec3d(-2.0D / 16.0D, 0.0D, edgePosScalar));
+            Vec3d pos = edge.getProjection().projectRUF(-2.0D / 16.0D, 0.0D, edgePosScalar);
             AxisAlignedBB attachmentBB = basicBB.offset(pos);
 
             RayTraceResult result = attachmentBB.calculateIntercept(ray.from, ray.to);
@@ -396,7 +469,7 @@ public class ClientProxy extends CommonProxy {
 
     @Nullable
     private EdgeRaytraceHit raytraceEdge(Ray viewRay, RenderEdge edge, double maxDistanceSq) {
-        Ray edgeRay = new Ray(edge.projectVec(new Vec3d(-2.0D / 16.0D, 0.0D, 0.0D)), edge.projectVec(new Vec3d(-2.0D / 16.0D, 0.0D, 1.0D)));
+        Ray edgeRay = new Ray(edge.getProjection().projectRUF(-2.0D / 16.0D, 0.0D, 0.0D), edge.getProjection().projectRUF(-2.0D / 16.0D, 0.0D, 1.0D));
 
         double b = viewRay.delta.dotProduct(edgeRay.delta);
         Vec3d w0 = viewRay.from.subtract(edgeRay.from);

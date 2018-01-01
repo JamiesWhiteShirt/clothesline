@@ -10,7 +10,7 @@ public final class EdgeKey implements Comparable<EdgeKey> {
     private final int length;
 
     public EdgeKey(BlockPos from, BlockPos to) {
-        this(to, Measurements.calculateGlobalAngle(from, to), Measurements.calculateDistance(from, to));
+        this(to, Measurements.calculateGlobalAngleY(from, to), Measurements.calculateDistance(from, to));
     }
 
     private EdgeKey(BlockPos pos, float angle, int length) {

@@ -21,9 +21,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 @SideOnly(Side.CLIENT)
-public class RenderClotheslineNetwork {
+public final class RenderClotheslineNetwork {
     private static final ResourceLocation TEXTURE = new ResourceLocation(Clothesline.MODID, "textures/misc/clothesline.png");
     private static final VertexFormat VERTEX_FORMAT = new VertexFormat()
             .addElement(DefaultVertexFormats.POSITION_3F)
@@ -51,56 +52,53 @@ public class RenderClotheslineNetwork {
         return bufferBuilder.pos(pos.x, pos.y, pos.z).normal((float)normal.x, (float)normal.y, (float)normal.z);
     }
 
-    private void renderEdge(IBlockAccess world, RenderEdge e, double x, double y, double z, double shift, BufferBuilder bufferBuilder) {
+    public void renderEdge(double fromOffset, double toOffset, int combinedLightFrom, int combinedLightTo, LineProjection p, BufferBuilder bufferBuilder, double x, double y, double z) {
+        int lightFrom1 = combinedLightFrom >> 16 & 0xFFFF;
+        int lightFrom2 = combinedLightFrom & 0xFFFF;
+        int lightTo1 = combinedLightTo >> 16 & 0xFFFF;
+        int lightTo2 = combinedLightTo & 0xFFFF;
+        double vFrom = fromOffset / Measurements.UNIT_LENGTH;
+        double vTo = toOffset / Measurements.UNIT_LENGTH;
+
         for (int j = 0; j < 4; j++) {
             double r1 = RIGHT_MULTIPLIERS[j];
             double r2 = RIGHT_MULTIPLIERS[j + 1];
             double u1 = UP_MULTIPLIERS[j];
             double u2 = UP_MULTIPLIERS[j + 1];
             double nr = NORMAL_RIGHT_MULTIPLIERS[j];
-            double ur = NORMAL_UP_MULTIPLIERS[j];
+            double nu = NORMAL_UP_MULTIPLIERS[j];
 
-            double vFrom = (e.getFromOffset() - shift) / Measurements.UNIT_LENGTH;
-            double vTo = (e.getToOffset() - shift) / Measurements.UNIT_LENGTH;
-
-            int combinedLightFrom = world.getCombinedLight(e.getFromPos(), 0);
-            int lightFrom1 = combinedLightFrom >> 16 & 0xFFFF;
-            int lightFrom2 = combinedLightFrom & 0xFFFF;
-            int combinedLightTo = world.getCombinedLight(e.getToPos(), 0);
-            int lightTo1 = combinedLightTo >> 16 & 0xFFFF;
-            int lightTo2 = combinedLightTo & 0xFFFF;
-
-            Vec3d normal = e.projectTangent(nr, ur);
-            posNormal(bufferBuilder, e.projectVec(new Vec3d(
+            Vec3d normal = p.projectTangentRU(nr, nu);
+            posNormal(bufferBuilder, p.projectRUF(
                     (r1 - 4.0D) / 32.0D,
                     u1 / 32.0D,
                     0.0D
-            )).subtract(x, y, z), normal).tex(0.0D, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
-            posNormal(bufferBuilder, e.projectVec(new Vec3d(
+            ).subtract(x, y, z), normal).tex(0.0D, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
+            posNormal(bufferBuilder, p.projectRUF(
                     (r2 - 4.0D) / 32.0D,
                     u2 / 32.0D,
                     0.0D
-            )).subtract(x, y, z), normal).tex(1.0D, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
-            posNormal(bufferBuilder, e.projectVec(new Vec3d(
+            ).subtract(x, y, z), normal).tex(1.0D, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
+            posNormal(bufferBuilder, p.projectRUF(
                     (r2 - 4.0D) / 32.0D,
                     u2 / 32.0D,
                     1.0D
-            )).subtract(x, y, z), normal).tex(1.0D, vTo).lightmap(lightTo1, lightTo2).endVertex();
-            posNormal(bufferBuilder, e.projectVec(new Vec3d(
+            ).subtract(x, y, z), normal).tex(1.0D, vTo).lightmap(lightTo1, lightTo2).endVertex();
+            posNormal(bufferBuilder, p.projectRUF(
                     (r1 - 4.0D) / 32.0D,
                     u1 / 32.0D,
                     1.0D
-            )).subtract(x, y, z), normal).tex(0.0D, vTo).lightmap(lightTo1, lightTo2).endVertex();
+            ).subtract(x, y, z), normal).tex(0.0D, vTo).lightmap(lightTo1, lightTo2).endVertex();
         }
     }
 
-    public void render(IBlockAccess world, RenderNetworkState state, double x, double y, double z, float partialTicks) {
-        Vec3d viewPos = new Vec3d(x, y, z);
+    private void renderEdge(IBlockAccess world, RenderEdge e, double x, double y, double z, double shift, BufferBuilder bufferBuilder) {
+        int combinedLightFrom = world.getCombinedLight(e.getFromPos(), 0);
+        int combinedLightTo = world.getCombinedLight(e.getToPos(), 0);
+        renderEdge(e.getFromOffset() - shift, e.getToOffset() - shift, combinedLightFrom, combinedLightTo, e.getProjection(), bufferBuilder, x, y, z);
+    }
 
-        double shift = state.getShift(partialTicks);
-
-        List<RenderEdge> renderEdges = state.getEdges();
-
+    public void buildAndDrawEdgeQuads(Consumer<BufferBuilder> consumer) {
         renderManager.renderEngine.bindTexture(TEXTURE);
         RenderHelper.enableStandardItemLighting();
         Minecraft.getMinecraft().entityRenderer.enableLightmap();
@@ -109,10 +107,21 @@ public class RenderClotheslineNetwork {
         BufferBuilder bufferBuilder = tessellator.getBuffer();
 
         bufferBuilder.begin(GL11.GL_QUADS, VERTEX_FORMAT);
-        for (RenderEdge edge : renderEdges) {
-            renderEdge(world, edge, x, y, z, shift, bufferBuilder);
-        }
+        consumer.accept(bufferBuilder);
         tessellator.draw();
+    }
+
+    public void render(IBlockAccess world, RenderNetworkState state, double x, double y, double z, float partialTicks) {
+        Vec3d viewPos = new Vec3d(x, y, z);
+
+        double shift = state.getShift(partialTicks);
+
+        List<RenderEdge> renderEdges = state.getEdges();
+        buildAndDrawEdgeQuads(bufferBuilder -> {
+            for (RenderEdge edge : renderEdges) {
+                renderEdge(world, edge, x, y, z, shift, bufferBuilder);
+            }
+        });
 
         double speedRatio = state.getMomentum(partialTicks) / AbsoluteNetworkState.MAX_MOMENTUM;
 
@@ -122,7 +131,7 @@ public class RenderClotheslineNetwork {
             RenderEdge edge = renderEdges.get(edgeIndex);
             double relativeOffset = attachmentOffset - edge.getFromOffset();
             double edgePosScalar = relativeOffset / (edge.getToOffset() - edge.getFromOffset());
-            Vec3d pos = edge.projectVec(new Vec3d(-2.0D / 16.0D, 0.0D, edgePosScalar));
+            Vec3d pos = edge.getProjection().projectRUF(-2.0D / 16.0D, 0.0D, edgePosScalar);
 
             RenderEdge previousEdge = renderEdges.get(Math.floorMod(edgeIndex - 1, renderEdges.size()));
             float angleDiff = (edge.getAngleY() - previousEdge.getAngleY() + 360.0F) % 360.0F;
@@ -147,7 +156,7 @@ public class RenderClotheslineNetwork {
         Minecraft.getMinecraft().entityRenderer.disableLightmap();
     }
 
-    public void renderOutline(RenderEdge edge, double x, double y, double z) {
+    public void renderOutline(LineProjection p, double x, double y, double z, float r, float g, float b, float a) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
         bufferBuilder.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
@@ -156,8 +165,8 @@ public class RenderClotheslineNetwork {
             double up = (UP_MULTIPLIERS[i] * 1.01D) / 32.0D;
             double right = (RIGHT_MULTIPLIERS[i] * 1.01D - 4.0D) / 32.0D;
 
-            pos(bufferBuilder, edge.projectVec(new Vec3d(right, up, 0.0D)).subtract(x, y, z)).color(0, 0, 0, 255).endVertex();
-            pos(bufferBuilder, edge.projectVec(new Vec3d(right, up, 1.0D)).subtract(x, y, z)).color(0, 0, 0, 255).endVertex();
+            pos(bufferBuilder, p.projectRUF(right, up, 0.0D).subtract(x, y, z)).color(r, g, b, a).endVertex();
+            pos(bufferBuilder, p.projectRUF(right, up, 1.0D).subtract(x, y, z)).color(r, g, b, a).endVertex();
         }
 
         tessellator.draw();
@@ -188,7 +197,7 @@ public class RenderClotheslineNetwork {
         List<RenderEdge> renderEdges = state.getEdges();
         for (int i = 0; i < renderEdges.size(); i++) {
             RenderEdge edge = renderEdges.get(i);
-            Vec3d pos = edge.projectVec(new Vec3d(0.125D, 0.125D, 0.5D));
+            Vec3d pos = edge.getProjection().projectRUF(0.125D, 0.125D, 0.5D);
             debugRenderText(i + ": " + edge.getAngleY(), pos.x - x, pos.y - y, pos.z - z, yaw, pitch, fontRenderer);
         }
 
@@ -201,7 +210,7 @@ public class RenderClotheslineNetwork {
             RenderEdge edge = renderEdges.get(edgeIndex);
             double relativeOffset = attachmentOffset - edge.getFromOffset();
             double edgePosScalar = relativeOffset / (edge.getToOffset() - edge.getFromOffset());
-            Vec3d pos = edge.projectVec(new Vec3d(-2.0D / 16.0D, 0.0D, edgePosScalar));
+            Vec3d pos = edge.getProjection().projectRUF(-2.0D / 16.0D, 0.0D, edgePosScalar);
             debugRenderText(Integer.toString(entry.getKey()), pos.x - x, pos.y - y, pos.z - z, yaw, pitch, fontRenderer);
         }
     }

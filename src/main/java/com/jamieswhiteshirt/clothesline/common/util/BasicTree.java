@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 /**
  * Minimal immutable data structure for a BlockPos tree for serialization purposes.
- * Children are expected to be ordered by {@link Measurements#compareGlobal(BlockPos, BlockPos, BlockPos)} of their
+ * Children are expected to be ordered by {@link EdgeKey#compareTo(EdgeKey)} of their
  * their {@link #getPos()} with this {@link #getPos()} as the origin.
  */
 public class BasicTree {
