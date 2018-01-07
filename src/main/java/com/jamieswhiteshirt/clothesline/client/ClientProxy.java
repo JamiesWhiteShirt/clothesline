@@ -145,8 +145,8 @@ public class ClientProxy extends CommonProxy {
         double length = Measurements.UNIT_LENGTH * vecB.distanceTo(vecA);
 
         renderClotheslineNetwork.buildAndDrawEdgeQuads(bufferBuilder -> {
-            renderClotheslineNetwork.renderEdge(-length, 0.0D, combinedLightA, combinedLightB, LineProjection.create(vecA, vecB), bufferBuilder, x, y, z);
-            renderClotheslineNetwork.renderEdge(0.0D, length, combinedLightB, combinedLightA, LineProjection.create(vecB, vecA), bufferBuilder, x, y, z);
+            renderClotheslineNetwork.renderEdge(0.0D, length, combinedLightA, combinedLightB, LineProjection.create(vecA, vecB), bufferBuilder, x, y, z);
+            renderClotheslineNetwork.renderEdge(-length, 0.0D, combinedLightB, combinedLightA, LineProjection.create(vecB, vecA), bufferBuilder, x, y, z);
         });
     }
 
