@@ -1,5 +1,6 @@
-package com.jamieswhiteshirt.clothesline.core;
+package com.jamieswhiteshirt.clothesline.core.plugin;
 
+import com.jamieswhiteshirt.clothesline.core.SafeClassWriter;
 import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -156,6 +157,40 @@ public class ClassTransformer implements IClassTransformer {
                                         insnList.add(continueLabel);
                                         i += insnList.size();
                                         methodNode.instructions.insert(insnNode, insnList);
+                                    }
+                                }
+                            }
+                        }
+                );
+            case "net.minecraft.client.entity.EntityPlayerSP":
+                /*
+                 * Players slow down and can't sprint when using items. Clotheslines are susceptible to this behavior in the
+                 * way their interaction works.
+                 * This hooks adds a reliable way to bypass the slowdown for specific items.
+                 */
+                return transformSingleMethod(
+                        basicClass,
+                        "func_70636_d",
+                        "onLivingUpdate",
+                        "()V",
+                        methodNode -> {
+                            for (int i = 0; i < methodNode.instructions.size(); i++) {
+                                AbstractInsnNode insnNode = methodNode.instructions.get(i);
+                                if (insnNode instanceof MethodInsnNode) {
+                                    MethodInsnNode mInsnNode = (MethodInsnNode) insnNode;
+                                    if (
+                                            mInsnNode.getOpcode() == Opcodes.INVOKEVIRTUAL &&
+                                            mInsnNode.owner.equals("net/minecraft/client/entity/EntityPlayerSP") &&
+                                            equalsEither(mInsnNode.name, "func_184587_cr", "isHandActive") &&
+                                            mInsnNode.desc.equals("()Z")
+                                    ) {
+                                        methodNode.instructions.set(insnNode, new MethodInsnNode(
+                                                Opcodes.INVOKESTATIC,
+                                                "com/jamieswhiteshirt/clothesline/core/ClientHooks",
+                                                "isActivityPreventingMovement",
+                                                "(Lnet/minecraft/client/entity/EntityPlayerSP;)Z",
+                                                false
+                                        ));
                                     }
                                 }
                             }

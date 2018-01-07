@@ -45,7 +45,8 @@ import java.util.stream.Collectors;
 @Mod(
         modid = Clothesline.MODID,
         version = Clothesline.VERSION,
-        name = "Clothesline"
+        name = "Clothesline",
+        dependencies = "required-after:clothesline_hooks"
 )
 public class Clothesline {
     public static final String MODID = "clothesline";

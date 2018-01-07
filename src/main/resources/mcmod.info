@@ -2,7 +2,7 @@
 {
   "modid": "clothesline",
   "name": "Clothesline",
-  "description": "For more than clothes",
+  "description": "For more than clothes!",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
