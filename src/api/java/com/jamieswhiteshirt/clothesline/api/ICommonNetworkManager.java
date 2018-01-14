@@ -42,6 +42,10 @@ public interface ICommonNetworkManager {
 
     void addMomentum(Network network, int momentum);
 
+    boolean connect(BlockPos fromPos, BlockPos toPos);
+
+    void destroy(BlockPos pos);
+
     void addEventListener(INetworkManagerEventListener eventListener);
 
     void removeEventListener(INetworkManagerEventListener eventListener);

@@ -5,8 +5,11 @@ import com.jamieswhiteshirt.clothesline.api.IConnector;
 import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.api.ICommonNetworkManager;
+import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
+import com.jamieswhiteshirt.clothesline.client.capability.ClientNetworkManagerProvider;
 import com.jamieswhiteshirt.clothesline.client.entity.EntityNetworkRaytraceHit;
+import com.jamieswhiteshirt.clothesline.client.impl.ClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.client.network.messagehandler.*;
 import com.jamieswhiteshirt.clothesline.client.renderer.LineProjection;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork;
@@ -16,6 +19,8 @@ import com.jamieswhiteshirt.clothesline.client.renderer.tileentity.TileEntityClo
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
 import com.jamieswhiteshirt.clothesline.common.CommonProxy;
 import com.jamieswhiteshirt.clothesline.common.Util;
+import com.jamieswhiteshirt.clothesline.common.capability.DummyStorage;
+import com.jamieswhiteshirt.clothesline.common.capability.ServerNetworkManagerProvider;
 import com.jamieswhiteshirt.clothesline.common.impl.CommonNetworkManager;
 import com.jamieswhiteshirt.clothesline.common.item.ItemConnector;
 import com.jamieswhiteshirt.clothesline.common.network.message.*;
@@ -45,6 +50,8 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -69,6 +76,8 @@ public class ClientProxy extends CommonProxy {
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
         MinecraftForge.EVENT_BUS.register(this);
+
+        CapabilityManager.INSTANCE.register(IClientNetworkManager.class, new DummyStorage<>(), ClientNetworkManager.class);
     }
 
     @Override
@@ -92,13 +101,12 @@ public class ClientProxy extends CommonProxy {
         Clothesline.instance.networkWrapper.registerMessage(new MessageSetConnectorPosHandler(), MessageSetConnectorPos.class, 10, Side.CLIENT);
     }
 
-    @Override
-    public CommonNetworkManager createNetworkManager(World world) {
-        CommonNetworkManager manager = super.createNetworkManager(world);
+    @SubscribeEvent
+    public void attachWorldCapabilities(AttachCapabilitiesEvent<World> event) {
+        World world = event.getObject();
         if (world instanceof WorldClient) {
-            return manager;
-        } else {
-            return manager;
+            ClientNetworkManager manager = new ClientNetworkManager((WorldClient) world);
+            event.addCapability(new ResourceLocation(Clothesline.MODID, "network_manager"), new ClientNetworkManagerProvider(manager));
         }
     }
 
@@ -330,7 +338,7 @@ public class ClientProxy extends CommonProxy {
         public boolean hitByEntity(ICommonNetworkManager manager, Network network, EntityPlayer player) {
             int offset = (int) Math.round(this.offset);
             int attachmentKey = network.getState().offsetToAttachmentKey(offset);
-            Clothesline.instance.networkWrapper.sendToServer(new MessageHitNetwork(network.getUuid(), attachmentKey, offset));
+            Clothesline.instance.networkWrapper.sendToServer(new MessageHitNetwork(network.getId(), attachmentKey, offset));
             return true;
         }
 
@@ -338,7 +346,7 @@ public class ClientProxy extends CommonProxy {
         public boolean useItem(ICommonNetworkManager manager, Network network, EntityPlayer player, EnumHand hand) {
             int offset = (int) Math.round(this.offset);
             int attachmentKey = network.getState().offsetToAttachmentKey(offset);
-            Clothesline.instance.networkWrapper.sendToServer(new MessageTryUseItemOnNetwork(hand, network.getUuid(), attachmentKey));
+            Clothesline.instance.networkWrapper.sendToServer(new MessageTryUseItemOnNetwork(hand, network.getId(), attachmentKey));
             return manager.useItem(network, player, hand, attachmentKey);
         }
 
@@ -361,7 +369,7 @@ public class ClientProxy extends CommonProxy {
 
         @Override
         public boolean hitByEntity(ICommonNetworkManager manager, Network network, EntityPlayer player) {
-            Clothesline.instance.networkWrapper.sendToServer(new MessageHitAttachment(network.getUuid(), attachmentKey));
+            Clothesline.instance.networkWrapper.sendToServer(new MessageHitAttachment(network.getId(), attachmentKey));
             manager.hitAttachment(network, player, attachmentKey);
             return true;
         }

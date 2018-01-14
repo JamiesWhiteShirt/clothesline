@@ -11,7 +11,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class SynchronizationListener implements INetworkManagerEventListener {
@@ -25,7 +25,7 @@ public class SynchronizationListener implements INetworkManagerEventListener {
     }
 
     @Override
-    public void onNetworksReset(Collection<Network> networks) {
+    public void onNetworksReset(List<Network> networks) {
         networkWrapper.sendToDimension(new MessageSetNetworks(networks.stream().map(
                 BasicNetwork::fromAbsolute
         ).collect(Collectors.toList())), dimension);
@@ -38,21 +38,21 @@ public class SynchronizationListener implements INetworkManagerEventListener {
 
     @Override
     public void onNetworkRemoved(Network network) {
-        networkWrapper.sendToDimension(new MessageRemoveNetwork(network.getUuid()), dimension);
+        networkWrapper.sendToDimension(new MessageRemoveNetwork(network.getId()), dimension);
     }
 
     @Override
     public void onNetworkStateChanged(Network network, AbsoluteNetworkState state) {
-        networkWrapper.sendToDimension(new MessageSetNetworkState(network.getUuid(), BasicNetworkState.fromAbsolute(state)), dimension);
+        networkWrapper.sendToDimension(new MessageSetNetworkState(network.getId(), BasicNetworkState.fromAbsolute(state)), dimension);
     }
 
     @Override
     public void onAttachmentChanged(Network network, int attachmentKey, ItemStack previousStack, ItemStack newStack) {
         if (!ItemStack.areItemStacksEqual(previousStack, newStack)) {
             if (!newStack.isEmpty()) {
-                networkWrapper.sendToDimension(new MessageSetAttachment(network.getUuid(), new BasicAttachment(attachmentKey, newStack)), dimension);
+                networkWrapper.sendToDimension(new MessageSetAttachment(network.getId(), new BasicAttachment(attachmentKey, newStack)), dimension);
             } else {
-                networkWrapper.sendToDimension(new MessageRemoveAttachment(network.getUuid(), attachmentKey), dimension);
+                networkWrapper.sendToDimension(new MessageRemoveAttachment(network.getId(), attachmentKey), dimension);
             }
         }
     }

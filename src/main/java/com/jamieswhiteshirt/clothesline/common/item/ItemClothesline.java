@@ -28,10 +28,7 @@ public class ItemClothesline extends ItemConnector {
             if (world.getBlockState(to).getBlock() == ClotheslineBlocks.CLOTHESLINE_ANCHOR) {
                 RayTraceResult result = world.rayTraceBlocks(Measurements.midVec(from), Measurements.midVec(to), false, true, false);
                 if (result == null || result.typeOfHit == RayTraceResult.Type.MISS) {
-                    if (!world.isRemote) {
-                        manager.connect(from, to);
-                    }
-                    return true;
+                    return manager.connect(from, to);
                 }
             }
         }

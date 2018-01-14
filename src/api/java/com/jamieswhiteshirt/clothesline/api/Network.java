@@ -3,33 +3,35 @@ package com.jamieswhiteshirt.clothesline.api;
 import java.util.UUID;
 
 public final class Network {
-    private final UUID uuid;
     private final int id;
-    private AbsoluteNetworkState state;
+    private final PersistentNetwork persistentNetwork;
 
-    public Network(UUID uuid, int id, AbsoluteNetworkState state) {
-        this.uuid = uuid;
+    public Network(int id, PersistentNetwork persistentNetwork) {
         this.id = id;
-        this.state = state;
-    }
-
-    public void setState(AbsoluteNetworkState state) {
-        this.state = state;
-    }
-
-    public UUID getUuid() {
-        return uuid;
+        this.persistentNetwork = persistentNetwork;
     }
 
     public int getId() {
         return id;
     }
 
+    public UUID getUuid() {
+        return persistentNetwork.getUuid();
+    }
+
+    public void setState(AbsoluteNetworkState state) {
+        persistentNetwork.setState(state);
+    }
+
     public AbsoluteNetworkState getState() {
-        return state;
+        return persistentNetwork.getState();
     }
 
     public void update() {
-        this.state.update();
+        persistentNetwork.update();
+    }
+
+    public PersistentNetwork getPersistent() {
+        return persistentNetwork;
     }
 }

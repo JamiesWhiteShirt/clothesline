@@ -5,10 +5,13 @@ import com.jamieswhiteshirt.clothesline.common.*;
 import com.jamieswhiteshirt.clothesline.common.capability.*;
 import com.jamieswhiteshirt.clothesline.common.impl.Connector;
 import com.jamieswhiteshirt.clothesline.common.impl.CommonNetworkManager;
+import com.jamieswhiteshirt.clothesline.common.impl.ServerNetworkManager;
+import com.jamieswhiteshirt.clothesline.common.impl.SynchronizationListener;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetConnectorPos;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetNetworks;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
 import com.jamieswhiteshirt.clothesline.common.util.BasicNetwork;
+import com.jamieswhiteshirt.clothesline.common.util.BasicPersistentNetwork;
 import com.jamieswhiteshirt.clothesline.core.event.MayPlaceBlockEvent;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -20,6 +23,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
@@ -74,7 +78,8 @@ public class Clothesline {
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
         MinecraftForge.EVENT_BUS.register(this);
-        CapabilityManager.INSTANCE.register(ICommonNetworkManager.class, new NetworkManagerStorage(), CommonNetworkManager.class);
+        CapabilityManager.INSTANCE.register(ICommonNetworkManager.class, new DummyStorage<>(), CommonNetworkManager.class);
+        CapabilityManager.INSTANCE.register(IServerNetworkManager.class, new ServerNetworkManagerStorage(), ServerNetworkManager.class);
         CapabilityManager.INSTANCE.register(IConnector.class, new ConnectorStorage(), Connector::new);
         proxy.preInit(event);
     }
@@ -103,7 +108,12 @@ public class Clothesline {
 
     @SubscribeEvent
     public void attachWorldCapabilities(AttachCapabilitiesEvent<World> event) {
-        event.addCapability(new ResourceLocation(MODID, "network_manager"), new NetworkManagerProvider(proxy.createNetworkManager(event.getObject())));
+        World world = event.getObject();
+        if (world instanceof WorldServer) {
+            ServerNetworkManager manager = new ServerNetworkManager((WorldServer) world);
+            manager.addEventListener(new SynchronizationListener((WorldServer) world, Clothesline.instance.networkWrapper));
+            event.addCapability(new ResourceLocation(MODID, "network_manager"), new ServerNetworkManagerProvider(manager));
+        }
     }
 
     @SubscribeEvent

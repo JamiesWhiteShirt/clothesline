@@ -10,31 +10,31 @@ import java.util.Arrays;
 import java.util.List;
 
 public class NBTSerialization {
-    public static NBTTagList writeNetworks(List<BasicNetwork> networks) {
+    public static NBTTagList writePersistentNetworks(List<BasicPersistentNetwork> networks) {
         NBTTagList nbt = new NBTTagList();
-        for (BasicNetwork network : networks) {
-            nbt.appendTag(writeNetwork(network));
+        for (BasicPersistentNetwork network : networks) {
+            nbt.appendTag(writePersistentNetwork(network));
         }
         return nbt;
     }
 
-    public static List<BasicNetwork> readNetworks(NBTTagList nbt) {
-        BasicNetwork[] networks = new BasicNetwork[nbt.tagCount()];
+    public static List<BasicPersistentNetwork> readPersistentNetworks(NBTTagList nbt) {
+        BasicPersistentNetwork[] networks = new BasicPersistentNetwork[nbt.tagCount()];
         for (int i = 0; i < nbt.tagCount(); i++) {
-            networks[i] = readNetwork(nbt.getCompoundTagAt(i));
+            networks[i] = readPersistentNetwork(nbt.getCompoundTagAt(i));
         }
         return Arrays.asList(networks);
     }
 
-    public static NBTTagCompound writeNetwork(BasicNetwork network) {
+    public static NBTTagCompound writePersistentNetwork(BasicPersistentNetwork network) {
         NBTTagCompound nbt = new NBTTagCompound();
         nbt.setUniqueId("Uuid", network.getUuid());
         nbt.setTag("State", writeNetworkState(network.getState()));
         return nbt;
     }
 
-    public static BasicNetwork readNetwork(NBTTagCompound compound) {
-        return new BasicNetwork(
+    public static BasicPersistentNetwork readPersistentNetwork(NBTTagCompound compound) {
+        return new BasicPersistentNetwork(
                 compound.getUniqueId("Uuid"),
                 readNetworkState(compound.getCompoundTag("State"))
         );

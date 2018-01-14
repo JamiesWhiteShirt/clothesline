@@ -45,12 +45,12 @@ public abstract class CommonNetworkManager implements ICommonNetworkManager {
     public CommonNetworkManager() { }
 
     protected void resetInternal(List<Network> networks) {
-        networks = new ArrayList<>(networks);
-        networksById = new IntHashMap<>();
+        this.networks = new ArrayList<>(networks);
+        this.networksById = new IntHashMap<>();
         for (Network network : networks) {
             networksById.addKey(network.getId(), network);
         }
-        networkNodesByPos = new HashMap<>();
+        this.networkNodesByPos = new HashMap<>();
         for (Network network : networks) {
             assignNetworkGraph(network);
         }
@@ -87,6 +87,10 @@ public abstract class CommonNetworkManager implements ICommonNetworkManager {
         networks.add(network);
         networksById.addKey(network.getId(), network);
         assignNetworkGraph(network);
+
+        for (INetworkManagerEventListener eventListener : eventListeners) {
+            eventListener.onNetworkAdded(network);
+        }
     }
 
     @Override

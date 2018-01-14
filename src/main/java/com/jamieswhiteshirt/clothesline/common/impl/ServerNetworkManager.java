@@ -3,6 +3,7 @@ package com.jamieswhiteshirt.clothesline.common.impl;
 import com.jamieswhiteshirt.clothesline.api.AbsoluteNetworkState;
 import com.jamieswhiteshirt.clothesline.api.IServerNetworkManager;
 import com.jamieswhiteshirt.clothesline.api.Network;
+import com.jamieswhiteshirt.clothesline.api.PersistentNetwork;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.common.util.BasicTree;
 import com.jamieswhiteshirt.clothesline.common.util.RelativeNetworkState;
@@ -12,7 +13,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldServer;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -46,17 +46,16 @@ public final class ServerNetworkManager extends CommonNetworkManager implements 
     }
 
     private Network createAndAddNetwork(AbsoluteNetworkState state) {
-        UUID uuid = UUID.randomUUID();
-        Network network = new Network(uuid, nextNetworkId++, state);
+        Network network = new Network(nextNetworkId++, new PersistentNetwork(UUID.randomUUID(), state));
         addNetwork(network);
         return network;
     }
 
     @Override
-    public void reset(List<Pair<UUID, AbsoluteNetworkState>> data) {
+    public void reset(List<PersistentNetwork> data) {
         nextNetworkId = 0;
-        List<Network> networks = data.stream().map(pair -> new Network(pair.getLeft(), nextNetworkId++, pair.getRight())).collect(Collectors.toList());
-        networksByUuid = new HashMap<>();
+        List<Network> networks = data.stream().map(persistent -> new Network(nextNetworkId++, persistent)).collect(Collectors.toList());
+        this.networksByUuid = new HashMap<>();
         for (Network network : networks) {
             networksByUuid.put(network.getUuid(), network);
         }
@@ -97,50 +96,49 @@ public final class ServerNetworkManager extends CommonNetworkManager implements 
     }
 
     @Override
-    public final boolean connect(BlockPos posA, BlockPos posB) {
-        if (posA.equals(posB)) {
-            INetworkNode node = getNetworkNodeByPos(posA);
+    public final boolean connect(BlockPos fromPos, BlockPos toPos) {
+        if (fromPos.equals(toPos)) {
+            INetworkNode node = getNetworkNodeByPos(fromPos);
             if (node != null) {
                 Network network = node.getNetwork();
                 RelativeNetworkState relativeState = RelativeNetworkState.fromAbsolute(network.getState());
-                relativeState.reroot(posB);
+                relativeState.reroot(toPos);
                 setNetworkState(network, relativeState.toAbsolute());
-                return true;
             }
             return false;
         }
 
-        INetworkNode nodeA = getNetworkNodeByPos(posA);
-        INetworkNode nodeB = getNetworkNodeByPos(posB);
+        INetworkNode fromNode = getNetworkNodeByPos(fromPos);
+        INetworkNode toNode = getNetworkNodeByPos(toPos);
 
-        if (nodeA != null) {
-            Network networkA = nodeA.getNetwork();
-            if (nodeB != null) {
-                Network networkB = nodeB.getNetwork();
+        if (fromNode != null) {
+            Network fromNetwork = fromNode.getNetwork();
+            if (toNode != null) {
+                Network toNetwork = toNode.getNetwork();
 
-                if (networkA == networkB) {
+                if (fromNetwork == toNetwork) {
                     //TODO: Look into circular networks
                     return false;
                 }
 
-                removeNetwork(networkA);
-                removeNetwork(networkB);
+                removeNetwork(fromNetwork);
+                removeNetwork(toNetwork);
 
-                RelativeNetworkState stateA = RelativeNetworkState.fromAbsolute(networkA.getState());
-                RelativeNetworkState stateB = RelativeNetworkState.fromAbsolute(networkB.getState());
-                stateB.reroot(posB);
-                stateA.addSubState(posA, stateB);
+                RelativeNetworkState fromState = RelativeNetworkState.fromAbsolute(fromNetwork.getState());
+                RelativeNetworkState toState = RelativeNetworkState.fromAbsolute(toNetwork.getState());
+                toState.reroot(toPos);
+                fromState.addSubState(fromPos, toState);
 
-                createAndAddNetwork(stateA.toAbsolute());
+                createAndAddNetwork(fromState.toAbsolute());
             } else {
-                extend(networkA, posA, posB);
+                extend(fromNetwork, fromPos, toPos);
             }
         } else {
-            if (nodeB != null) {
-                Network networkB = nodeB.getNetwork();
-                extend(networkB, posB, posA);
+            if (toNode != null) {
+                Network toNetwork = toNode.getNetwork();
+                extend(toNetwork, toPos, fromPos);
             } else {
-                AbsoluteNetworkState state = AbsoluteNetworkState.createInitial(BasicTree.createInitial(posA, posB).toAbsolute());
+                AbsoluteNetworkState state = AbsoluteNetworkState.createInitial(BasicTree.createInitial(fromPos, toPos).toAbsolute());
                 createAndAddNetwork(state);
             }
         }

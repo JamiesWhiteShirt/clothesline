@@ -10,13 +10,21 @@ import java.util.UUID;
 
 public class ByteBufSerialization {
     public static void writeNetwork(ByteBuf buf, BasicNetwork network) {
-        writeNetworkUuid(buf, network.getUuid());
         writeNetworkId(buf, network.getId());
-        writeNetworkState(buf, network.getState());
+        writePersistentNetwork(buf, network.getPersistentNetwork());
     }
 
     public static BasicNetwork readNetwork(ByteBuf buf) {
-        return new BasicNetwork(readNetworkUuid(buf), readNetworkId(buf), readNetworkState(buf));
+        return new BasicNetwork(readNetworkId(buf), readPersistentNetwork(buf));
+    }
+
+    public static void writePersistentNetwork(ByteBuf buf, BasicPersistentNetwork network) {
+        writeNetworkUuid(buf, network.getUuid());
+        writeNetworkState(buf, network.getState());
+    }
+
+    public static BasicPersistentNetwork readPersistentNetwork(ByteBuf buf) {
+        return new BasicPersistentNetwork(readNetworkUuid(buf), readNetworkState(buf));
     }
 
     public static void writeNetworkUuid(ByteBuf buf, UUID networkUuid) {
