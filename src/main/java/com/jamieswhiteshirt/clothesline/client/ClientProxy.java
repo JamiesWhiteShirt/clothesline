@@ -4,8 +4,7 @@ import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.IConnector;
 import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.api.Network;
-import com.jamieswhiteshirt.clothesline.api.ICommonNetworkManager;
-import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
+import com.jamieswhiteshirt.clothesline.api.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.client.capability.ClientNetworkManagerProvider;
 import com.jamieswhiteshirt.clothesline.client.entity.EntityNetworkRaytraceHit;
@@ -18,10 +17,6 @@ import com.jamieswhiteshirt.clothesline.client.renderer.RenderNetworkState;
 import com.jamieswhiteshirt.clothesline.client.renderer.tileentity.TileEntityClotheslineAnchorRenderer;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
 import com.jamieswhiteshirt.clothesline.common.CommonProxy;
-import com.jamieswhiteshirt.clothesline.common.Util;
-import com.jamieswhiteshirt.clothesline.common.capability.DummyStorage;
-import com.jamieswhiteshirt.clothesline.common.capability.ServerNetworkManagerProvider;
-import com.jamieswhiteshirt.clothesline.common.impl.CommonNetworkManager;
 import com.jamieswhiteshirt.clothesline.common.item.ItemConnector;
 import com.jamieswhiteshirt.clothesline.common.network.message.*;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
@@ -48,9 +43,6 @@ import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
-import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -65,19 +57,12 @@ import java.util.List;
 
 @SideOnly(Side.CLIENT)
 public class ClientProxy extends CommonProxy {
-    @CapabilityInject(ICommonNetworkManager.class)
-    private static final Capability<ICommonNetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
-    @CapabilityInject(IConnector.class)
-    private static final Capability<IConnector> CONNECTOR_CAPABILITY = Util.nonNullInjected();
-
     private RenderClotheslineNetwork renderClotheslineNetwork;
 
     @Override
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
         MinecraftForge.EVENT_BUS.register(this);
-
-        CapabilityManager.INSTANCE.register(IClientNetworkManager.class, new DummyStorage<>(), ClientNetworkManager.class);
     }
 
     @Override
@@ -159,7 +144,7 @@ public class ClientProxy extends CommonProxy {
     }
 
     private void renderThirdPersonPlayerHeldClothesline(EntityPlayer player, double x, double y, double z, float partialTicks) {
-        IConnector connector = player.getCapability(CONNECTOR_CAPABILITY, null);
+        IConnector connector = player.getCapability(Clothesline.CONNECTOR_CAPABILITY, null);
         if (connector != null) {
             BlockPos posA = connector.getPos();
             if (posA != null) {
@@ -183,7 +168,7 @@ public class ClientProxy extends CommonProxy {
     }
 
     private void renderFirstPersonPlayerHeldClothesline(EntityPlayer player, double x, double y, double z, float partialTicks) {
-        IConnector connector = player.getCapability(CONNECTOR_CAPABILITY, null);
+        IConnector connector = player.getCapability(Clothesline.CONNECTOR_CAPABILITY, null);
         if (connector != null) {
             BlockPos posA = connector.getPos();
             if (posA != null) {
@@ -228,7 +213,7 @@ public class ClientProxy extends CommonProxy {
                 double y = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks;
                 double z = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks;
 
-                ICommonNetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
+                IClientNetworkManager manager = world.getCapability(Clothesline.CLIENT_NETWORK_MANAGER_CAPABILITY, null);
                 if (manager != null) {
                     boolean showDebugInfo = Minecraft.getMinecraft().gameSettings.showDebugInfo;
                     for (Network network : manager.getNetworks()) {
@@ -281,7 +266,7 @@ public class ClientProxy extends CommonProxy {
         if (event.phase == TickEvent.Phase.END && !Minecraft.getMinecraft().isGamePaused()) {
             WorldClient world = Minecraft.getMinecraft().world;
             if (world != null) {
-                ICommonNetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
+                IClientNetworkManager manager = world.getCapability(Clothesline.CLIENT_NETWORK_MANAGER_CAPABILITY, null);
                 if (manager != null) {
                     manager.update();
                 }
@@ -316,9 +301,9 @@ public class ClientProxy extends CommonProxy {
             this.distanceSq = distanceSq;
         }
 
-        public abstract boolean hitByEntity(ICommonNetworkManager manager, Network network, EntityPlayer player);
+        public abstract boolean hitByEntity(IClientNetworkManager manager, Network network, EntityPlayer player);
 
-        public abstract boolean useItem(ICommonNetworkManager manager, Network network, EntityPlayer player, EnumHand hand);
+        public abstract boolean useItem(IClientNetworkManager manager, Network network, EntityPlayer player, EnumHand hand);
 
         public abstract void renderHighlight(RenderClotheslineNetwork renderClotheslineNetwork, float partialTicks, double x, double y, double z, float r, float g, float b, float a);
     }
@@ -335,7 +320,7 @@ public class ClientProxy extends CommonProxy {
         }
 
         @Override
-        public boolean hitByEntity(ICommonNetworkManager manager, Network network, EntityPlayer player) {
+        public boolean hitByEntity(IClientNetworkManager manager, Network network, EntityPlayer player) {
             int offset = (int) Math.round(this.offset);
             int attachmentKey = network.getState().offsetToAttachmentKey(offset);
             Clothesline.instance.networkWrapper.sendToServer(new MessageHitNetwork(network.getId(), attachmentKey, offset));
@@ -343,7 +328,7 @@ public class ClientProxy extends CommonProxy {
         }
 
         @Override
-        public boolean useItem(ICommonNetworkManager manager, Network network, EntityPlayer player, EnumHand hand) {
+        public boolean useItem(IClientNetworkManager manager, Network network, EntityPlayer player, EnumHand hand) {
             int offset = (int) Math.round(this.offset);
             int attachmentKey = network.getState().offsetToAttachmentKey(offset);
             Clothesline.instance.networkWrapper.sendToServer(new MessageTryUseItemOnNetwork(hand, network.getId(), attachmentKey));
@@ -368,14 +353,14 @@ public class ClientProxy extends CommonProxy {
         }
 
         @Override
-        public boolean hitByEntity(ICommonNetworkManager manager, Network network, EntityPlayer player) {
+        public boolean hitByEntity(IClientNetworkManager manager, Network network, EntityPlayer player) {
             Clothesline.instance.networkWrapper.sendToServer(new MessageHitAttachment(network.getId(), attachmentKey));
             manager.hitAttachment(network, player, attachmentKey);
             return true;
         }
 
         @Override
-        public boolean useItem(ICommonNetworkManager manager, Network network, EntityPlayer player, EnumHand hand) {
+        public boolean useItem(IClientNetworkManager manager, Network network, EntityPlayer player, EnumHand hand) {
             return false;
         }
 
@@ -403,7 +388,7 @@ public class ClientProxy extends CommonProxy {
         World world = mc.world;
         Entity renderViewEntity = mc.getRenderViewEntity();
         if (world != null && renderViewEntity != null) {
-            ICommonNetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
+            IClientNetworkManager manager = world.getCapability(Clothesline.CLIENT_NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 Vec3d rayFrom = renderViewEntity.getPositionEyes(partialTicks);
                 Vec3d rayTo = mc.objectMouseOver.hitVec;
@@ -421,7 +406,7 @@ public class ClientProxy extends CommonProxy {
     }
 
     @Nullable
-    private NetworkRaytraceHit raytraceNetworks(ICommonNetworkManager manager, Ray ray, double maxDistanceSq, float partialTicks) {
+    private NetworkRaytraceHit raytraceNetworks(IClientNetworkManager manager, Ray ray, double maxDistanceSq, float partialTicks) {
         NetworkRaytraceHit hit = null;
         for (Network network : manager.getNetworks()) {
             //TODO: Cache the RenderNetworkStates

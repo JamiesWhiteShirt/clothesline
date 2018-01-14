@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.client.entity;
 
-import com.jamieswhiteshirt.clothesline.api.ICommonNetworkManager;
+import com.jamieswhiteshirt.clothesline.api.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.client.ClientProxy;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -12,14 +12,14 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public final class EntityNetworkRaytraceHit extends Entity {
-    private ICommonNetworkManager manager;
+    private IClientNetworkManager manager;
     private ClientProxy.NetworkRaytraceHit hit;
 
     public EntityNetworkRaytraceHit(World worldIn) {
         super(worldIn);
     }
 
-    public EntityNetworkRaytraceHit(World world, ICommonNetworkManager manager, ClientProxy.NetworkRaytraceHit hit) {
+    public EntityNetworkRaytraceHit(World world, IClientNetworkManager manager, ClientProxy.NetworkRaytraceHit hit) {
         this(world);
         this.manager = manager;
         this.hit = hit;

@@ -1,24 +1,20 @@
 package com.jamieswhiteshirt.clothesline.common.capability;
 
-import com.jamieswhiteshirt.clothesline.api.ICommonNetworkManager;
-import com.jamieswhiteshirt.clothesline.api.IServerNetworkManager;
-import com.jamieswhiteshirt.clothesline.common.Util;
+import com.jamieswhiteshirt.clothesline.Clothesline;
+import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.common.impl.ServerNetworkManager;
-import net.minecraft.nbt.NBTBase;
+import com.jamieswhiteshirt.clothesline.common.util.BasicPersistentNetwork;
+import com.jamieswhiteshirt.clothesline.common.util.NBTSerialization;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.stream.Collectors;
 
-public class ServerNetworkManagerProvider implements ICapabilitySerializable<NBTBase> {
-    @CapabilityInject(ICommonNetworkManager.class)
-    private static final Capability<ICommonNetworkManager> COMMON_CAPABILITY = Util.nonNullInjected();
-    @CapabilityInject(IServerNetworkManager.class)
-    private static final Capability<IServerNetworkManager> SERVER_CAPABILITY = Util.nonNullInjected();
-
+public class ServerNetworkManagerProvider implements ICapabilitySerializable<NBTTagList> {
     private final ServerNetworkManager instance;
 
     public ServerNetworkManagerProvider(ServerNetworkManager instance) {
@@ -27,16 +23,16 @@ public class ServerNetworkManagerProvider implements ICapabilitySerializable<NBT
 
     @Override
     public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
-        return capability == COMMON_CAPABILITY || capability == SERVER_CAPABILITY;
+        return capability == Clothesline.COMMON_NETWORK_MANAGER_CAPABILITY || capability == Clothesline.SERVER_NETWORK_MANAGER_CAPABILITY;
     }
 
     @Nullable
     @Override
     public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
-        if (capability == COMMON_CAPABILITY) {
-            return COMMON_CAPABILITY.cast(instance);
-        } else if (capability == SERVER_CAPABILITY) {
-            return SERVER_CAPABILITY.cast(instance);
+        if (capability == Clothesline.COMMON_NETWORK_MANAGER_CAPABILITY) {
+            return Clothesline.COMMON_NETWORK_MANAGER_CAPABILITY.cast(instance);
+        } else if (capability == Clothesline.SERVER_NETWORK_MANAGER_CAPABILITY) {
+            return Clothesline.SERVER_NETWORK_MANAGER_CAPABILITY.cast(instance);
         } else {
             return null;
         }
@@ -44,12 +40,18 @@ public class ServerNetworkManagerProvider implements ICapabilitySerializable<NBT
 
     @Override
     @Nullable
-    public NBTBase serializeNBT() {
-        return SERVER_CAPABILITY.getStorage().writeNBT(SERVER_CAPABILITY, instance, null);
+    public NBTTagList serializeNBT() {
+        return NBTSerialization.writePersistentNetworks(instance.getNetworks().stream().map(
+                Network::getPersistent
+        ).map(
+                BasicPersistentNetwork::fromAbsolute
+        ).collect(Collectors.toList()));
     }
 
     @Override
-    public void deserializeNBT(NBTBase nbt) {
-        SERVER_CAPABILITY.getStorage().readNBT(SERVER_CAPABILITY, instance, null, nbt);
+    public void deserializeNBT(NBTTagList nbt) {
+        instance.reset(NBTSerialization.readPersistentNetworks(nbt).stream().map(
+                BasicPersistentNetwork::toAbsolute
+        ).collect(Collectors.toList()));
     }
 }

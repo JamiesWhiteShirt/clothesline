@@ -1,5 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.tileentity;
 
+import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.common.Util;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkItemHandler;
@@ -19,8 +20,6 @@ import net.minecraftforge.items.IItemHandler;
 import javax.annotation.Nullable;
 
 public class TileEntityClotheslineAnchor extends TileEntity implements ITickable {
-    @CapabilityInject(ICommonNetworkManager.class)
-    private static final Capability<ICommonNetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
     @CapabilityInject(IItemHandler.class)
     private static final Capability<IItemHandler> ITEM_HANDLER_CAPABILITY = Util.nonNullInjected();
     private ICommonNetworkManager manager;
@@ -44,7 +43,7 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     @Override
     public void setWorld(World world) {
         super.setWorld(world);
-        manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
+        manager = world.getCapability(Clothesline.COMMON_NETWORK_MANAGER_CAPABILITY, null);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.client.impl;
 
-import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
+import com.jamieswhiteshirt.clothesline.api.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.common.impl.CommonNetworkManager;
 import net.minecraft.client.multiplayer.WorldClient;

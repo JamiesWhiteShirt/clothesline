@@ -1,9 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
-import com.jamieswhiteshirt.clothesline.common.impl.CommonNetworkManager;
-import com.jamieswhiteshirt.clothesline.common.impl.ServerNetworkManager;
-import com.jamieswhiteshirt.clothesline.common.impl.SynchronizationListener;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageStopUsingItemOn;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageHitAttachment;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageHitNetwork;
@@ -12,9 +9,6 @@ import com.jamieswhiteshirt.clothesline.common.network.messagehandler.MessageSto
 import com.jamieswhiteshirt.clothesline.common.network.messagehandler.MessageHitAttachmentHandler;
 import com.jamieswhiteshirt.clothesline.common.network.messagehandler.MessageHitNetworkHandler;
 import com.jamieswhiteshirt.clothesline.common.network.messagehandler.MessageTryUseItemOnNetworkHandler;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
