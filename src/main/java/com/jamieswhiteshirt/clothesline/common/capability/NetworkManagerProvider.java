@@ -1,8 +1,8 @@
 package com.jamieswhiteshirt.clothesline.common.capability;
 
-import com.jamieswhiteshirt.clothesline.api.INetworkManager;
+import com.jamieswhiteshirt.clothesline.api.ICommonNetworkManager;
 import com.jamieswhiteshirt.clothesline.common.Util;
-import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
+import com.jamieswhiteshirt.clothesline.common.impl.CommonNetworkManager;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
@@ -13,12 +13,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class NetworkManagerProvider implements ICapabilitySerializable<NBTTagList> {
-    @CapabilityInject(INetworkManager.class)
-    private static final Capability<INetworkManager> CAPABILITY = Util.nonNullInjected();
+    @CapabilityInject(ICommonNetworkManager.class)
+    private static final Capability<ICommonNetworkManager> CAPABILITY = Util.nonNullInjected();
 
-    private final NetworkManager instance;
+    private final CommonNetworkManager instance;
 
-    public NetworkManagerProvider(NetworkManager instance) {
+    public NetworkManagerProvider(CommonNetworkManager instance) {
         this.instance = instance;
     }
 

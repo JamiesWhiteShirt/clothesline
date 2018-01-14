@@ -19,14 +19,14 @@ import net.minecraftforge.items.IItemHandler;
 import javax.annotation.Nullable;
 
 public class TileEntityClotheslineAnchor extends TileEntity implements ITickable {
-    @CapabilityInject(INetworkManager.class)
-    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    @CapabilityInject(ICommonNetworkManager.class)
+    private static final Capability<ICommonNetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
     @CapabilityInject(IItemHandler.class)
     private static final Capability<IItemHandler> ITEM_HANDLER_CAPABILITY = Util.nonNullInjected();
-    private INetworkManager manager;
+    private ICommonNetworkManager manager;
 
     @Nullable
-    public INetworkManager.INetworkNode getNetworkNode() {
+    public ICommonNetworkManager.INetworkNode getNetworkNode() {
         if (manager != null) {
             return manager.getNetworkNodeByPos(pos);
         } else {
@@ -35,7 +35,7 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     }
 
     public void crank(int amount) {
-        INetworkManager.INetworkNode node = getNetworkNode();
+        ICommonNetworkManager.INetworkNode node = getNetworkNode();
         if (node != null) {
             manager.addMomentum(node.getNetwork(), amount);
         }
@@ -56,7 +56,7 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
         if (capability == ITEM_HANDLER_CAPABILITY && facing != null) {
-            INetworkManager.INetworkNode node = getNetworkNode();
+            ICommonNetworkManager.INetworkNode node = getNetworkNode();
             if (node != null) {
                 Network network = node.getNetwork();
                 EdgeKey edgeKey = new EdgeKey(pos, pos.offset(facing));
@@ -70,7 +70,7 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
         if (capability == ITEM_HANDLER_CAPABILITY && facing != null) {
-            INetworkManager.INetworkNode node = getNetworkNode();
+            ICommonNetworkManager.INetworkNode node = getNetworkNode();
             return node != null;
         }
         return false;

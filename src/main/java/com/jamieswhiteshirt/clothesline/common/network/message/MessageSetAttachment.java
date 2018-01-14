@@ -5,30 +5,28 @@ import com.jamieswhiteshirt.clothesline.common.util.ByteBufSerialization;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
-import java.util.UUID;
-
 public class MessageSetAttachment implements IMessage {
-    public UUID networkUuid;
+    public int networkId;
     public BasicAttachment attachment;
 
     public MessageSetAttachment() {
 
     }
 
-    public MessageSetAttachment(UUID networkUuid, BasicAttachment attachment) {
-        this.networkUuid = networkUuid;
+    public MessageSetAttachment(int networkId, BasicAttachment attachment) {
+        this.networkId = networkId;
         this.attachment = attachment;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        this.networkUuid = ByteBufSerialization.readNetworkUuid(buf);
+        this.networkId = ByteBufSerialization.readNetworkId(buf);
         this.attachment = ByteBufSerialization.readAttachment(buf);
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
-        ByteBufSerialization.writeNetworkUuid(buf, networkUuid);
+        ByteBufSerialization.writeNetworkId(buf, networkId);
         ByteBufSerialization.writeAttachment(buf, attachment);
     }
 }

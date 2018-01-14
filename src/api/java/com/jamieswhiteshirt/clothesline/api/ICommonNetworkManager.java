@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.UUID;
 
-public interface INetworkManager {
+public interface ICommonNetworkManager {
     interface INetworkNode {
         Network getNetwork();
 
@@ -19,24 +19,14 @@ public interface INetworkManager {
     Collection<Network> getNetworks();
 
     @Nullable
-    Network getNetworkByUUID(UUID uuid);
+    Network getNetworkById(int id);
 
     @Nullable
     INetworkNode getNetworkNodeByPos(BlockPos pos);
 
-    void addNetwork(Network network);
-
-    void removeNetwork(UUID networkUuid);
-
-    void setNetworks(Collection<Network> networks);
+    void removeNetwork(Network network);
 
     void update();
-
-    boolean connect(BlockPos from, BlockPos to);
-
-    void destroy(BlockPos pos);
-
-    void disconnect(BlockPos posA, BlockPos posB);
 
     void setNetworkState(Network network, AbsoluteNetworkState state);
 

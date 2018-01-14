@@ -4,10 +4,12 @@ import java.util.UUID;
 
 public final class Network {
     private final UUID uuid;
+    private final int id;
     private AbsoluteNetworkState state;
 
-    public Network(UUID uuid, AbsoluteNetworkState state) {
+    public Network(UUID uuid, int id, AbsoluteNetworkState state) {
         this.uuid = uuid;
+        this.id = id;
         this.state = state;
     }
 
@@ -17,6 +19,10 @@ public final class Network {
 
     public UUID getUuid() {
         return uuid;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public AbsoluteNetworkState getState() {

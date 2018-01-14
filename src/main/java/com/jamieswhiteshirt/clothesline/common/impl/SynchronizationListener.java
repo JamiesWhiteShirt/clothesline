@@ -25,7 +25,7 @@ public class SynchronizationListener implements INetworkManagerEventListener {
     }
 
     @Override
-    public void onNetworksSet(Collection<Network> networks) {
+    public void onNetworksReset(Collection<Network> networks) {
         networkWrapper.sendToDimension(new MessageSetNetworks(networks.stream().map(
                 BasicNetwork::fromAbsolute
         ).collect(Collectors.toList())), dimension);

@@ -2,10 +2,10 @@ package com.jamieswhiteshirt.clothesline.api;
 
 import net.minecraft.item.ItemStack;
 
-import java.util.Collection;
+import java.util.List;
 
 public interface INetworkManagerEventListener {
-    void onNetworksSet(Collection<Network> networks);
+    void onNetworksReset(List<Network> networks);
 
     void onNetworkAdded(Network network);
 

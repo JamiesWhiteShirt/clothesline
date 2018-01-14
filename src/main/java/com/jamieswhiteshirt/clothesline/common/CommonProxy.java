@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
-import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
+import com.jamieswhiteshirt.clothesline.common.impl.CommonNetworkManager;
 import com.jamieswhiteshirt.clothesline.common.impl.SynchronizationListener;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageStopUsingItemOn;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageHitAttachment;
@@ -28,8 +28,8 @@ public abstract class CommonProxy {
         Clothesline.instance.networkWrapper.registerMessage(new MessageStopUsingItemOnHandler(), MessageStopUsingItemOn.class, 9, Side.SERVER);
     }
 
-    public NetworkManager createNetworkManager(World world) {
-        NetworkManager manager = new NetworkManager(world);
+    public CommonNetworkManager createNetworkManager(World world) {
+        CommonNetworkManager manager = new CommonNetworkManager(world);
         if (world instanceof WorldServer) {
             manager.addEventListener(new SynchronizationListener((WorldServer) world, Clothesline.instance.networkWrapper));
         }

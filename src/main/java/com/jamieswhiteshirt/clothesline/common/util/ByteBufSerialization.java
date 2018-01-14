@@ -11,12 +11,12 @@ import java.util.UUID;
 public class ByteBufSerialization {
     public static void writeNetwork(ByteBuf buf, BasicNetwork network) {
         writeNetworkUuid(buf, network.getUuid());
+        writeNetworkId(buf, network.getId());
         writeNetworkState(buf, network.getState());
     }
 
     public static BasicNetwork readNetwork(ByteBuf buf) {
-        UUID uuid = readNetworkUuid(buf);
-        return new BasicNetwork(uuid, readNetworkState(buf));
+        return new BasicNetwork(readNetworkUuid(buf), readNetworkId(buf), readNetworkState(buf));
     }
 
     public static void writeNetworkUuid(ByteBuf buf, UUID networkUuid) {
@@ -26,6 +26,14 @@ public class ByteBufSerialization {
 
     public static UUID readNetworkUuid(ByteBuf buf) {
         return new UUID(buf.readLong(), buf.readLong());
+    }
+
+    public static void writeNetworkId(ByteBuf buf, int networkId) {
+        ByteBufUtils.writeVarInt(buf, networkId, 4);
+    }
+
+    public static int readNetworkId(ByteBuf buf) {
+        return ByteBufUtils.readVarInt(buf, 4);
     }
 
     public static void writeNetworkState(ByteBuf buf, BasicNetworkState state) {

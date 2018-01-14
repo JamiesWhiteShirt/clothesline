@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
-import com.jamieswhiteshirt.clothesline.api.INetworkManager;
+import com.jamieswhiteshirt.clothesline.api.ICommonNetworkManager;
 import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
@@ -11,11 +11,11 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 public final class NetworkItemHandler implements IItemHandler {
-    private final INetworkManager manager;
+    private final ICommonNetworkManager manager;
     private final Network network;
     private final int attachmentKey;
 
-    public NetworkItemHandler(INetworkManager manager, Network network, int attachmentKey) {
+    public NetworkItemHandler(ICommonNetworkManager manager, Network network, int attachmentKey) {
         this.manager = manager;
         this.network = network;
         this.attachmentKey = attachmentKey;

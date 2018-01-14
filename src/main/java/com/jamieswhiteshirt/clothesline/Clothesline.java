@@ -4,7 +4,7 @@ import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.common.*;
 import com.jamieswhiteshirt.clothesline.common.capability.*;
 import com.jamieswhiteshirt.clothesline.common.impl.Connector;
-import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
+import com.jamieswhiteshirt.clothesline.common.impl.CommonNetworkManager;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetConnectorPos;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetNetworks;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
@@ -52,8 +52,8 @@ public class Clothesline {
     public static final String MODID = "clothesline";
     public static final String VERSION = "1.12-0.0.0.0";
 
-    @CapabilityInject(INetworkManager.class)
-    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    @CapabilityInject(ICommonNetworkManager.class)
+    private static final Capability<ICommonNetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
     @CapabilityInject(IConnector.class)
     private static final Capability<IConnector> CONNECTOR_CAPABILITY = Util.nonNullInjected();
 
@@ -74,7 +74,7 @@ public class Clothesline {
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
         MinecraftForge.EVENT_BUS.register(this);
-        CapabilityManager.INSTANCE.register(INetworkManager.class, new NetworkManagerStorage(), NetworkManager.class);
+        CapabilityManager.INSTANCE.register(ICommonNetworkManager.class, new NetworkManagerStorage(), CommonNetworkManager.class);
         CapabilityManager.INSTANCE.register(IConnector.class, new ConnectorStorage(), Connector::new);
         proxy.preInit(event);
     }
@@ -126,7 +126,7 @@ public class Clothesline {
     public void onEntityJoinWorld(EntityJoinWorldEvent event) {
         if (!event.getWorld().isRemote && event.getEntity() instanceof EntityPlayerMP) {
             EntityPlayerMP player = (EntityPlayerMP) event.getEntity();
-            INetworkManager manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
+            ICommonNetworkManager manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 networkWrapper.sendTo(new MessageSetNetworks(manager.getNetworks().stream().map(
                         BasicNetwork::fromAbsolute
@@ -138,7 +138,7 @@ public class Clothesline {
     @SubscribeEvent
     public void onWorldTick(TickEvent.WorldTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
-            INetworkManager manager = event.world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
+            ICommonNetworkManager manager = event.world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 manager.update();
             }
@@ -149,7 +149,7 @@ public class Clothesline {
     public void onMayPlaceBlock(MayPlaceBlockEvent event) {
         AxisAlignedBB aabb = event.getState().getCollisionBoundingBox(event.getWorld(), event.getPos());
         if (aabb != Block.NULL_AABB) {
-            INetworkManager manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
+            ICommonNetworkManager manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 for (Network network : manager.getNetworks()) {
                     if (intersectsTree(aabb.offset(event.getPos()), network.getState().getTree())) {

@@ -1,0 +1,184 @@
+package com.jamieswhiteshirt.clothesline.common.impl;
+
+import com.jamieswhiteshirt.clothesline.api.AbsoluteNetworkState;
+import com.jamieswhiteshirt.clothesline.api.IServerNetworkManager;
+import com.jamieswhiteshirt.clothesline.api.Network;
+import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
+import com.jamieswhiteshirt.clothesline.common.util.BasicTree;
+import com.jamieswhiteshirt.clothesline.common.util.RelativeNetworkState;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.WorldServer;
+import org.apache.commons.lang3.tuple.Pair;
+
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+public final class ServerNetworkManager extends CommonNetworkManager implements IServerNetworkManager {
+    private final WorldServer world;
+    private Map<UUID, Network> networksByUuid = new HashMap<>();
+    private int nextNetworkId = 0;
+
+    public ServerNetworkManager(WorldServer world) {
+        this.world = world;
+    }
+
+    private void dropAttachment(AbsoluteNetworkState state, ItemStack stack, int attachmentKey) {
+        if (!stack.isEmpty() && world.getGameRules().getBoolean("doTileDrops")) {
+            Vec3d pos = state.getTree().getPositionForOffset(state.attachmentKeyToOffset(attachmentKey));
+            EntityItem entityitem = new EntityItem(world, pos.x, pos.y - 0.5D, pos.z, stack);
+            entityitem.setDefaultPickupDelay();
+            world.spawnEntity(entityitem);
+        }
+    }
+
+    private void dropNetworkItems(AbsoluteNetworkState state) {
+        for (MutableSortedIntMap.Entry<ItemStack> entry : state.getAttachments().entries()) {
+            dropAttachment(state, entry.getValue(), entry.getKey());
+        }
+    }
+
+    private Network createAndAddNetwork(AbsoluteNetworkState state) {
+        UUID uuid = UUID.randomUUID();
+        Network network = new Network(uuid, nextNetworkId++, state);
+        addNetwork(network);
+        return network;
+    }
+
+    @Override
+    public void reset(List<Pair<UUID, AbsoluteNetworkState>> data) {
+        nextNetworkId = 0;
+        List<Network> networks = data.stream().map(pair -> new Network(pair.getLeft(), nextNetworkId++, pair.getRight())).collect(Collectors.toList());
+        networksByUuid = new HashMap<>();
+        for (Network network : networks) {
+            networksByUuid.put(network.getUuid(), network);
+        }
+        resetInternal(networks);
+    }
+
+    @Override
+    protected void addNetwork(Network network) {
+        networksByUuid.put(network.getUuid(), network);
+        super.addNetwork(network);
+    }
+
+    @Override
+    public void removeNetwork(Network network) {
+        networksByUuid.remove(network.getUuid());
+        super.removeNetwork(network);
+    }
+
+    @Override
+    public void hitAttachment(Network network, EntityPlayer player, int attachmentKey) {
+        ItemStack stack = network.getState().getAttachment(attachmentKey);
+        if (!stack.isEmpty()) {
+            setAttachment(network, attachmentKey, ItemStack.EMPTY);
+            dropAttachment(network.getState(), stack, attachmentKey);
+        }
+    }
+
+    @Nullable
+    @Override
+    public final Network getNetworkByUuid(UUID uuid) {
+        return networksByUuid.get(uuid);
+    }
+
+    private void extend(Network network, BlockPos fromPos, BlockPos toPos) {
+        RelativeNetworkState relativeState = RelativeNetworkState.fromAbsolute(network.getState());
+        relativeState.addEdge(fromPos, toPos);
+        setNetworkState(network, relativeState.toAbsolute());
+    }
+
+    @Override
+    public final boolean connect(BlockPos posA, BlockPos posB) {
+        if (posA.equals(posB)) {
+            INetworkNode node = getNetworkNodeByPos(posA);
+            if (node != null) {
+                Network network = node.getNetwork();
+                RelativeNetworkState relativeState = RelativeNetworkState.fromAbsolute(network.getState());
+                relativeState.reroot(posB);
+                setNetworkState(network, relativeState.toAbsolute());
+                return true;
+            }
+            return false;
+        }
+
+        INetworkNode nodeA = getNetworkNodeByPos(posA);
+        INetworkNode nodeB = getNetworkNodeByPos(posB);
+
+        if (nodeA != null) {
+            Network networkA = nodeA.getNetwork();
+            if (nodeB != null) {
+                Network networkB = nodeB.getNetwork();
+
+                if (networkA == networkB) {
+                    //TODO: Look into circular networks
+                    return false;
+                }
+
+                removeNetwork(networkA);
+                removeNetwork(networkB);
+
+                RelativeNetworkState stateA = RelativeNetworkState.fromAbsolute(networkA.getState());
+                RelativeNetworkState stateB = RelativeNetworkState.fromAbsolute(networkB.getState());
+                stateB.reroot(posB);
+                stateA.addSubState(posA, stateB);
+
+                createAndAddNetwork(stateA.toAbsolute());
+            } else {
+                extend(networkA, posA, posB);
+            }
+        } else {
+            if (nodeB != null) {
+                Network networkB = nodeB.getNetwork();
+                extend(networkB, posB, posA);
+            } else {
+                AbsoluteNetworkState state = AbsoluteNetworkState.createInitial(BasicTree.createInitial(posA, posB).toAbsolute());
+                createAndAddNetwork(state);
+            }
+        }
+
+        return true;
+    }
+
+    private void applySplitResult(RelativeNetworkState.SplitResult splitResult) {
+        for (RelativeNetworkState subState : splitResult.getSubStates()) {
+            createAndAddNetwork(subState.toAbsolute());
+        }
+        dropNetworkItems(splitResult.getState().toAbsolute());
+    }
+
+    @Override
+    public final void destroy(BlockPos pos) {
+        INetworkNode node = getNetworkNodeByPos(pos);
+        if (node != null) {
+            Network network = node.getNetwork();
+            RelativeNetworkState state = RelativeNetworkState.fromAbsolute(network.getState());
+            state.reroot(pos);
+            removeNetwork(network);
+            applySplitResult(state.splitRoot());
+        }
+    }
+
+    @Override
+    public void disconnect(BlockPos posA, BlockPos posB) {
+        INetworkNode nodeA = getNetworkNodeByPos(posA);
+        INetworkNode nodeB = getNetworkNodeByPos(posB);
+        if (nodeA != null && nodeB != null) {
+            Network network = nodeA.getNetwork();
+            if (network == nodeB.getNetwork()) {
+                RelativeNetworkState state = RelativeNetworkState.fromAbsolute(network.getState());
+                state.reroot(posA);
+                removeNetwork(network);
+                applySplitResult(state.splitEdge(posB));
+            }
+        }
+    }
+}

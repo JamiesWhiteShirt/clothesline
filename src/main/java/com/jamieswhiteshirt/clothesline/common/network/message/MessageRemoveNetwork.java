@@ -4,26 +4,24 @@ import com.jamieswhiteshirt.clothesline.common.util.ByteBufSerialization;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
-import java.util.UUID;
-
 public class MessageRemoveNetwork implements IMessage {
-    public UUID networkUuid;
+    public int networkId;
 
     public MessageRemoveNetwork() {
 
     }
 
-    public MessageRemoveNetwork(UUID networkUuid) {
-        this.networkUuid = networkUuid;
+    public MessageRemoveNetwork(int networkId) {
+        this.networkId = networkId;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        networkUuid = ByteBufSerialization.readNetworkUuid(buf);
+        networkId = ByteBufSerialization.readNetworkId(buf);
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
-        ByteBufSerialization.writeNetworkUuid(buf, networkUuid);
+        ByteBufSerialization.writeNetworkId(buf, networkId);
     }
 }

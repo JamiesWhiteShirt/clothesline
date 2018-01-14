@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.client.network.messagehandler;
 
-import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.api.Network;
+import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.common.Util;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetNetworkState;
 import net.minecraft.client.Minecraft;
@@ -18,8 +18,8 @@ import javax.annotation.Nullable;
 
 @SideOnly(Side.CLIENT)
 public class MessageSetNetworkStateHandler implements IMessageHandler<MessageSetNetworkState, IMessage> {
-    @CapabilityInject(INetworkManager.class)
-    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    @CapabilityInject(IClientNetworkManager.class)
+    private static final Capability<IClientNetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
 
     @Override
     @Nullable
@@ -27,9 +27,9 @@ public class MessageSetNetworkStateHandler implements IMessageHandler<MessageSet
         Minecraft.getMinecraft().addScheduledTask(() -> {
             WorldClient world = Minecraft.getMinecraft().world;
             if (world != null) {
-                INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
+                IClientNetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
                 if (manager != null) {
-                    Network network = manager.getNetworkByUUID(message.networkUuid);
+                    Network network = manager.getNetworkById(message.networkId);
                     if (network != null) {
                         manager.setNetworkState(network, message.state.toAbsolute());
                     }

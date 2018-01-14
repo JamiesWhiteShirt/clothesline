@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.client.network.messagehandler;
 
-import com.jamieswhiteshirt.clothesline.api.INetworkManager;
+import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.common.Util;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageAddNetwork;
 import net.minecraft.client.Minecraft;
@@ -17,8 +17,8 @@ import javax.annotation.Nullable;
 
 @SideOnly(Side.CLIENT)
 public class MessageAddNetworkHandler implements IMessageHandler<MessageAddNetwork, IMessage> {
-    @CapabilityInject(INetworkManager.class)
-    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    @CapabilityInject(IClientNetworkManager.class)
+    private static final Capability<IClientNetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
 
     @Override
     @Nullable
@@ -26,7 +26,7 @@ public class MessageAddNetworkHandler implements IMessageHandler<MessageAddNetwo
         Minecraft.getMinecraft().addScheduledTask(() -> {
             WorldClient world = Minecraft.getMinecraft().world;
             if (world != null) {
-                INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
+                IClientNetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
                 if (manager != null) {
                     manager.addNetwork(message.network.toAbsolute());
                 }

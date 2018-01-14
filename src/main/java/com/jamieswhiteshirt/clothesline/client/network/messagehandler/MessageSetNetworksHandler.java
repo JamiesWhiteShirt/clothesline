@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.client.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
-import com.jamieswhiteshirt.clothesline.api.INetworkManager;
+import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.common.Util;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetNetworks;
 import com.jamieswhiteshirt.clothesline.common.util.BasicNetwork;
@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
 
 @SideOnly(Side.CLIENT)
 public class MessageSetNetworksHandler implements IMessageHandler<MessageSetNetworks, IMessage> {
-    @CapabilityInject(INetworkManager.class)
-    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    @CapabilityInject(IClientNetworkManager.class)
+    private static final Capability<IClientNetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
     // This message may be received before the client world is actually assigned to Minecraft.
     // The network manager holds the world that will later be assigned to the client in this field.
     private static final Field clientWorldController = ReflectionHelper.findField(NetHandlerPlayClient.class, "field_147300_g", "clientWorldController");
@@ -40,9 +40,9 @@ public class MessageSetNetworksHandler implements IMessageHandler<MessageSetNetw
                 Clothesline.logger.error("Could not access client world for network sync", e);
             }
             if (world != null) {
-                INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
+                IClientNetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
                 if (manager != null) {
-                    manager.setNetworks(message.networks.stream().map(
+                    manager.reset(message.networks.stream().map(
                             BasicNetwork::toAbsolute
                     ).collect(Collectors.toList()));
                 }

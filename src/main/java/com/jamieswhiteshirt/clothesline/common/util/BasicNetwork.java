@@ -28,9 +28,10 @@ public class BasicNetwork {
         return state;
     }
 
-    public Network toAbsolute() {
+    public Network toAbsolute(int id) {
         return new Network(
                 uuid,
+                id,
                 state.toAbsolute()
         );
     }
