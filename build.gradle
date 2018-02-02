@@ -27,7 +27,20 @@ minecraft {
     mappings = "snapshot_20170628"
 }
 
+repositories {
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots"
+    }
+}
+
+configurations {
+    contained
+    contained.transitive = false
+}
+
 dependencies {
+    contained "com.jamieswhiteshirt:rtree-3i-lite:0.1-SNAPSHOT"
+    compile "com.jamieswhiteshirt:rtree-3i-lite:0.1-SNAPSHOT"
 }
 
 processResources {
@@ -81,8 +94,12 @@ jar {
         include '*'
     }
 
+    from(configurations.contained.files) {
+        include '*'
+    }
+
     manifest {
-        attributes 'ContainedDeps': coreJar.archivePath.name
+        attributes 'ContainedDeps': ([coreJar.archivePath] + configurations.contained.files).collect { it.name }.join(" ")
     }
 
     dependsOn reobfCoreJar
