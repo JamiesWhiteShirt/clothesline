@@ -1,6 +1,8 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.*;
+import com.jamieswhiteshirt.rtree3i.ConfigurationBuilder;
+import com.jamieswhiteshirt.rtree3i.RTree;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
@@ -11,7 +13,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public abstract class CommonNetworkManager implements ICommonNetworkManager {
-    private static class NetworkNode implements INetworkNode {
+    private static final class NetworkNode implements INetworkNode {
         private final Network network;
         private final NetworkGraph.Node graphNode;
 
@@ -29,16 +31,69 @@ public abstract class CommonNetworkManager implements ICommonNetworkManager {
         public NetworkGraph.Node getGraphNode() {
             return graphNode;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            NetworkNode that = (NetworkNode) o;
+            return Objects.equals(network, that.network) &&
+                Objects.equals(graphNode, that.graphNode);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(network, graphNode);
+        }
+    }
+
+    private static final class NetworkEdge implements INetworkEdge {
+        private final Network network;
+        private final NetworkGraph.Edge graphEdge;
+
+        private NetworkEdge(Network network, NetworkGraph.Edge graphEdge) {
+            this.network = network;
+            this.graphEdge = graphEdge;
+        }
+
+        @Override
+        public Network getNetwork() {
+            return network;
+        }
+
+        @Override
+        public NetworkGraph.Edge getGraphEdge() {
+            return graphEdge;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            NetworkEdge that = (NetworkEdge) o;
+            return Objects.equals(network, that.network) &&
+                Objects.equals(graphEdge, that.graphEdge);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(network, graphEdge);
+        }
     }
 
     private List<Network> networks = new ArrayList<>();
     private IntHashMap<Network> networksById = new IntHashMap<>();
     private Map<BlockPos, NetworkNode> networkNodesByPos = new HashMap<>();
+    private RTree<INetworkEdge> networkEdges = RTree.create(new ConfigurationBuilder().star().build());
     private final List<INetworkManagerEventListener> eventListeners = new ArrayList<>();
 
     private void unassignNetworkGraph(Network network) {
-        for (NetworkGraph.Node graphNode : network.getState().getGraph().getNodes()) {
+        NetworkGraph graph = network.getState().getGraph();
+        for (NetworkGraph.Node graphNode : graph.getNodes()) {
             networkNodesByPos.remove(graphNode.getKey());
+        }
+        for (NetworkGraph.Edge graphEdge : graph.getAllEdges()) {
+            networkEdges = networkEdges.remove(graphEdge.getBox(), new NetworkEdge(network, graphEdge));
         }
     }
 
@@ -77,9 +132,18 @@ public abstract class CommonNetworkManager implements ICommonNetworkManager {
         return networkNodesByPos.get(pos);
     }
 
+    @Override
+    public RTree<INetworkEdge> getNetworkEdges() {
+        return networkEdges;
+    }
+
     private void assignNetworkGraph(Network network) {
-        for (NetworkGraph.Node graphNode : network.getState().getGraph().getNodes()) {
+        NetworkGraph graph = network.getState().getGraph();
+        for (NetworkGraph.Node graphNode : graph.getNodes()) {
             networkNodesByPos.put(graphNode.getKey(), new NetworkNode(network, graphNode));
+        }
+        for (NetworkGraph.Edge graphEdge : graph.getAllEdges()) {
+            networkEdges = networkEdges.add(graphEdge.getBox(), new NetworkEdge(network, graphEdge));
         }
     }
 

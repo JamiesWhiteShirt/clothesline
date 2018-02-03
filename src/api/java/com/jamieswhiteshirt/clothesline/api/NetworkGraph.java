@@ -1,12 +1,13 @@
 package com.jamieswhiteshirt.clothesline.api;
 
+import com.jamieswhiteshirt.rtree3i.Box;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
 
 public class NetworkGraph {
-    public class Node {
+    public final class Node {
         private final BlockPos key;
         private final List<Edge> edges = new ArrayList<>();
 
@@ -64,7 +65,7 @@ public class NetworkGraph {
         }
     }
 
-    public static class Edge {
+    public static final class Edge {
         private final EdgeKey key;
         private final BlockPos fromKey;
         private final BlockPos toKey;
@@ -102,6 +103,34 @@ public class NetworkGraph {
         public Vec3d getPositionForOffset(int offset) {
             double scalar = (double)(offset - getFromOffset()) / (getToOffset() - getFromOffset());
             return Measurements.midVec(getFromKey()).scale(1.0D - scalar).add(Measurements.midVec(getToKey()).scale(scalar));
+        }
+
+        public Box getBox() {
+            return Box.create(
+                Math.min(fromKey.getX(), toKey.getX()),
+                Math.min(fromKey.getY(), toKey.getY()),
+                Math.min(fromKey.getZ(), toKey.getZ()),
+                Math.max(fromKey.getX(), toKey.getX()) + 1,
+                Math.max(fromKey.getY(), toKey.getY()) + 1,
+                Math.max(fromKey.getZ(), toKey.getZ()) + 1
+            );
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Edge edge = (Edge) o;
+            return fromOffset == edge.fromOffset &&
+                toOffset == edge.toOffset &&
+                Objects.equals(key, edge.key) &&
+                Objects.equals(fromKey, edge.fromKey) &&
+                Objects.equals(toKey, edge.toKey);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(key, fromKey, toKey, fromOffset, toOffset);
         }
     }
 

@@ -11,6 +11,8 @@ import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetNetwork
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
 import com.jamieswhiteshirt.clothesline.common.util.BasicNetwork;
 import com.jamieswhiteshirt.clothesline.core.event.MayPlaceBlockEvent;
+import com.jamieswhiteshirt.rtree3i.Box;
+import com.jamieswhiteshirt.rtree3i.RTree;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -19,6 +21,7 @@ import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -164,25 +167,18 @@ public class Clothesline {
         if (aabb != Block.NULL_AABB) {
             ICommonNetworkManager manager = event.getWorld().getCapability(COMMON_NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
-                for (Network network : manager.getNetworks()) {
-                    if (intersectsTree(aabb.offset(event.getPos()), network.getState().getTree())) {
-                        event.setCanceled(true);
-                        return;
-                    }
+                BlockPos pos = event.getPos();
+                Box box = Box.create(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+                boolean intersects = manager.getNetworkEdges().any(RTree.intersects(box), entry -> {
+                    NetworkGraph.Edge edge = entry.getValue().getGraphEdge();
+                    Vec3d fromVec = Measurements.midVec(edge.getFromKey().subtract(pos));
+                    Vec3d toVec = Measurements.midVec(edge.getToKey().subtract(pos));
+                    return aabb.calculateIntercept(fromVec, toVec) != null;
+                });
+                if (intersects) {
+                    event.setCanceled(true);
                 }
             }
         }
-    }
-
-    private boolean intersectsTree(AxisAlignedBB aabb, AbsoluteTree parent) {
-        Vec3d parentVec = Measurements.midVec(parent.getPos());
-        for (AbsoluteTree.Edge edge : parent.getEdges()) {
-            AbsoluteTree child = edge.getTree();
-            Vec3d childVec = Measurements.midVec(child.getPos());
-            if (aabb.calculateIntercept(parentVec, childVec) != null || intersectsTree(aabb, child)) {
-                return true;
-            }
-        }
-        return false;
     }
 }
