@@ -1,6 +1,6 @@
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-package com.jamieswhiteshirt.clothesline.client.entity;
+package com.jamieswhiteshirt.clothesline.client.raytrace;
 
 import mcp.MethodsReturnNonnullByDefault;
 

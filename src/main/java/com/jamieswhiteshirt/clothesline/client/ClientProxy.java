@@ -6,10 +6,14 @@ import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.client.capability.ClientNetworkManagerProvider;
-import com.jamieswhiteshirt.clothesline.client.entity.EntityNetworkRaytraceHit;
+import com.jamieswhiteshirt.clothesline.client.raytrace.EntityNetworkRaytraceHit;
 import com.jamieswhiteshirt.clothesline.client.impl.ClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.client.network.messagehandler.*;
 import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
+import com.jamieswhiteshirt.clothesline.client.raytrace.AttachmentRaytraceHit;
+import com.jamieswhiteshirt.clothesline.client.raytrace.EdgeRaytraceHit;
+import com.jamieswhiteshirt.clothesline.client.raytrace.NetworkRaytraceHit;
+import com.jamieswhiteshirt.clothesline.client.renderer.EdgeAttachmentProjector;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork;
 import com.jamieswhiteshirt.clothesline.client.renderer.tileentity.TileEntityClotheslineAnchorRenderer;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
@@ -26,12 +30,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.*;
@@ -50,11 +52,16 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector4f;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @SideOnly(Side.CLIENT)
 public class ClientProxy extends CommonProxy {
+    private static final AxisAlignedBB attachmentBox = new AxisAlignedBB(-0.5D, -0.5D, -0.5D, 0.5D, 0.5D, 0.5D);
+
     private RenderClotheslineNetwork renderClotheslineNetwork;
 
     @Override
@@ -215,14 +222,6 @@ public class ClientProxy extends CommonProxy {
                 if (manager != null) {
                     boolean showDebugInfo = Minecraft.getMinecraft().gameSettings.showDebugInfo;
                     renderClotheslineNetwork.render(world, manager.getNetworkEdges(), event.getCamera(), x, y, z, partialTicks);
-                    /* for (Network network : manager.getNetworks()) {
-                        //TODO: Cache the RenderNetworkStates
-                        RenderNetworkState renderNetworkState = RenderNetworkState.fromNetworkState(network.getState());
-                        renderClotheslineNetwork.render(world, renderNetworkState, x, y, z, partialTicks);
-                        if (showDebugInfo) {
-                            renderClotheslineNetwork.debugRender(renderNetworkState, x, y, z, partialTicks);
-                        }
-                    } */
                 }
 
                 if (Minecraft.getMinecraft().gameSettings.thirdPersonView <= 0) {
@@ -292,86 +291,6 @@ public class ClientProxy extends CommonProxy {
         }
     }
 
-    @SideOnly(Side.CLIENT)
-    public abstract static class NetworkRaytraceHit {
-        public final double distanceSq;
-        public final IClientNetworkEdge edge;
-
-        public NetworkRaytraceHit(double distanceSq, IClientNetworkEdge edge) {
-            this.distanceSq = distanceSq;
-            this.edge = edge;
-        }
-
-        public abstract boolean hitByEntity(IClientNetworkManager manager, EntityPlayer player);
-
-        public abstract boolean useItem(IClientNetworkManager manager, EntityPlayer player, EnumHand hand);
-
-        public abstract void renderHighlight(RenderClotheslineNetwork renderClotheslineNetwork, float partialTicks, double x, double y, double z, float r, float g, float b, float a);
-    }
-
-    @SideOnly(Side.CLIENT)
-    public static class EdgeRaytraceHit extends NetworkRaytraceHit {
-        private final double offset;
-
-        public EdgeRaytraceHit(double distanceSq, IClientNetworkEdge edge, double offset) {
-            super(distanceSq, edge);
-            this.offset = offset;
-        }
-
-        @Override
-        public boolean hitByEntity(IClientNetworkManager manager, EntityPlayer player) {
-            int offset = (int) Math.round(this.offset);
-            Network network = edge.getNetwork();
-            int attachmentKey = network.getState().offsetToAttachmentKey(offset);
-            Clothesline.instance.networkWrapper.sendToServer(new MessageHitNetwork(network.getId(), attachmentKey, offset));
-            return true;
-        }
-
-        @Override
-        public boolean useItem(IClientNetworkManager manager, EntityPlayer player, EnumHand hand) {
-            int offset = (int) Math.round(this.offset);
-            Network network = edge.getNetwork();
-            int attachmentKey = network.getState().offsetToAttachmentKey(offset);
-            Clothesline.instance.networkWrapper.sendToServer(new MessageTryUseItemOnNetwork(hand, network.getId(), attachmentKey));
-            return manager.useItem(network, player, hand, attachmentKey);
-        }
-
-        @Override
-        public void renderHighlight(RenderClotheslineNetwork renderClotheslineNetwork, float partialTicks, double x, double y, double z, float r, float g, float b, float a) {
-            renderClotheslineNetwork.renderOutline(edge.getProjection(), x, y, z, r, g, b, a);
-        }
-    }
-
-    @SideOnly(Side.CLIENT)
-    public static class AttachmentRaytraceHit extends NetworkRaytraceHit {
-        private final int attachmentKey;
-        private final AxisAlignedBB attachmentBB;
-
-        public AttachmentRaytraceHit(double distanceSq, IClientNetworkEdge edge, int attachmentKey, AxisAlignedBB attachmentBB) {
-            super(distanceSq, edge);
-            this.attachmentKey = attachmentKey;
-            this.attachmentBB = attachmentBB;
-        }
-
-        @Override
-        public boolean hitByEntity(IClientNetworkManager manager, EntityPlayer player) {
-            Network network = edge.getNetwork();
-            Clothesline.instance.networkWrapper.sendToServer(new MessageHitAttachment(network.getId(), attachmentKey));
-            manager.hitAttachment(network, player, attachmentKey);
-            return true;
-        }
-
-        @Override
-        public boolean useItem(IClientNetworkManager manager, EntityPlayer player, EnumHand hand) {
-            return false;
-        }
-
-        @Override
-        public void renderHighlight(RenderClotheslineNetwork renderClotheslineNetwork, float partialTicks, double x, double y, double z, float r, float g, float b, float a) {
-            RenderGlobal.drawSelectionBoundingBox(attachmentBB.offset(-x, -y, -z), r, g, b, a);
-        }
-    }
-
     @SubscribeEvent
     public void onGetMouseOver(GetMouseOverEvent event) {
         float partialTicks = event.getPartialTicks();
@@ -421,6 +340,7 @@ public class ClientProxy extends CommonProxy {
 
     @Nullable
     private NetworkRaytraceHit raytraceEdge(Ray viewRay, IClientNetworkEdge edge, double maxDistanceSq, float partialTicks) {
+        Graph.Edge graphEdge = edge.getGraphEdge();
         NetworkRaytraceHit hit = null;
 
         Ray edgeRay = new Ray(edge.getProjection().projectRUF(-2.0D / 16.0D, 0.0D, 0.0D), edge.getProjection().projectRUF(-2.0D / 16.0D, 0.0D, 1.0D));
@@ -441,7 +361,6 @@ public class ClientProxy extends CommonProxy {
             if (nearDelta.lengthSquared() < (1.0D / 16.0D) * (1.0D / 16.0D)) {
                 double rayLengthSquared = (viewNear.subtract(viewRay.from)).lengthSquared();
                 if (rayLengthSquared < maxDistanceSq) {
-                    Graph.Edge graphEdge = edge.getGraphEdge();
                     double offset = graphEdge.getFromOffset() * (1.0D - edgeDeltaScalar) + graphEdge.getToOffset() * edgeDeltaScalar;
                     hit = new EdgeRaytraceHit(rayLengthSquared, edge, offset);
                 }
@@ -449,24 +368,35 @@ public class ClientProxy extends CommonProxy {
         }
 
         AbsoluteNetworkState state = edge.getNetwork().getState();
-        AxisAlignedBB basicBB = new AxisAlignedBB(-0.25D, -0.5D, -0.25D, 0.25D, 0.0D, 0.25D);
-
-        Graph.Edge graphEdge = edge.getGraphEdge();
         double fromAttachmentKey = state.offsetToAttachmentKey(graphEdge.getFromOffset(), partialTicks);
         double toAttachmentKey = state.offsetToAttachmentKey(graphEdge.getToOffset(), partialTicks);
-        for (MutableSortedIntMap.Entry<ItemStack> entry : state.getAttachmentsInRange((int) fromAttachmentKey, (int) toAttachmentKey)) {
-            double attachmentOffset = state.attachmentKeyToOffset(entry.getKey(), partialTicks);
-            double relativeOffset = attachmentOffset - graphEdge.getFromOffset();
-            double edgePosScalar = relativeOffset / (graphEdge.getToOffset() - graphEdge.getFromOffset());
-            Vec3d pos = edge.getProjection().projectRUF(-2.0D / 16.0D, 0.0D, edgePosScalar);
-            AxisAlignedBB attachmentBB = basicBB.offset(pos);
+        List<MutableSortedIntMap.Entry<ItemStack>> attachments = state.getAttachmentsInRange((int) fromAttachmentKey, (int) toAttachmentKey);
+        if (!attachments.isEmpty()) {
+            Vector4f lFrom = new Vector4f();
+            Vector4f lTo = new Vector4f();
+            Vector4f wHitVec = new Vector4f();
 
-            RayTraceResult result = attachmentBB.calculateIntercept(viewRay.from, viewRay.to);
-            if (result != null) {
-                double distanceSq = result.hitVec.squareDistanceTo(viewRay.from);
-                if (distanceSq < maxDistanceSq) {
-                    maxDistanceSq = distanceSq;
-                    hit = new AttachmentRaytraceHit(distanceSq, edge, entry.getKey(), attachmentBB);
+            EdgeAttachmentProjector projector = EdgeAttachmentProjector.build(edge);
+            for (MutableSortedIntMap.Entry<ItemStack> entry : attachments) {
+                double attachmentOffset = state.attachmentKeyToOffset(entry.getKey(), partialTicks);
+                // Local space to world space matrix
+                Matrix4f l2w = projector.getL2WForAttachment(state.getMomentum(partialTicks), attachmentOffset, partialTicks);
+
+                // World space to local space matrix
+                Matrix4f w2l = new Matrix4f();
+                Matrix4f.invert(l2w, w2l);
+
+                Matrix4f.transform(w2l, new Vector4f((float) viewRay.from.x, (float) viewRay.from.y, (float) viewRay.from.z, 1.0F), lFrom);
+                Matrix4f.transform(w2l, new Vector4f((float) viewRay.to.x, (float) viewRay.to.y, (float) viewRay.to.z, 1.0F), lTo);
+
+                RayTraceResult result = attachmentBox.calculateIntercept(new Vec3d(lFrom.x, lFrom.y, lFrom.z), new Vec3d(lTo.x, lTo.y, lTo.z));
+                if (result != null) {
+                    Matrix4f.transform(l2w, new Vector4f((float) result.hitVec.x, (float) result.hitVec.y, (float) result.hitVec.z, 1.0F), wHitVec);
+                    double distanceSq = new Vec3d(wHitVec.x, wHitVec.y, wHitVec.z).squareDistanceTo(viewRay.from);
+                    if (distanceSq < maxDistanceSq) {
+                        maxDistanceSq = distanceSq;
+                        hit = new AttachmentRaytraceHit(distanceSq, edge, entry.getKey(), l2w);
+                    }
                 }
             }
         }

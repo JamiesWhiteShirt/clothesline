@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.item.ItemStack;
@@ -26,7 +25,10 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector4f;
 
+import java.nio.FloatBuffer;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
@@ -138,6 +140,13 @@ public final class RenderClotheslineNetwork {
         RenderHelper.enableStandardItemLighting();
         GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 
+        // Local position of attachment item
+        Vector4f lPos = new Vector4f(0.0F, 0.0F, 0.0F, 1.0F);
+        // World position of attachment item
+        Vector4f wPos = new Vector4f();
+        // Buffer for local space to world space matrix to upload to GL
+        FloatBuffer l2wBuffer = GLAllocation.createDirectFloatBuffer(16);
+
         for (Entry<IClientNetworkEdge> edgeEntry : entries) {
             IClientNetworkEdge edge = edgeEntry.getValue();
             Graph.Edge graphEdge = edge.getGraphEdge();
@@ -147,40 +156,34 @@ public final class RenderClotheslineNetwork {
 
             List<MutableSortedIntMap.Entry<ItemStack>> attachments = state.getAttachmentsInRange((int) fromAttachmentKey, (int) toAttachmentKey);
             if (!attachments.isEmpty()) {
-                float angleY = graphEdge.getKey().getAngle();
-                Graph.Edge previousGraphEdge = state.getGraph().getEdgeForOffset(graphEdge.getFromOffset() - 1);
-                float angleDiff = (graphEdge.getKey().getAngle() - previousGraphEdge.getKey().getAngle() + 360.0F) % 360.0F;
-                float speedRatio = (float) state.getMomentum(partialTicks) / AbsoluteNetworkState.MAX_MOMENTUM;
-                float swingMax = angleDiff / 4.0F * speedRatio * speedRatio;
+                EdgeAttachmentProjector projector = EdgeAttachmentProjector.build(edge);
 
                 for (MutableSortedIntMap.Entry<ItemStack> attachmentEntry : attachments) {
                     double attachmentOffset = state.attachmentKeyToOffset(attachmentEntry.getKey(), partialTicks);
-                    double relativeOffset = attachmentOffset - graphEdge.getFromOffset();
-                    double edgePosScalar = relativeOffset / graphEdge.getLength();
-                    Vec3d pos = edge.getProjection().projectRUF(-2.0D / 16.0D, 0.0D, edgePosScalar);
+                    // Local space to world space matrix
+                    Matrix4f l2w = projector.getL2WForAttachment(state.getMomentum(partialTicks), attachmentOffset, partialTicks);
 
-                    int light = world.getCombinedLight(new BlockPos(pos), 0);
+                    // Create world position of attachment for lighting calculation
+                    Matrix4f.transform(l2w, lPos, wPos);
+                    int light = world.getCombinedLight(new BlockPos(MathHelper.floor(wPos.x), MathHelper.floor(wPos.y), MathHelper.floor(wPos.z)), 0);
                     OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float)(light & 0xFFFF), (float)((light >> 16) & 0xFFFF));
 
+                    // Store and flip to be ready for read
+                    l2w.store(l2wBuffer);
+                    l2wBuffer.flip();
+
                     GlStateManager.pushMatrix();
-                    GlStateManager.translate(pos.x - viewPos.x, pos.y - viewPos.y, pos.z - viewPos.z);
-                    GlStateManager.scale(0.5D, 0.5D, 0.5D);
-                    GlStateManager.rotate(-angleY, 0.0f, 1.0f, 0.0f);
-                    GlStateManager.rotate(
-                        swingMax *
-                            (float)(Math.exp(-relativeOffset / (Measurements.UNIT_LENGTH * 2.0D))) *
-                            MathHelper.sin((float)(relativeOffset / (AbsoluteNetworkState.MAX_MOMENTUM * 2.0D)))
-                        , 1.0F, 0.0F, 0.0F);
-                    GlStateManager.translate(0.0f, -0.5f, 0.0f);
-
+                    GlStateManager.translate(-viewPos.x, -viewPos.y, -viewPos.z);
+                    GlStateManager.multMatrix(l2wBuffer);
                     renderItem.renderItem(attachmentEntry.getValue(), ItemCameraTransforms.TransformType.FIXED);
-
                     GlStateManager.popMatrix();
+
+                    l2wBuffer.clear();
                 }
             }
         }
 
-        Minecraft.getMinecraft().entityRenderer.disableLightmap();
+        GlStateManager.disableRescaleNormal();
     }
 
     public void renderOutline(LineProjection p, double x, double y, double z, float r, float g, float b, float a) {

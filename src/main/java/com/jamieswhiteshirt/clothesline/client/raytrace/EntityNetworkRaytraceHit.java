@@ -1,4 +1,4 @@
-package com.jamieswhiteshirt.clothesline.client.entity;
+package com.jamieswhiteshirt.clothesline.client.raytrace;
 
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.client.raytrace.NetworkRaytraceHit;
