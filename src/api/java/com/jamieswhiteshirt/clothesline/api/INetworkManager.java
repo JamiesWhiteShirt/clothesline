@@ -1,7 +1,5 @@
 package com.jamieswhiteshirt.clothesline.api;
 
-import com.jamieswhiteshirt.rtree3i.Box;
-import com.jamieswhiteshirt.rtree3i.Entry;
 import com.jamieswhiteshirt.rtree3i.RTree;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -10,22 +8,8 @@ import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
 
-public interface ICommonNetworkManager {
-    interface INetworkNode {
-        Network getNetwork();
-
-        NetworkGraph.Node getGraphNode();
-    }
-
-    interface INetworkEdge {
-        Network getNetwork();
-
-        NetworkGraph.Edge getGraphEdge();
-    }
-
+public interface INetworkManager<T extends INetworkEdge> {
     Collection<Network> getNetworks();
 
     @Nullable
@@ -34,7 +18,7 @@ public interface ICommonNetworkManager {
     @Nullable
     INetworkNode getNetworkNodeByPos(BlockPos pos);
 
-    RTree<INetworkEdge> getNetworkEdges();
+    RTree<T> getNetworkEdges();
 
     void removeNetwork(Network network);
 

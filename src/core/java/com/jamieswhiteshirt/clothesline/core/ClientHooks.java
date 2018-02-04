@@ -5,6 +5,7 @@ import com.jamieswhiteshirt.clothesline.core.event.GetMouseOverEvent;
 import com.jamieswhiteshirt.clothesline.core.event.ClientStoppedUsingItemEvent;
 import com.jamieswhiteshirt.clothesline.core.event.RenderEntitiesEvent;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
@@ -21,8 +22,8 @@ public class ClientHooks {
         MinecraftForge.EVENT_BUS.post(new GetMouseOverEvent(partialTicks));
     }
 
-    public static void onRenderEntities(float partialTicks) {
-        MinecraftForge.EVENT_BUS.post(new RenderEntitiesEvent(partialTicks));
+    public static void onRenderEntities(ICamera camera, float partialTicks) {
+        MinecraftForge.EVENT_BUS.post(new RenderEntitiesEvent(camera, partialTicks));
     }
 
     public static boolean onStoppedUsingItem() {

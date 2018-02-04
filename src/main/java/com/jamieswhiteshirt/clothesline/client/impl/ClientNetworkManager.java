@@ -1,8 +1,11 @@
 package com.jamieswhiteshirt.clothesline.client.impl;
 
-import com.jamieswhiteshirt.clothesline.api.IClientNetworkManager;
+import com.jamieswhiteshirt.clothesline.api.Graph;
+import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
+import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
+import com.jamieswhiteshirt.clothesline.api.INetworkNode;
 import com.jamieswhiteshirt.clothesline.api.Network;
-import com.jamieswhiteshirt.clothesline.common.impl.CommonNetworkManager;
+import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -13,13 +16,18 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.List;
 
 @SideOnly(Side.CLIENT)
-public final class ClientNetworkManager extends CommonNetworkManager implements IClientNetworkManager {
+public final class ClientNetworkManager extends NetworkManager<IClientNetworkEdge> implements IClientNetworkManager {
     public ClientNetworkManager(WorldClient world) {
     }
 
     @Override
     public void reset(List<Network> networks) {
         resetInternal(networks);
+    }
+
+    @Override
+    protected ClientNetworkEdge createNetworkEdge(Network network, Graph.Edge graphEdge) {
+        return new ClientNetworkEdge(network, graphEdge);
     }
 
     @Override

@@ -1,10 +1,9 @@
 package com.jamieswhiteshirt.clothesline.common.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
-import com.jamieswhiteshirt.clothesline.api.AbsoluteNetworkState;
 import com.jamieswhiteshirt.clothesline.api.IServerNetworkManager;
 import com.jamieswhiteshirt.clothesline.api.Network;
-import com.jamieswhiteshirt.clothesline.api.NetworkGraph;
+import com.jamieswhiteshirt.clothesline.api.Graph;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageHitNetwork;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldServer;
@@ -25,8 +24,7 @@ public class MessageHitNetworkHandler implements IMessageHandler<MessageHitNetwo
             if (manager != null) {
                 Network network = manager.getNetworkById(message.networkId);
                 if (network != null) {
-                    AbsoluteNetworkState state = network.getState();
-                    NetworkGraph.Edge edge = state.getTree().getGraphEdgeForOffset(message.offset);
+                    Graph.Edge edge = network.getState().getGraph().getEdgeForOffset(message.offset);
                     if (Validation.canReachPos(player, edge.getPositionForOffset(message.offset))) {
                         manager.disconnect(edge.getFromKey(), edge.getToKey());
                     }

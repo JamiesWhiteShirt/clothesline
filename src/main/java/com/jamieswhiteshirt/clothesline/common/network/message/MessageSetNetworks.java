@@ -2,7 +2,6 @@ package com.jamieswhiteshirt.clothesline.common.network.message;
 
 import com.jamieswhiteshirt.clothesline.common.util.BasicNetwork;
 import com.jamieswhiteshirt.clothesline.common.util.ByteBufSerialization;
-import com.jamieswhiteshirt.clothesline.common.util.BasicPersistentNetwork;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 

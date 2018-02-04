@@ -1,9 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
-import com.jamieswhiteshirt.clothesline.api.AbsoluteNetworkState;
-import com.jamieswhiteshirt.clothesline.api.IServerNetworkManager;
-import com.jamieswhiteshirt.clothesline.api.Network;
-import com.jamieswhiteshirt.clothesline.api.PersistentNetwork;
+import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.common.util.BasicTree;
 import com.jamieswhiteshirt.clothesline.common.util.RelativeNetworkState;
@@ -21,7 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public final class ServerNetworkManager extends CommonNetworkManager implements IServerNetworkManager {
+public final class ServerNetworkManager extends NetworkManager<NetworkEdge> implements IServerNetworkManager<NetworkEdge> {
     private final WorldServer world;
     private Map<UUID, Network> networksByUuid = new HashMap<>();
     private int nextNetworkId = 0;
@@ -32,7 +29,7 @@ public final class ServerNetworkManager extends CommonNetworkManager implements 
 
     private void dropAttachment(AbsoluteNetworkState state, ItemStack stack, int attachmentKey) {
         if (!stack.isEmpty() && world.getGameRules().getBoolean("doTileDrops")) {
-            Vec3d pos = state.getTree().getPositionForOffset(state.attachmentKeyToOffset(attachmentKey));
+            Vec3d pos = state.getGraph().getPositionForOffset(state.attachmentKeyToOffset(attachmentKey));
             EntityItem entityitem = new EntityItem(world, pos.x, pos.y - 0.5D, pos.z, stack);
             entityitem.setDefaultPickupDelay();
             world.spawnEntity(entityitem);
@@ -60,6 +57,11 @@ public final class ServerNetworkManager extends CommonNetworkManager implements 
             networksByUuid.put(network.getUuid(), network);
         }
         resetInternal(networks);
+    }
+
+    @Override
+    protected NetworkEdge createNetworkEdge(Network network, Graph.Edge graphEdge) {
+        return new NetworkEdge(network, graphEdge);
     }
 
     @Override

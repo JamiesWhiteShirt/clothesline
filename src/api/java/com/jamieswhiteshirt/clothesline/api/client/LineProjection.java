@@ -1,10 +1,7 @@
-package com.jamieswhiteshirt.clothesline.client.renderer;
+package com.jamieswhiteshirt.clothesline.api.client;
 
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
-@SideOnly(Side.CLIENT)
 public final class LineProjection {
     private final Vec3d origin;
     private final Vec3d right;

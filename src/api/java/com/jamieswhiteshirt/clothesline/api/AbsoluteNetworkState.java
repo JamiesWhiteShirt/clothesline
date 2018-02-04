@@ -1,5 +1,6 @@
 package com.jamieswhiteshirt.clothesline.api;
 
+import com.jamieswhiteshirt.clothesline.api.util.MathUtil;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -13,7 +14,7 @@ import java.util.Map;
  * Performant for manipulation of attachments on the network.
  */
 public final class AbsoluteNetworkState {
-    public static final int MAX_MOMENTUM = 30;
+    public static final int MAX_MOMENTUM = 40;
 
     private int previousShift;
     private int shift;
@@ -21,7 +22,7 @@ public final class AbsoluteNetworkState {
     private int momentum;
 
     private final AbsoluteTree tree;
-    private final NetworkGraph graph;
+    private final Graph graph;
     private final Map<BlockPos, AbsoluteTree> posLookup;
     private final MutableSortedIntMap<ItemStack> attachments;
 
@@ -38,7 +39,7 @@ public final class AbsoluteNetworkState {
 
     public AbsoluteNetworkState(int previousShift, int shift, int previousMomentum, int momentum, AbsoluteTree tree, MutableSortedIntMap<ItemStack> attachments) {
         this.tree = tree;
-        this.graph = tree.toGraph();
+        this.graph = tree.buildGraph();
         this.posLookup = tree.createPositionLookup();
         this.attachments = attachments;
         this.previousShift = previousShift;
@@ -55,7 +56,7 @@ public final class AbsoluteNetworkState {
         return tree;
     }
 
-    public NetworkGraph getGraph() {
+    public Graph getGraph() {
         return graph;
     }
 
@@ -113,12 +114,20 @@ public final class AbsoluteNetworkState {
         return previousShift;
     }
 
+    public double getShift(float partialTicks) {
+        return previousShift + (shift - previousShift) * partialTicks;
+    }
+
     public int getMomentum() {
         return momentum;
     }
 
     public int getPreviousMomentum() {
         return previousMomentum;
+    }
+
+    public double getMomentum(float partialTicks) {
+        return previousMomentum + (momentum - previousMomentum) * partialTicks;
     }
 
     public int getLoopLength() {
@@ -129,7 +138,15 @@ public final class AbsoluteNetworkState {
         return Math.floorMod(offset - shift, getLoopLength());
     }
 
+    public double offsetToAttachmentKey(double offset, float partialTicks) {
+        return MathUtil.floorMod(offset - getShift(partialTicks), getLoopLength());
+    }
+
     public int attachmentKeyToOffset(int attachmentKey) {
         return Math.floorMod(attachmentKey + shift, getLoopLength());
+    }
+
+    public double attachmentKeyToOffset(double attachmentKey, float partialTicks) {
+        return MathUtil.floorMod(attachmentKey + getShift(partialTicks), getLoopLength());
     }
 }

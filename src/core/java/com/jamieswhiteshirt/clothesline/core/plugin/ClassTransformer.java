@@ -102,12 +102,13 @@ public class ClassTransformer implements IClassTransformer {
                                             mInsnNode.desc.equals("()V")
                                     ) {
                                         InsnList insnList = new InsnList();
+                                        insnList.add(new VarInsnNode(Opcodes.ALOAD, 2));
                                         insnList.add(new VarInsnNode(Opcodes.FLOAD, 3));
                                         insnList.add(new MethodInsnNode(
                                                 Opcodes.INVOKESTATIC,
                                                 "com/jamieswhiteshirt/clothesline/core/ClientHooks",
                                                 "onRenderEntities",
-                                                "(F)V",
+                                                "(Lnet/minecraft/client/renderer/culling/ICamera;F)V",
                                                 false
                                         ));
                                         i += insnList.size();

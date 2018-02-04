@@ -6,38 +6,18 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
 
-public class NetworkGraph {
-    public final class Node {
+public class Graph {
+    public static final class Node {
         private final BlockPos key;
-        private final List<Edge> edges = new ArrayList<>();
+        private final List<Edge> edges;
 
-        private Node(BlockPos key) {
+        public Node(BlockPos key, List<Edge> edges) {
             this.key = key;
+            this.edges = edges;
         }
 
         public BlockPos getKey() {
             return key;
-        }
-
-        private void putEdge(Edge edge, int minIndex, int maxIndex) {
-            if (minIndex != maxIndex) {
-                int middleIndex = (minIndex + maxIndex) / 2;
-                int comparison = edge.getKey().compareTo(edges.get(middleIndex).getKey());
-                if (comparison < 0) {
-                    putEdge(edge, minIndex, middleIndex);
-                } else if (comparison > 0) {
-                    putEdge(edge, middleIndex + 1, maxIndex);
-                }
-            } else {
-                edges.add(minIndex, edge);
-            }
-        }
-
-        public void putEdge(EdgeKey key, BlockPos toKey) {
-            int minOffset = getMaxOffset();
-            Edge edge = new Edge(key, this.key, toKey, minOffset, minOffset + key.getLength());
-            allEdges.add(edge);
-            putEdge(edge, 0, edges.size());
         }
 
         private int floorEdgeIndex(EdgeKey key, int minIndex, int maxIndex) {
@@ -62,6 +42,20 @@ public class NetworkGraph {
 
         public int getCornerOffset(EdgeKey key) {
             return edges.get(floorEdgeIndex(key) % edges.size()).fromOffset;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Node node = (Node) o;
+            return Objects.equals(key, node.key) &&
+                Objects.equals(edges, node.edges);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(key, edges);
         }
     }
 
@@ -100,6 +94,10 @@ public class NetworkGraph {
             return toOffset;
         }
 
+        public int getLength() {
+            return toOffset - fromOffset;
+        }
+
         public Vec3d getPositionForOffset(int offset) {
             double scalar = (double)(offset - getFromOffset()) / (getToOffset() - getFromOffset());
             return Measurements.midVec(getFromKey()).scale(1.0D - scalar).add(Measurements.midVec(getToKey()).scale(scalar));
@@ -134,28 +132,51 @@ public class NetworkGraph {
         }
     }
 
-    private final Map<BlockPos, Node> nodes = new HashMap<>();
-    private final List<Edge> allEdges = new ArrayList<>();
+    private final Map<BlockPos, Node> nodes;
+    private final List<Edge> edges;
+
+    public Graph(Map<BlockPos, Node> nodes, List<Edge> edges) {
+        this.nodes = nodes;
+        this.edges = edges;
+    }
 
     public int getMaxOffset() {
-        if (!allEdges.isEmpty()) {
-            return allEdges.get(allEdges.size() - 1).toOffset;
+        if (!edges.isEmpty()) {
+            return edges.get(edges.size() - 1).toOffset;
         } else {
             return 0;
         }
-    }
-
-    public Node putNode(BlockPos key) {
-        Node node = new Node(key);
-        nodes.put(key, node);
-        return node;
     }
 
     public Collection<Node> getNodes() {
         return nodes.values();
     }
 
-    public List<Edge> getAllEdges() {
-        return allEdges;
+    public List<Edge> getEdges() {
+        return edges;
+    }
+
+    private Edge getEdgeForOffset(int offset, int fromIndex, int toIndex) {
+        if (fromIndex != toIndex) {
+            int middleIndex = (fromIndex + toIndex) / 2;
+            Edge edge = edges.get(middleIndex);
+            if (offset < edge.fromOffset) {
+                return getEdgeForOffset(offset, fromIndex, middleIndex);
+            } else if (offset >= edge.toOffset) {
+                return getEdgeForOffset(offset, middleIndex + 1, toIndex);
+            } else {
+                return edge;
+            }
+        } else {
+            return edges.get(fromIndex);
+        }
+    }
+
+    public Edge getEdgeForOffset(int offset) {
+        return getEdgeForOffset(offset, 0, edges.size());
+    }
+
+    public Vec3d getPositionForOffset(int offset) {
+        return getEdgeForOffset(offset).getPositionForOffset(offset);
     }
 }

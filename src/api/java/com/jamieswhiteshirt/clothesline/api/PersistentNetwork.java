@@ -4,14 +4,10 @@ import java.util.UUID;
 
 public class PersistentNetwork {
     private final UUID uuid;
-    private AbsoluteNetworkState state;
+    private final AbsoluteNetworkState state;
 
     public PersistentNetwork(UUID uuid, AbsoluteNetworkState state) {
         this.uuid = uuid;
-        this.state = state;
-    }
-
-    public void setState(AbsoluteNetworkState state) {
         this.state = state;
     }
 
@@ -21,9 +17,5 @@ public class PersistentNetwork {
 
     public AbsoluteNetworkState getState() {
         return state;
-    }
-
-    public void update() {
-        this.state.update();
     }
 }

@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.client.entity;
 
-import com.jamieswhiteshirt.clothesline.api.IClientNetworkManager;
-import com.jamieswhiteshirt.clothesline.client.ClientProxy;
+import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
+import com.jamieswhiteshirt.clothesline.client.raytrace.NetworkRaytraceHit;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -13,13 +13,13 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public final class EntityNetworkRaytraceHit extends Entity {
     private IClientNetworkManager manager;
-    private ClientProxy.NetworkRaytraceHit hit;
+    private NetworkRaytraceHit hit;
 
     public EntityNetworkRaytraceHit(World worldIn) {
         super(worldIn);
     }
 
-    public EntityNetworkRaytraceHit(World world, IClientNetworkManager manager, ClientProxy.NetworkRaytraceHit hit) {
+    public EntityNetworkRaytraceHit(World world, IClientNetworkManager manager, NetworkRaytraceHit hit) {
         this(world);
         this.manager = manager;
         this.hit = hit;
@@ -36,15 +36,15 @@ public final class EntityNetworkRaytraceHit extends Entity {
 
     @Override
     public boolean hitByEntity(Entity entity) {
-        return hit.graphHit.hitByEntity(manager, hit.network, (EntityPlayer) entity);
+        return hit.hitByEntity(manager, (EntityPlayer) entity);
     }
 
     @Override
     public boolean processInitialInteract(EntityPlayer player, EnumHand hand) {
-        return hit.graphHit.useItem(manager, hit.network, player, hand);
+        return hit.useItem(manager, player, hand);
     }
 
-    public ClientProxy.NetworkRaytraceHit getHit() {
+    public NetworkRaytraceHit getHit() {
         return hit;
     }
 }

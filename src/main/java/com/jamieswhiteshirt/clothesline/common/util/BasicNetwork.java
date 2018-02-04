@@ -4,7 +4,7 @@ import com.jamieswhiteshirt.clothesline.api.Network;
 
 public class BasicNetwork {
     public static BasicNetwork fromAbsolute(Network network) {
-        return new BasicNetwork(network.getId(), BasicPersistentNetwork.fromAbsolute(network.getPersistent()));
+        return new BasicNetwork(network.getId(), BasicPersistentNetwork.fromAbsolute(network.toPersistent()));
     }
 
     private final int id;

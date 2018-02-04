@@ -4,11 +4,13 @@ import java.util.UUID;
 
 public final class Network {
     private final int id;
-    private final PersistentNetwork persistentNetwork;
+    private final UUID uuid;
+    private AbsoluteNetworkState state;
 
     public Network(int id, PersistentNetwork persistentNetwork) {
         this.id = id;
-        this.persistentNetwork = persistentNetwork;
+        this.uuid = persistentNetwork.getUuid();
+        this.state = persistentNetwork.getState();
     }
 
     public int getId() {
@@ -16,22 +18,22 @@ public final class Network {
     }
 
     public UUID getUuid() {
-        return persistentNetwork.getUuid();
+        return uuid;
     }
 
     public void setState(AbsoluteNetworkState state) {
-        persistentNetwork.setState(state);
+        this.state = state;
     }
 
     public AbsoluteNetworkState getState() {
-        return persistentNetwork.getState();
+        return state;
     }
 
     public void update() {
-        persistentNetwork.update();
+        state.update();
     }
 
-    public PersistentNetwork getPersistent() {
-        return persistentNetwork;
+    public PersistentNetwork toPersistent() {
+        return new PersistentNetwork(uuid, state);
     }
 }

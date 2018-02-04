@@ -23,14 +23,14 @@ public class ServerNetworkManagerProvider implements ICapabilitySerializable<NBT
 
     @Override
     public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
-        return capability == Clothesline.COMMON_NETWORK_MANAGER_CAPABILITY || capability == Clothesline.SERVER_NETWORK_MANAGER_CAPABILITY;
+        return capability == Clothesline.NETWORK_MANAGER_CAPABILITY || capability == Clothesline.SERVER_NETWORK_MANAGER_CAPABILITY;
     }
 
     @Nullable
     @Override
     public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
-        if (capability == Clothesline.COMMON_NETWORK_MANAGER_CAPABILITY) {
-            return Clothesline.COMMON_NETWORK_MANAGER_CAPABILITY.cast(instance);
+        if (capability == Clothesline.NETWORK_MANAGER_CAPABILITY) {
+            return Clothesline.NETWORK_MANAGER_CAPABILITY.cast(instance);
         } else if (capability == Clothesline.SERVER_NETWORK_MANAGER_CAPABILITY) {
             return Clothesline.SERVER_NETWORK_MANAGER_CAPABILITY.cast(instance);
         } else {
@@ -42,7 +42,7 @@ public class ServerNetworkManagerProvider implements ICapabilitySerializable<NBT
     @Nullable
     public NBTTagList serializeNBT() {
         return NBTSerialization.writePersistentNetworks(instance.getNetworks().stream().map(
-                Network::getPersistent
+                Network::toPersistent
         ).map(
                 BasicPersistentNetwork::fromAbsolute
         ).collect(Collectors.toList()));

@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
-public interface IServerNetworkManager extends ICommonNetworkManager {
+public interface IServerNetworkManager<T extends INetworkEdge> extends INetworkManager<T> {
     void reset(List<PersistentNetwork> networks);
 
     @Nullable

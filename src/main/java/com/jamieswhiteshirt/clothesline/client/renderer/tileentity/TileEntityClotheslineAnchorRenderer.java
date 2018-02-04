@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.client.renderer.tileentity;
 
-import com.jamieswhiteshirt.clothesline.api.ICommonNetworkManager;
+import com.jamieswhiteshirt.clothesline.api.INetworkNode;
 import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
@@ -25,7 +25,7 @@ public class TileEntityClotheslineAnchorRenderer extends TileEntitySpecialRender
 
     @Override
     public void render(TileEntityClotheslineAnchor te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
-        ICommonNetworkManager.INetworkNode node = te.getNetworkNode();
+        INetworkNode node = te.getNetworkNode();
         float crankRotation = 0.0F;
         if (node != null) {
             Network network = node.getNetwork();

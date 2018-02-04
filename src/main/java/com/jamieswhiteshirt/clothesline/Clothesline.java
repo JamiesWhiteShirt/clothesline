@@ -1,6 +1,8 @@
 package com.jamieswhiteshirt.clothesline;
 
 import com.jamieswhiteshirt.clothesline.api.*;
+import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
+import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.common.*;
 import com.jamieswhiteshirt.clothesline.common.capability.*;
 import com.jamieswhiteshirt.clothesline.common.impl.Connector;
@@ -57,10 +59,10 @@ public class Clothesline {
     public static final String MODID = "clothesline";
     public static final String VERSION = "1.12-0.0.0.0";
 
-    @CapabilityInject(ICommonNetworkManager.class)
-    public static final Capability<ICommonNetworkManager> COMMON_NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    @CapabilityInject(INetworkManager.class)
+    public static final Capability<INetworkManager<? extends INetworkEdge>> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
     @CapabilityInject(IServerNetworkManager.class)
-    public static final Capability<IServerNetworkManager> SERVER_NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    public static final Capability<IServerNetworkManager<? extends INetworkEdge>> SERVER_NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
     @CapabilityInject(IClientNetworkManager.class)
     public static final Capability<IClientNetworkManager> CLIENT_NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
     @CapabilityInject(IConnector.class)
@@ -83,7 +85,7 @@ public class Clothesline {
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
         MinecraftForge.EVENT_BUS.register(this);
-        CapabilityManager.INSTANCE.register(ICommonNetworkManager.class, new DummyStorage<>(), new DummyFactory<>());
+        CapabilityManager.INSTANCE.register(INetworkManager.class, new DummyStorage<>(), new DummyFactory<>());
         CapabilityManager.INSTANCE.register(IServerNetworkManager.class, new DummyStorage<>(), new DummyFactory<>());
         CapabilityManager.INSTANCE.register(IClientNetworkManager.class, new DummyStorage<>(), new DummyFactory<>());
         CapabilityManager.INSTANCE.register(IConnector.class, new ConnectorStorage(), Connector::new);
@@ -142,7 +144,7 @@ public class Clothesline {
     public void onEntityJoinWorld(EntityJoinWorldEvent event) {
         if (!event.getWorld().isRemote && event.getEntity() instanceof EntityPlayerMP) {
             EntityPlayerMP player = (EntityPlayerMP) event.getEntity();
-            ICommonNetworkManager manager = event.getWorld().getCapability(COMMON_NETWORK_MANAGER_CAPABILITY, null);
+            INetworkManager<? extends INetworkEdge> manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 networkWrapper.sendTo(new MessageSetNetworks(manager.getNetworks().stream().map(
                         BasicNetwork::fromAbsolute
@@ -154,7 +156,7 @@ public class Clothesline {
     @SubscribeEvent
     public void onWorldTick(TickEvent.WorldTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
-            ICommonNetworkManager manager = event.world.getCapability(COMMON_NETWORK_MANAGER_CAPABILITY, null);
+            INetworkManager manager = event.world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 manager.update();
             }
@@ -163,16 +165,17 @@ public class Clothesline {
 
     @SubscribeEvent
     public void onMayPlaceBlock(MayPlaceBlockEvent event) {
-        AxisAlignedBB aabb = event.getState().getCollisionBoundingBox(event.getWorld(), event.getPos());
-        if (aabb != Block.NULL_AABB) {
-            ICommonNetworkManager manager = event.getWorld().getCapability(COMMON_NETWORK_MANAGER_CAPABILITY, null);
+        AxisAlignedBB blockAabb = event.getState().getCollisionBoundingBox(event.getWorld(), event.getPos());
+        if (blockAabb != Block.NULL_AABB) {
+            INetworkManager<? extends INetworkEdge> manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 BlockPos pos = event.getPos();
+                AxisAlignedBB aabb = blockAabb.offset(pos);
                 Box box = Box.create(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
                 boolean intersects = manager.getNetworkEdges().any(RTree.intersects(box), entry -> {
-                    NetworkGraph.Edge edge = entry.getValue().getGraphEdge();
-                    Vec3d fromVec = Measurements.midVec(edge.getFromKey().subtract(pos));
-                    Vec3d toVec = Measurements.midVec(edge.getToKey().subtract(pos));
+                    Graph.Edge edge = entry.getValue().getGraphEdge();
+                    Vec3d fromVec = Measurements.midVec(edge.getFromKey());
+                    Vec3d toVec = Measurements.midVec(edge.getToKey());
                     return aabb.calculateIntercept(fromVec, toVec) != null;
                 });
                 if (intersects) {
