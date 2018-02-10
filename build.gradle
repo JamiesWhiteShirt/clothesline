@@ -38,6 +38,7 @@ repositories {
 
 configurations {
     contained
+    contained.transitive = false
 }
 
 dependencies {
