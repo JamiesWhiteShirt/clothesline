@@ -9,8 +9,8 @@ buildscript {
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = "1.12-0.0.0.0"
-group = "com.jamieswhiteshirt.clothesline" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+version = "1.12.2-1.0.0.0-SNAPSHOT"
+group = "com.jamieswhiteshirt" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "clothesline"
 
 sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
@@ -31,16 +31,20 @@ repositories {
     maven {
         url "https://oss.sonatype.org/content/repositories/snapshots"
     }
+    maven {
+        url "http://maven.jamieswhiteshirt.com/libs-snapshot/"
+    }
 }
 
 configurations {
     contained
-    contained.transitive = false
 }
 
 dependencies {
     contained "com.jamieswhiteshirt:rtree-3i-lite:0.1-SNAPSHOT"
     compile "com.jamieswhiteshirt:rtree-3i-lite:0.1-SNAPSHOT"
+    contained "com.jamieswhiteshirt:clothesline-hooks:1.12.2-1.0.0.0-SNAPSHOT"
+    deobfCompile "com.jamieswhiteshirt:clothesline-hooks:1.12.2-1.0.0.0-SNAPSHOT"
 }
 
 processResources {
@@ -59,56 +63,22 @@ processResources {
     }
 }
 
-sourceSets {
-    core {
-        compileClasspath = main.compileClasspath
-        runtimeClasspath = main.runtimeClasspath
-    }
-    main {
-        compileClasspath += core.output
-        runtimeClasspath += core.output
-    }
-}
-
-task coreJar(type: Jar) {
-    from sourceSets.core.output
-
-    manifest {
-        attributes 'FMLCorePlugin': fmlCorePlugin, 'Maven-Version': "${project.group}:${project.archivesBaseName}:${project.version}:core"
-    }
-
-    classifier = 'core'
-}
-
-reobf {
-    coreJar {
-        mappingType = 'SEARGE'
-    }
-}
-
 jar {
     from sourceSets.api.output
     from sourceSets.main.output
-
-    from(coreJar.archivePath.absolutePath) {
-        include '*'
-    }
 
     from(configurations.contained.files) {
         include '*'
     }
 
     manifest {
-        attributes 'ContainedDeps': ([coreJar.archivePath] + configurations.contained.files).collect { it.name }.join(" ")
+        attributes 'ContainedDeps': configurations.contained.files.collect { it.name }.join(" ")
     }
-
-    dependsOn reobfCoreJar
 }
 
 task sourcesJar(type: Jar) {
     from sourceSets.api.allSource
     from sourceSets.main.allSource
-    from sourceSets.core.allSource
     classifier = 'sources'
 }
 
@@ -116,3 +86,19 @@ task apiJar(type: Jar) {
     from sourceSets.api.output
     classifier = 'api'
 }
+
+task signJar(type: SignJar, dependsOn: reobfJar) {
+    onlyIf {
+        project.hasProperty('keyStore')
+    }
+
+    inputFile = jar.archivePath
+    outputFile = jar.archivePath
+
+    keyStore = project.properties.keyStore
+    alias = project.properties.keyStoreAlias
+    storePass = project.properties.keyStorePass
+    keyPass = project.properties.keyStoreKeyPass
+}
+
+build.dependsOn signJar

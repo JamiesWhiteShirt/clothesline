@@ -1,7 +1,6 @@
 package com.jamieswhiteshirt.clothesline;
 
 import com.jamieswhiteshirt.clothesline.api.*;
-import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.common.*;
 import com.jamieswhiteshirt.clothesline.common.capability.*;
@@ -12,7 +11,7 @@ import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetConnect
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetNetworks;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
 import com.jamieswhiteshirt.clothesline.common.util.BasicNetwork;
-import com.jamieswhiteshirt.clothesline.core.event.MayPlaceBlockEvent;
+import com.jamieswhiteshirt.clothesline.hooks.api.MayPlaceBlockEvent;
 import com.jamieswhiteshirt.rtree3i.Box;
 import com.jamieswhiteshirt.rtree3i.RTree;
 import net.minecraft.block.Block;
@@ -50,14 +49,16 @@ import org.apache.logging.log4j.Logger;
 import java.util.stream.Collectors;
 
 @Mod(
-        modid = Clothesline.MODID,
-        version = Clothesline.VERSION,
-        name = "Clothesline",
-        dependencies = "required-after:clothesline_hooks"
+    modid = Clothesline.MODID,
+    version = Clothesline.VERSION,
+    name = "Clothesline",
+    dependencies = "required-after:clothesline-hooks",
+    certificateFingerprint = Clothesline.CERTIFICATE_FINGERPRINT
 )
 public class Clothesline {
     public static final String MODID = "clothesline";
-    public static final String VERSION = "1.12-0.0.0.0";
+    public static final String VERSION = "1.12.2-1.0.0.0-SNAPSHOT";
+    public static final String CERTIFICATE_FINGERPRINT = "3bae2d07b93a5971335cb2de15230c19c103db32";
 
     @CapabilityInject(INetworkManager.class)
     public static final Capability<INetworkManager<? extends INetworkEdge>> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();

@@ -1,10 +1,10 @@
 package com.jamieswhiteshirt.clothesline.common.item;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
-import com.jamieswhiteshirt.clothesline.api.IActivityMovement;
 import com.jamieswhiteshirt.clothesline.api.IConnector;
 import com.jamieswhiteshirt.clothesline.common.Util;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetConnectorPos;
+import com.jamieswhiteshirt.clothesline.hooks.api.IActivityMovement;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumAction;
