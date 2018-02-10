@@ -37,6 +37,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLFingerprintViolationEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -44,6 +45,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.stream.Collectors;
@@ -78,13 +80,12 @@ public class Clothesline {
     )
     public static CommonProxy proxy;
 
-    public static Logger logger;
+    public static final Logger logger = LogManager.getLogger(MODID);
 
     public final SimpleNetworkWrapper networkWrapper = NetworkRegistry.INSTANCE.newSimpleChannel(MODID);
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        logger = event.getModLog();
         MinecraftForge.EVENT_BUS.register(this);
         CapabilityManager.INSTANCE.register(INetworkManager.class, new DummyStorage<>(), new DummyFactory<>());
         CapabilityManager.INSTANCE.register(IServerNetworkManager.class, new DummyStorage<>(), new DummyFactory<>());
@@ -96,6 +97,12 @@ public class Clothesline {
     @EventHandler
     public void init(FMLInitializationEvent event) {
         proxy.init(event);
+    }
+
+    @EventHandler
+    public void onFingerprintViolation(FMLFingerprintViolationEvent event) {
+        logger.warn("The file " + event.getSource().getName() + " may have been tampered with.");
+        logger.warn("This version is NOT supported by the author.");
     }
 
     @SubscribeEvent
