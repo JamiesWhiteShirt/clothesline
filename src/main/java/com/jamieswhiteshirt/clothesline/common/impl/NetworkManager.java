@@ -3,9 +3,7 @@ package com.jamieswhiteshirt.clothesline.common.impl;
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.rtree3i.ConfigurationBuilder;
 import com.jamieswhiteshirt.rtree3i.RTree;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.IntHashMap;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -65,6 +63,7 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
     protected NetworkManager() { }
 
     protected void resetInternal(List<INetwork> networks) {
+        List<INetwork> previousNetworks = this.networks;
         this.networks = new ArrayList<>(networks);
         this.networksById = new IntHashMap<>();
         for (INetwork network : networks) {
@@ -77,7 +76,7 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
         }
 
         for (INetworkManagerEventListener eventListener : eventListeners.values()) {
-            eventListener.onNetworksReset(getNetworks());
+            eventListener.onNetworksReset(previousNetworks, this.networks);
         }
     }
 

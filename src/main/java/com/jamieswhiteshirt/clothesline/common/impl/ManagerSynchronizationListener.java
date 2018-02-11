@@ -24,8 +24,8 @@ public class ManagerSynchronizationListener implements INetworkManagerEventListe
     }
 
     @Override
-    public void onNetworksReset(List<INetwork> networks) {
-        networkChannel.sendToDimension(new SetNetworkMessage(networks.stream().map(
+    public void onNetworksReset(List<INetwork> previousNetworks, List<INetwork> newNetworks) {
+        networkChannel.sendToDimension(new SetNetworkMessage(newNetworks.stream().map(
                 BasicNetwork::fromAbsolute
         ).collect(Collectors.toList())), dimension);
     }
