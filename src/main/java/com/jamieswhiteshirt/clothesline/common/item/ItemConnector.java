@@ -86,7 +86,7 @@ public abstract class ItemConnector extends Item {
 
     private void setConnectorPos(World world, EntityLivingBase entity, IConnector connector, @Nullable BlockPos pos) {
         if (!world.isRemote) {
-            Packet<?> packet = Clothesline.instance.networkWrapper.getPacketFrom(new SetConnectorPosMessage(entity.getEntityId(), pos));
+            Packet<?> packet = Clothesline.instance.networkChannel.getPacketFrom(new SetConnectorPosMessage(entity.getEntityId(), pos));
             ((WorldServer) world).getEntityTracker().sendToTracking(entity, packet);
         }
         connector.setPos(pos);

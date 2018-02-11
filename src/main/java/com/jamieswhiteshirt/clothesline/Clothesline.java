@@ -74,15 +74,15 @@ public class Clothesline {
     @Mod.Instance
     public static Clothesline instance;
     @SidedProxy(
-            clientSide = "com.jamieswhiteshirt.clothesline.client.ClientProxy",
-            serverSide = "com.jamieswhiteshirt.clothesline.server.ServerProxy",
-            modId = MODID
+        clientSide = "com.jamieswhiteshirt.clothesline.client.ClientProxy",
+        serverSide = "com.jamieswhiteshirt.clothesline.server.ServerProxy",
+        modId = MODID
     )
     public static CommonProxy proxy;
 
     public static final Logger logger = LogManager.getLogger(MODID);
 
-    public final SimpleNetworkWrapper networkWrapper = NetworkRegistry.INSTANCE.newSimpleChannel(MODID);
+    public SimpleNetworkWrapper networkChannel;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
@@ -91,6 +91,8 @@ public class Clothesline {
         CapabilityManager.INSTANCE.register(IServerNetworkManager.class, new DummyStorage<>(), new DummyFactory<>());
         CapabilityManager.INSTANCE.register(IClientNetworkManager.class, new DummyStorage<>(), new DummyFactory<>());
         CapabilityManager.INSTANCE.register(IConnector.class, new ConnectorStorage(), Connector::new);
+
+        networkChannel = proxy.createNetworkChannel();
         proxy.preInit(event);
     }
 
@@ -127,7 +129,7 @@ public class Clothesline {
         World world = event.getObject();
         if (world instanceof WorldServer) {
             ServerNetworkManager manager = new ServerNetworkManager((WorldServer) world);
-            manager.addEventListener(new SynchronizationListener((WorldServer) world, Clothesline.instance.networkWrapper));
+            manager.addEventListener(new SynchronizationListener((WorldServer) world, Clothesline.instance.networkChannel));
             event.addCapability(new ResourceLocation(MODID, "network_manager"), new ServerNetworkManagerProvider(manager));
         }
     }
@@ -144,7 +146,7 @@ public class Clothesline {
         Entity target = event.getTarget();
         IConnector connector = target.getCapability(CONNECTOR_CAPABILITY, null);
         if (connector != null) {
-            networkWrapper.sendTo(new SetConnectorPosMessage(target.getEntityId(), connector.getPos()), (EntityPlayerMP) event.getEntityPlayer());
+            networkChannel.sendTo(new SetConnectorPosMessage(target.getEntityId(), connector.getPos()), (EntityPlayerMP) event.getEntityPlayer());
         }
     }
 
@@ -154,7 +156,7 @@ public class Clothesline {
             EntityPlayerMP player = (EntityPlayerMP) event.getEntity();
             INetworkManager<? extends INetworkEdge> manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
-                networkWrapper.sendTo(new SetNetworkMessage(manager.getNetworks().stream().map(
+                networkChannel.sendTo(new SetNetworkMessage(manager.getNetworks().stream().map(
                         BasicNetwork::fromAbsolute
                 ).collect(Collectors.toList())), player);
             }

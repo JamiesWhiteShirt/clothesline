@@ -35,9 +35,9 @@ public class HitAttachmentMessageHandler implements IMessageHandler<HitAttachmen
                     // Send the current attachment to make sure the client keeps up.
                     ItemStack stack = network.getState().getAttachment(message.attachmentKey);
                     if (!stack.isEmpty()) {
-                        Clothesline.instance.networkWrapper.sendTo(new SetAttachmentMessage(network.getId(), new BasicAttachment(message.attachmentKey, stack)), player);
+                        Clothesline.instance.networkChannel.sendTo(new SetAttachmentMessage(network.getId(), new BasicAttachment(message.attachmentKey, stack)), player);
                     } else {
-                        Clothesline.instance.networkWrapper.sendTo(new RemoveAttachmentMessage(network.getId(), message.attachmentKey), player);
+                        Clothesline.instance.networkChannel.sendTo(new RemoveAttachmentMessage(network.getId(), message.attachmentKey), player);
                     }
                 }
             }

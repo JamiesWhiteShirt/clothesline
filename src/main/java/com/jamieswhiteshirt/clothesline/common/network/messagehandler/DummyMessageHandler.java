@@ -6,7 +6,9 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 import javax.annotation.Nullable;
 
-public class DummyMessageHandler implements IMessageHandler<IMessage, IMessage> {
+public enum DummyMessageHandler implements IMessageHandler<IMessage, IMessage> {
+    INSTANCE;
+
     @Override
     @Nullable
     public IMessage onMessage(IMessage message, MessageContext ctx) {

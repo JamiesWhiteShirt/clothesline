@@ -26,7 +26,7 @@ public class EdgeRaytraceHit extends NetworkRaytraceHit {
         int offset = (int) Math.round(this.offset);
         Network network = edge.getNetwork();
         int attachmentKey = network.getState().offsetToAttachmentKey(offset);
-        Clothesline.instance.networkWrapper.sendToServer(new HitNetworkMessage(network.getId(), attachmentKey, offset));
+        Clothesline.instance.networkChannel.sendToServer(new HitNetworkMessage(network.getId(), attachmentKey, offset));
         return true;
     }
 
@@ -35,7 +35,7 @@ public class EdgeRaytraceHit extends NetworkRaytraceHit {
         int offset = (int) Math.round(this.offset);
         Network network = edge.getNetwork();
         int attachmentKey = network.getState().offsetToAttachmentKey(offset);
-        Clothesline.instance.networkWrapper.sendToServer(new TryUseItemOnNetworkMessage(hand, network.getId(), attachmentKey));
+        Clothesline.instance.networkChannel.sendToServer(new TryUseItemOnNetworkMessage(hand, network.getId(), attachmentKey));
         return manager.useItem(network, player, hand, attachmentKey);
     }
 

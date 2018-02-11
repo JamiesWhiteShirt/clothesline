@@ -50,6 +50,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.util.vector.Matrix4f;
@@ -63,6 +64,19 @@ public class ClientProxy extends CommonProxy {
     private static final AxisAlignedBB attachmentBox = new AxisAlignedBB(-0.5D, -0.5D, -0.5D, 0.5D, 0.5D, 0.5D);
 
     private RenderClotheslineNetwork renderClotheslineNetwork;
+
+    @Override
+    public SimpleNetworkWrapper createNetworkChannel() {
+        SimpleNetworkWrapper networkChannel = super.createNetworkChannel();
+        networkChannel.registerMessage(new SetNetworksMessageHandler(), SetNetworkMessage.class, 0, Side.CLIENT);
+        networkChannel.registerMessage(new AddNetworkMessageHandler(), AddNetworkMessage.class, 1, Side.CLIENT);
+        networkChannel.registerMessage(new RemoveNetworkMessageHandler(), RemoveNetworkMessage.class, 2, Side.CLIENT);
+        networkChannel.registerMessage(new SetAttachmentMessageHandler(), SetAttachmentMessage.class, 3, Side.CLIENT);
+        networkChannel.registerMessage(new RemoveAttachmentMessageHandler(), RemoveAttachmentMessage.class, 4, Side.CLIENT);
+        networkChannel.registerMessage(new SetNetworkStateMessageHandler(), SetNetworkStateMessage.class, 5, Side.CLIENT);
+        networkChannel.registerMessage(new SetConnectorPosMessageHandler(), SetConnectorPosMessage.class, 10, Side.CLIENT);
+        return networkChannel;
+    }
 
     @Override
     public void preInit(FMLPreInitializationEvent event) {
@@ -81,14 +95,6 @@ public class ClientProxy extends CommonProxy {
                 new TileEntityClotheslineAnchorRenderer(minecraft.getRenderItem())
         );
         renderClotheslineNetwork = new RenderClotheslineNetwork(minecraft.getRenderManager(), minecraft.getRenderItem());
-
-        Clothesline.instance.networkWrapper.registerMessage(new SetNetworksMessageHandler(), SetNetworkMessage.class, 0, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new AddNetworkMessageHandler(), AddNetworkMessage.class, 1, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new RemoveNetworkMessageHandler(), RemoveNetworkMessage.class, 2, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new SetAttachmentMessageHandler(), SetAttachmentMessage.class, 3, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new RemoveAttachmentMessageHandler(), RemoveAttachmentMessage.class, 4, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new SetNetworkStateMessageHandler(), SetNetworkStateMessage.class, 5, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new SetConnectorPosMessageHandler(), SetConnectorPosMessage.class, 10, Side.CLIENT);
     }
 
     @SubscribeEvent
@@ -109,7 +115,7 @@ public class ClientProxy extends CommonProxy {
             if (player != null && player.getActiveItemStack().getItem() instanceof ItemConnector) {
                 // This is a connector item, we must therefore tell the server which block position where the connection
                 // will end.
-                Clothesline.instance.networkWrapper.sendToServer(new StopUsingItemOnMessage(objectMouseOver.getBlockPos()));
+                Clothesline.instance.networkChannel.sendToServer(new StopUsingItemOnMessage(objectMouseOver.getBlockPos()));
 
                 ItemConnector itemConnector = (ItemConnector) player.getActiveItemStack().getItem();
                 itemConnector.stopActiveHandWithToPos(player, objectMouseOver.getBlockPos());
