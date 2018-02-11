@@ -157,11 +157,6 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
     }
 
     @Override
-    public void addMomentum(Network network, int momentum) {
-        network.getState().addMomentum(momentum);
-    }
-
-    @Override
     public boolean useItem(Network network, EntityPlayer player, EnumHand hand, int attachmentKey) {
         ItemStack stack = player.getHeldItem(hand);
         if (!stack.isEmpty()) {

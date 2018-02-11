@@ -102,12 +102,12 @@ public final class AbsoluteNetworkState {
         shift += momentum;
     }
 
-    public void addMomentum(int momentum) {
-        this.momentum = Math.min(Math.max(this.momentum + momentum, -MAX_MOMENTUM), MAX_MOMENTUM);
-    }
-
     public int getShift() {
         return shift;
+    }
+
+    public void setShift(int shift) {
+        this.shift = shift;
     }
 
     public int getPreviousShift() {
@@ -120,6 +120,10 @@ public final class AbsoluteNetworkState {
 
     public int getMomentum() {
         return momentum;
+    }
+
+    public void setMomentum(int momentum) {
+        this.momentum = Math.min(Math.max(momentum, -MAX_MOMENTUM), MAX_MOMENTUM);
     }
 
     public int getPreviousMomentum() {

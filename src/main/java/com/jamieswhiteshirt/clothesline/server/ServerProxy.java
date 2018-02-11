@@ -19,6 +19,7 @@ public class ServerProxy extends CommonProxy {
         networkChannel.registerMessage(DummyMessageHandler.INSTANCE, RemoveAttachmentMessage.class, 4, Side.CLIENT);
         networkChannel.registerMessage(DummyMessageHandler.INSTANCE, SetNetworkStateMessage.class, 5, Side.CLIENT);
         networkChannel.registerMessage(DummyMessageHandler.INSTANCE, SetConnectorPosMessage.class, 10, Side.CLIENT);
+        networkChannel.registerMessage(DummyMessageHandler.INSTANCE, UpdateNetworkMessage.class, 11, Side.CLIENT);
         return networkChannel;
     }
 }

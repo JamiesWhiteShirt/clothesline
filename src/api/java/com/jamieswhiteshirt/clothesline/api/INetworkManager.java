@@ -36,8 +36,6 @@ public interface INetworkManager<T extends INetworkEdge> {
 
     void hitAttachment(Network network, EntityPlayer player, int attachmentKey);
 
-    void addMomentum(Network network, int momentum);
-
     boolean connect(BlockPos fromPos, BlockPos toPos);
 
     void destroy(BlockPos pos);
