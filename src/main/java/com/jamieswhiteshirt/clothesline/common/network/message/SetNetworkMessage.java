@@ -7,14 +7,14 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 import java.util.*;
 
-public class MessageSetNetworks implements IMessage {
+public class SetNetworkMessage implements IMessage {
     public List<BasicNetwork> networks;
 
-    public MessageSetNetworks() {
+    public SetNetworkMessage() {
 
     }
 
-    public MessageSetNetworks(Collection<BasicNetwork> networks) {
+    public SetNetworkMessage(Collection<BasicNetwork> networks) {
         this.networks = new ArrayList<>(networks);
     }
 

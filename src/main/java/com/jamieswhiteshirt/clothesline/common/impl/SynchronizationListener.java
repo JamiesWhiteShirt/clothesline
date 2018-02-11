@@ -26,33 +26,33 @@ public class SynchronizationListener implements INetworkManagerEventListener {
 
     @Override
     public void onNetworksReset(List<Network> networks) {
-        networkWrapper.sendToDimension(new MessageSetNetworks(networks.stream().map(
+        networkWrapper.sendToDimension(new SetNetworkMessage(networks.stream().map(
                 BasicNetwork::fromAbsolute
         ).collect(Collectors.toList())), dimension);
     }
 
     @Override
     public void onNetworkAdded(Network network) {
-        networkWrapper.sendToDimension(new MessageAddNetwork(BasicNetwork.fromAbsolute(network)), dimension);
+        networkWrapper.sendToDimension(new AddNetworkMessage(BasicNetwork.fromAbsolute(network)), dimension);
     }
 
     @Override
     public void onNetworkRemoved(Network network) {
-        networkWrapper.sendToDimension(new MessageRemoveNetwork(network.getId()), dimension);
+        networkWrapper.sendToDimension(new RemoveNetworkMessage(network.getId()), dimension);
     }
 
     @Override
     public void onNetworkStateChanged(Network network, AbsoluteNetworkState state) {
-        networkWrapper.sendToDimension(new MessageSetNetworkState(network.getId(), BasicNetworkState.fromAbsolute(state)), dimension);
+        networkWrapper.sendToDimension(new SetNetworkStateMessage(network.getId(), BasicNetworkState.fromAbsolute(state)), dimension);
     }
 
     @Override
     public void onAttachmentChanged(Network network, int attachmentKey, ItemStack previousStack, ItemStack newStack) {
         if (!ItemStack.areItemStacksEqual(previousStack, newStack)) {
             if (!newStack.isEmpty()) {
-                networkWrapper.sendToDimension(new MessageSetAttachment(network.getId(), new BasicAttachment(attachmentKey, newStack)), dimension);
+                networkWrapper.sendToDimension(new SetAttachmentMessage(network.getId(), new BasicAttachment(attachmentKey, newStack)), dimension);
             } else {
-                networkWrapper.sendToDimension(new MessageRemoveAttachment(network.getId(), attachmentKey), dimension);
+                networkWrapper.sendToDimension(new RemoveAttachmentMessage(network.getId(), attachmentKey), dimension);
             }
         }
     }

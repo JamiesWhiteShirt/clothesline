@@ -1,14 +1,14 @@
 package com.jamieswhiteshirt.clothesline.common;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageStopUsingItemOn;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageHitAttachment;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageHitNetwork;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageTryUseItemOnNetwork;
-import com.jamieswhiteshirt.clothesline.common.network.messagehandler.MessageStopUsingItemOnHandler;
-import com.jamieswhiteshirt.clothesline.common.network.messagehandler.MessageHitAttachmentHandler;
-import com.jamieswhiteshirt.clothesline.common.network.messagehandler.MessageHitNetworkHandler;
-import com.jamieswhiteshirt.clothesline.common.network.messagehandler.MessageTryUseItemOnNetworkHandler;
+import com.jamieswhiteshirt.clothesline.common.network.message.StopUsingItemOnMessage;
+import com.jamieswhiteshirt.clothesline.common.network.message.HitAttachmentMessage;
+import com.jamieswhiteshirt.clothesline.common.network.message.HitNetworkMessage;
+import com.jamieswhiteshirt.clothesline.common.network.message.TryUseItemOnNetworkMessage;
+import com.jamieswhiteshirt.clothesline.common.network.messagehandler.StopUsingItemOnMessageHandler;
+import com.jamieswhiteshirt.clothesline.common.network.messagehandler.HitAttachmentMessageHandler;
+import com.jamieswhiteshirt.clothesline.common.network.messagehandler.HitNetworkMessageHandler;
+import com.jamieswhiteshirt.clothesline.common.network.messagehandler.TryUseItemOnNetworkMessageHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -18,9 +18,9 @@ public abstract class CommonProxy {
     }
 
     public void init(FMLInitializationEvent event) {
-        Clothesline.instance.networkWrapper.registerMessage(new MessageHitNetworkHandler(), MessageHitNetwork.class, 6, Side.SERVER);
-        Clothesline.instance.networkWrapper.registerMessage(new MessageTryUseItemOnNetworkHandler(), MessageTryUseItemOnNetwork.class, 7, Side.SERVER);
-        Clothesline.instance.networkWrapper.registerMessage(new MessageHitAttachmentHandler(), MessageHitAttachment.class, 8, Side.SERVER);
-        Clothesline.instance.networkWrapper.registerMessage(new MessageStopUsingItemOnHandler(), MessageStopUsingItemOn.class, 9, Side.SERVER);
+        Clothesline.instance.networkWrapper.registerMessage(new HitNetworkMessageHandler(), HitNetworkMessage.class, 6, Side.SERVER);
+        Clothesline.instance.networkWrapper.registerMessage(new TryUseItemOnNetworkMessageHandler(), TryUseItemOnNetworkMessage.class, 7, Side.SERVER);
+        Clothesline.instance.networkWrapper.registerMessage(new HitAttachmentMessageHandler(), HitAttachmentMessage.class, 8, Side.SERVER);
+        Clothesline.instance.networkWrapper.registerMessage(new StopUsingItemOnMessageHandler(), StopUsingItemOnMessage.class, 9, Side.SERVER);
     }
 }

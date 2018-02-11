@@ -6,14 +6,14 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 import javax.annotation.Nullable;
 
-public class MessageSetConnectorPos implements IMessage {
+public class SetConnectorPosMessage implements IMessage {
     public int entityId;
     @Nullable
     public BlockPos fromPos;
 
-    public MessageSetConnectorPos() { }
+    public SetConnectorPosMessage() { }
 
-    public MessageSetConnectorPos(int entityId, @Nullable BlockPos fromPos) {
+    public SetConnectorPosMessage(int entityId, @Nullable BlockPos fromPos) {
         this.entityId = entityId;
         this.fromPos = fromPos;
     }

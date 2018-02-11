@@ -1,32 +1,36 @@
 package com.jamieswhiteshirt.clothesline.common.network.message;
 
-import com.jamieswhiteshirt.clothesline.common.util.BasicAttachment;
 import com.jamieswhiteshirt.clothesline.common.util.ByteBufSerialization;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
-public class MessageSetAttachment implements IMessage {
+public class TryUseItemOnNetworkMessage implements IMessage {
+    public EnumHand hand;
     public int networkId;
-    public BasicAttachment attachment;
+    public int attachmentKey;
 
-    public MessageSetAttachment() {
+    public TryUseItemOnNetworkMessage() {
 
     }
 
-    public MessageSetAttachment(int networkId, BasicAttachment attachment) {
+    public TryUseItemOnNetworkMessage(EnumHand hand, int networkId, int attachmentKey) {
+        this.hand = hand;
         this.networkId = networkId;
-        this.attachment = attachment;
+        this.attachmentKey = attachmentKey;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
+        this.hand = EnumHand.values()[buf.readByte()];
         this.networkId = ByteBufSerialization.readNetworkId(buf);
-        this.attachment = ByteBufSerialization.readAttachment(buf);
+        this.attachmentKey = buf.readInt();
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
+        buf.writeByte(hand.ordinal());
         ByteBufSerialization.writeNetworkId(buf, networkId);
-        ByteBufSerialization.writeAttachment(buf, attachment);
+        buf.writeInt(attachmentKey);
     }
 }

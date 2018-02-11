@@ -7,8 +7,8 @@ import com.jamieswhiteshirt.clothesline.common.capability.*;
 import com.jamieswhiteshirt.clothesline.common.impl.Connector;
 import com.jamieswhiteshirt.clothesline.common.impl.ServerNetworkManager;
 import com.jamieswhiteshirt.clothesline.common.impl.SynchronizationListener;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetConnectorPos;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetNetworks;
+import com.jamieswhiteshirt.clothesline.common.network.message.SetConnectorPosMessage;
+import com.jamieswhiteshirt.clothesline.common.network.message.SetNetworkMessage;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
 import com.jamieswhiteshirt.clothesline.common.util.BasicNetwork;
 import com.jamieswhiteshirt.clothesline.hooks.api.MayPlaceBlockEvent;
@@ -144,7 +144,7 @@ public class Clothesline {
         Entity target = event.getTarget();
         IConnector connector = target.getCapability(CONNECTOR_CAPABILITY, null);
         if (connector != null) {
-            networkWrapper.sendTo(new MessageSetConnectorPos(target.getEntityId(), connector.getPos()), (EntityPlayerMP) event.getEntityPlayer());
+            networkWrapper.sendTo(new SetConnectorPosMessage(target.getEntityId(), connector.getPos()), (EntityPlayerMP) event.getEntityPlayer());
         }
     }
 
@@ -154,7 +154,7 @@ public class Clothesline {
             EntityPlayerMP player = (EntityPlayerMP) event.getEntity();
             INetworkManager<? extends INetworkEdge> manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
-                networkWrapper.sendTo(new MessageSetNetworks(manager.getNetworks().stream().map(
+                networkWrapper.sendTo(new SetNetworkMessage(manager.getNetworks().stream().map(
                         BasicNetwork::fromAbsolute
                 ).collect(Collectors.toList())), player);
             }

@@ -5,8 +5,8 @@ import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageHitNetwork;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageTryUseItemOnNetwork;
+import com.jamieswhiteshirt.clothesline.common.network.message.HitNetworkMessage;
+import com.jamieswhiteshirt.clothesline.common.network.message.TryUseItemOnNetworkMessage;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.relauncher.Side;
@@ -26,7 +26,7 @@ public class EdgeRaytraceHit extends NetworkRaytraceHit {
         int offset = (int) Math.round(this.offset);
         Network network = edge.getNetwork();
         int attachmentKey = network.getState().offsetToAttachmentKey(offset);
-        Clothesline.instance.networkWrapper.sendToServer(new MessageHitNetwork(network.getId(), attachmentKey, offset));
+        Clothesline.instance.networkWrapper.sendToServer(new HitNetworkMessage(network.getId(), attachmentKey, offset));
         return true;
     }
 
@@ -35,7 +35,7 @@ public class EdgeRaytraceHit extends NetworkRaytraceHit {
         int offset = (int) Math.round(this.offset);
         Network network = edge.getNetwork();
         int attachmentKey = network.getState().offsetToAttachmentKey(offset);
-        Clothesline.instance.networkWrapper.sendToServer(new MessageTryUseItemOnNetwork(hand, network.getId(), attachmentKey));
+        Clothesline.instance.networkWrapper.sendToServer(new TryUseItemOnNetworkMessage(hand, network.getId(), attachmentKey));
         return manager.useItem(network, player, hand, attachmentKey);
     }
 

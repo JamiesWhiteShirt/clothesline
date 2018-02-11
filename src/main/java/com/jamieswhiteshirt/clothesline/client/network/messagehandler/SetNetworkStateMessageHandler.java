@@ -3,7 +3,7 @@ package com.jamieswhiteshirt.clothesline.client.network.messagehandler;
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetNetworkState;
+import com.jamieswhiteshirt.clothesline.common.network.message.SetNetworkStateMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -15,10 +15,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import javax.annotation.Nullable;
 
 @SideOnly(Side.CLIENT)
-public class MessageSetNetworkStateHandler implements IMessageHandler<MessageSetNetworkState, IMessage> {
+public class SetNetworkStateMessageHandler implements IMessageHandler<SetNetworkStateMessage, IMessage> {
     @Override
     @Nullable
-    public IMessage onMessage(MessageSetNetworkState message, MessageContext ctx) {
+    public IMessage onMessage(SetNetworkStateMessage message, MessageContext ctx) {
         Minecraft.getMinecraft().addScheduledTask(() -> {
             WorldClient world = Minecraft.getMinecraft().world;
             if (world != null) {

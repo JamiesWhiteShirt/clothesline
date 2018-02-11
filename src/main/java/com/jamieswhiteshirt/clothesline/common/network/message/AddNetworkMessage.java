@@ -5,14 +5,14 @@ import com.jamieswhiteshirt.clothesline.common.util.ByteBufSerialization;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
-public class MessageAddNetwork implements IMessage {
+public class AddNetworkMessage implements IMessage {
     public BasicNetwork network;
 
-    public MessageAddNetwork() {
+    public AddNetworkMessage() {
 
     }
 
-    public MessageAddNetwork(BasicNetwork network) {
+    public AddNetworkMessage(BasicNetwork network) {
         this.network = network;
     }
 

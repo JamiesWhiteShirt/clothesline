@@ -4,15 +4,15 @@ import com.jamieswhiteshirt.clothesline.common.util.ByteBufSerialization;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
-public class MessageRemoveAttachment implements IMessage {
+public class RemoveAttachmentMessage implements IMessage {
     public int networkId;
     public int attachmentKey;
 
-    public MessageRemoveAttachment() {
+    public RemoveAttachmentMessage() {
 
     }
 
-    public MessageRemoveAttachment(int networkId, int attachmentKey) {
+    public RemoveAttachmentMessage(int networkId, int attachmentKey) {
         this.networkId = networkId;
         this.attachmentKey = attachmentKey;
     }

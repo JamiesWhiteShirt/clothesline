@@ -4,7 +4,7 @@ import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.IServerNetworkManager;
 import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.api.Graph;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageHitNetwork;
+import com.jamieswhiteshirt.clothesline.common.network.message.HitNetworkMessage;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -13,10 +13,10 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 import javax.annotation.Nullable;
 
-public class MessageHitNetworkHandler implements IMessageHandler<MessageHitNetwork, IMessage> {
+public class HitNetworkMessageHandler implements IMessageHandler<HitNetworkMessage, IMessage> {
     @Nullable
     @Override
-    public IMessage onMessage(MessageHitNetwork message, MessageContext ctx) {
+    public IMessage onMessage(HitNetworkMessage message, MessageContext ctx) {
         EntityPlayerMP player = ctx.getServerHandler().player;
         WorldServer world = player.getServerWorld();
         world.addScheduledTask(() -> {

@@ -82,13 +82,13 @@ public class ClientProxy extends CommonProxy {
         );
         renderClotheslineNetwork = new RenderClotheslineNetwork(minecraft.getRenderManager(), minecraft.getRenderItem());
 
-        Clothesline.instance.networkWrapper.registerMessage(new MessageSetNetworksHandler(), MessageSetNetworks.class, 0, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new MessageAddNetworkHandler(), MessageAddNetwork.class, 1, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new MessageRemoveNetworkHandler(), MessageRemoveNetwork.class, 2, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new MessageSetAttachmentHandler(), MessageSetAttachment.class, 3, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new MessageRemoveAttachmentHandler(), MessageRemoveAttachment.class, 4, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new MessageSetNetworkStateHandler(), MessageSetNetworkState.class, 5, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new MessageSetConnectorPosHandler(), MessageSetConnectorPos.class, 10, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new SetNetworksMessageHandler(), SetNetworkMessage.class, 0, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new AddNetworkMessageHandler(), AddNetworkMessage.class, 1, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new RemoveNetworkMessageHandler(), RemoveNetworkMessage.class, 2, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new SetAttachmentMessageHandler(), SetAttachmentMessage.class, 3, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new RemoveAttachmentMessageHandler(), RemoveAttachmentMessage.class, 4, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new SetNetworkStateMessageHandler(), SetNetworkStateMessage.class, 5, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new SetConnectorPosMessageHandler(), SetConnectorPosMessage.class, 10, Side.CLIENT);
     }
 
     @SubscribeEvent
@@ -109,7 +109,7 @@ public class ClientProxy extends CommonProxy {
             if (player != null && player.getActiveItemStack().getItem() instanceof ItemConnector) {
                 // This is a connector item, we must therefore tell the server which block position where the connection
                 // will end.
-                Clothesline.instance.networkWrapper.sendToServer(new MessageStopUsingItemOn(objectMouseOver.getBlockPos()));
+                Clothesline.instance.networkWrapper.sendToServer(new StopUsingItemOnMessage(objectMouseOver.getBlockPos()));
 
                 ItemConnector itemConnector = (ItemConnector) player.getActiveItemStack().getItem();
                 itemConnector.stopActiveHandWithToPos(player, objectMouseOver.getBlockPos());

@@ -5,14 +5,13 @@ import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageHitAttachment;
+import com.jamieswhiteshirt.clothesline.common.network.message.HitAttachmentMessage;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.util.vector.Matrix4f;
@@ -34,7 +33,7 @@ public class AttachmentRaytraceHit extends NetworkRaytraceHit {
     @Override
     public boolean hitByEntity(IClientNetworkManager manager, EntityPlayer player) {
         Network network = edge.getNetwork();
-        Clothesline.instance.networkWrapper.sendToServer(new MessageHitAttachment(network.getId(), attachmentKey));
+        Clothesline.instance.networkWrapper.sendToServer(new HitAttachmentMessage(network.getId(), attachmentKey));
         manager.hitAttachment(network, player, attachmentKey);
         return true;
     }

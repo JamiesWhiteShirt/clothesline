@@ -3,7 +3,7 @@ package com.jamieswhiteshirt.clothesline.common.item;
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.IConnector;
 import com.jamieswhiteshirt.clothesline.common.Util;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetConnectorPos;
+import com.jamieswhiteshirt.clothesline.common.network.message.SetConnectorPosMessage;
 import com.jamieswhiteshirt.clothesline.hooks.api.IActivityMovement;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -86,7 +86,7 @@ public abstract class ItemConnector extends Item {
 
     private void setConnectorPos(World world, EntityLivingBase entity, IConnector connector, @Nullable BlockPos pos) {
         if (!world.isRemote) {
-            Packet<?> packet = Clothesline.instance.networkWrapper.getPacketFrom(new MessageSetConnectorPos(entity.getEntityId(), pos));
+            Packet<?> packet = Clothesline.instance.networkWrapper.getPacketFrom(new SetConnectorPosMessage(entity.getEntityId(), pos));
             ((WorldServer) world).getEntityTracker().sendToTracking(entity, packet);
         }
         connector.setPos(pos);

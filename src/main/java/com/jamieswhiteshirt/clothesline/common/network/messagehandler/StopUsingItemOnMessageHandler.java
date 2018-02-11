@@ -2,7 +2,7 @@ package com.jamieswhiteshirt.clothesline.common.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.common.item.ItemConnector;
-import com.jamieswhiteshirt.clothesline.common.network.message.MessageStopUsingItemOn;
+import com.jamieswhiteshirt.clothesline.common.network.message.StopUsingItemOnMessage;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -11,10 +11,10 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 import javax.annotation.Nullable;
 
-public class MessageStopUsingItemOnHandler implements IMessageHandler<MessageStopUsingItemOn, IMessage> {
+public class StopUsingItemOnMessageHandler implements IMessageHandler<StopUsingItemOnMessage, IMessage> {
     @Nullable
     @Override
-    public IMessage onMessage(MessageStopUsingItemOn message, MessageContext ctx) {
+    public IMessage onMessage(StopUsingItemOnMessage message, MessageContext ctx) {
         EntityPlayerMP player = ctx.getServerHandler().player;
         WorldServer world = player.getServerWorld();
         world.addScheduledTask(() -> {

@@ -13,12 +13,12 @@ public class ServerProxy extends CommonProxy {
     @Override
     public void init(FMLInitializationEvent event) {
         super.init(event);
-        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), MessageSetNetworks.class, 0, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), MessageAddNetwork.class, 1, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), MessageRemoveNetwork.class, 2, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), MessageSetAttachment.class, 3, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), MessageRemoveAttachment.class, 4, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), MessageSetNetworkState.class, 5, Side.CLIENT);
-        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), MessageSetConnectorPos.class, 10, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), SetNetworkMessage.class, 0, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), AddNetworkMessage.class, 1, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), RemoveNetworkMessage.class, 2, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), SetAttachmentMessage.class, 3, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), RemoveAttachmentMessage.class, 4, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), SetNetworkStateMessage.class, 5, Side.CLIENT);
+        Clothesline.instance.networkWrapper.registerMessage(new DummyMessageHandler(), SetConnectorPosMessage.class, 10, Side.CLIENT);
     }
 }

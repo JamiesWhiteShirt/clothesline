@@ -4,14 +4,14 @@ import com.jamieswhiteshirt.clothesline.common.util.ByteBufSerialization;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
-public class MessageHitNetwork implements IMessage {
+public class HitNetworkMessage implements IMessage {
     public int networkId;
     public int attachmentKey;
     public int offset;
 
-    public MessageHitNetwork() { }
+    public HitNetworkMessage() { }
 
-    public MessageHitNetwork(int networkId, int attachmentKey, int offset) {
+    public HitNetworkMessage(int networkId, int attachmentKey, int offset) {
         this.networkId = networkId;
         this.attachmentKey = attachmentKey;
         this.offset = offset;

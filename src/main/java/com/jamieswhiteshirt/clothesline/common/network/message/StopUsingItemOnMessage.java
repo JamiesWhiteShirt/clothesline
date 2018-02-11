@@ -4,12 +4,12 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
-public class MessageStopUsingItemOn implements IMessage {
+public class StopUsingItemOnMessage implements IMessage {
     public BlockPos pos;
 
-    public MessageStopUsingItemOn() { }
+    public StopUsingItemOnMessage() { }
 
-    public MessageStopUsingItemOn(BlockPos pos) {
+    public StopUsingItemOnMessage(BlockPos pos) {
         this.pos = pos;
     }
 
