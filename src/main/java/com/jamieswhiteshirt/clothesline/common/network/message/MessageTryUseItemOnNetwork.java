@@ -5,34 +5,32 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
-import java.util.UUID;
-
 public class MessageTryUseItemOnNetwork implements IMessage {
     public EnumHand hand;
-    public UUID networkUuid;
+    public int networkId;
     public int attachmentKey;
 
     public MessageTryUseItemOnNetwork() {
 
     }
 
-    public MessageTryUseItemOnNetwork(EnumHand hand, UUID networkUuid, int attachmentKey) {
+    public MessageTryUseItemOnNetwork(EnumHand hand, int networkId, int attachmentKey) {
         this.hand = hand;
-        this.networkUuid = networkUuid;
+        this.networkId = networkId;
         this.attachmentKey = attachmentKey;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
         this.hand = EnumHand.values()[buf.readByte()];
-        this.networkUuid = ByteBufSerialization.readNetworkUuid(buf);
+        this.networkId = ByteBufSerialization.readNetworkId(buf);
         this.attachmentKey = buf.readInt();
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeByte(hand.ordinal());
-        ByteBufSerialization.writeNetworkUuid(buf, networkUuid);
+        ByteBufSerialization.writeNetworkId(buf, networkId);
         buf.writeInt(attachmentKey);
     }
 }

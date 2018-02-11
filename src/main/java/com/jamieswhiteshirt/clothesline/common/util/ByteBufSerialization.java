@@ -10,13 +10,21 @@ import java.util.UUID;
 
 public class ByteBufSerialization {
     public static void writeNetwork(ByteBuf buf, BasicNetwork network) {
+        writeNetworkId(buf, network.getId());
+        writePersistentNetwork(buf, network.getPersistentNetwork());
+    }
+
+    public static BasicNetwork readNetwork(ByteBuf buf) {
+        return new BasicNetwork(readNetworkId(buf), readPersistentNetwork(buf));
+    }
+
+    public static void writePersistentNetwork(ByteBuf buf, BasicPersistentNetwork network) {
         writeNetworkUuid(buf, network.getUuid());
         writeNetworkState(buf, network.getState());
     }
 
-    public static BasicNetwork readNetwork(ByteBuf buf) {
-        UUID uuid = readNetworkUuid(buf);
-        return new BasicNetwork(uuid, readNetworkState(buf));
+    public static BasicPersistentNetwork readPersistentNetwork(ByteBuf buf) {
+        return new BasicPersistentNetwork(readNetworkUuid(buf), readNetworkState(buf));
     }
 
     public static void writeNetworkUuid(ByteBuf buf, UUID networkUuid) {
@@ -26,6 +34,14 @@ public class ByteBufSerialization {
 
     public static UUID readNetworkUuid(ByteBuf buf) {
         return new UUID(buf.readLong(), buf.readLong());
+    }
+
+    public static void writeNetworkId(ByteBuf buf, int networkId) {
+        ByteBufUtils.writeVarInt(buf, networkId, 4);
+    }
+
+    public static int readNetworkId(ByteBuf buf) {
+        return ByteBufUtils.readVarInt(buf, 4);
     }
 
     public static void writeNetworkState(ByteBuf buf, BasicNetworkState state) {

@@ -5,30 +5,28 @@ import com.jamieswhiteshirt.clothesline.common.util.ByteBufSerialization;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
-import java.util.UUID;
-
 public class MessageSetNetworkState implements IMessage {
-    public UUID networkUuid;
+    public int networkId;
     public BasicNetworkState state;
 
     public MessageSetNetworkState() {
 
     }
 
-    public MessageSetNetworkState(UUID networkUuid, BasicNetworkState state) {
-        this.networkUuid = networkUuid;
+    public MessageSetNetworkState(int networkId, BasicNetworkState state) {
+        this.networkId = networkId;
         this.state = state;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        networkUuid = ByteBufSerialization.readNetworkUuid(buf);
+        networkId = ByteBufSerialization.readNetworkId(buf);
         state = ByteBufSerialization.readNetworkState(buf);
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
-        ByteBufSerialization.writeNetworkUuid(buf, networkUuid);
+        ByteBufSerialization.writeNetworkId(buf, networkId);
         ByteBufSerialization.writeNetworkState(buf, state);
     }
 }

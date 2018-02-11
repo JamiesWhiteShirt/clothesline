@@ -2,24 +2,34 @@ package com.jamieswhiteshirt.clothesline.client.renderer;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.*;
+import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
+import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
+import com.jamieswhiteshirt.rtree3i.Entry;
+import com.jamieswhiteshirt.rtree3i.RTree;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector4f;
 
+import java.nio.FloatBuffer;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -92,10 +102,12 @@ public final class RenderClotheslineNetwork {
         }
     }
 
-    private void renderEdge(IBlockAccess world, RenderEdge e, double x, double y, double z, double shift, BufferBuilder bufferBuilder) {
-        int combinedLightFrom = world.getCombinedLight(e.getFromPos(), 0);
-        int combinedLightTo = world.getCombinedLight(e.getToPos(), 0);
-        renderEdge(e.getFromOffset() - shift, e.getToOffset() - shift, combinedLightFrom, combinedLightTo, e.getProjection(), bufferBuilder, x, y, z);
+    private void renderEdge(IBlockAccess world, IClientNetworkEdge e, double x, double y, double z, BufferBuilder bufferBuilder, float partialTicks) {
+        Graph.Edge ge = e.getGraphEdge();
+        int combinedLightFrom = world.getCombinedLight(ge.getFromKey(), 0);
+        int combinedLightTo = world.getCombinedLight(ge.getToKey(), 0);
+        double shift = e.getNetwork().getState().getShift(partialTicks);
+        renderEdge(ge.getFromOffset() - shift, ge.getToOffset() - shift, combinedLightFrom, combinedLightTo, e.getProjection(), bufferBuilder, x, y, z);
     }
 
     public void buildAndDrawEdgeQuads(Consumer<BufferBuilder> consumer) {
@@ -111,49 +123,67 @@ public final class RenderClotheslineNetwork {
         tessellator.draw();
     }
 
-    public void render(IBlockAccess world, RenderNetworkState state, double x, double y, double z, float partialTicks) {
+    public void render(IBlockAccess world, RTree<IClientNetworkEdge> edgesTree, ICamera camera, double x, double y, double z, float partialTicks) {
         Vec3d viewPos = new Vec3d(x, y, z);
 
-        double shift = state.getShift(partialTicks);
+        Collection<Entry<IClientNetworkEdge>> entries = edgesTree.search(box -> camera.isBoundingBoxInFrustum(new AxisAlignedBB(box.x1(), box.y1(), box.z1(), box.x2(), box.y2(), box.z2())));
 
-        List<RenderEdge> renderEdges = state.getEdges();
         buildAndDrawEdgeQuads(bufferBuilder -> {
-            for (RenderEdge edge : renderEdges) {
-                renderEdge(world, edge, x, y, z, shift, bufferBuilder);
+            for (Entry<IClientNetworkEdge> entry : entries) {
+                renderEdge(world, entry.getValue(), x, y, z, bufferBuilder, partialTicks);
             }
         });
 
-        double speedRatio = state.getMomentum(partialTicks) / AbsoluteNetworkState.MAX_MOMENTUM;
+        GlStateManager.enableRescaleNormal();
+        GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
+        GlStateManager.enableBlend();
+        RenderHelper.enableStandardItemLighting();
+        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 
-        for (MutableSortedIntMap.Entry<ItemStack> entry : state.getStacks().entries()) {
-            double attachmentOffset = (entry.getKey() + shift) % state.getStacks().getMaxKey();
-            int edgeIndex = state.getEdgeIndexForOffset((int)attachmentOffset);
-            RenderEdge edge = renderEdges.get(edgeIndex);
-            double relativeOffset = attachmentOffset - edge.getFromOffset();
-            double edgePosScalar = relativeOffset / (edge.getToOffset() - edge.getFromOffset());
-            Vec3d pos = edge.getProjection().projectRUF(-2.0D / 16.0D, 0.0D, edgePosScalar);
+        // Local position of attachment item
+        Vector4f lPos = new Vector4f(0.0F, 0.0F, 0.0F, 1.0F);
+        // World position of attachment item
+        Vector4f wPos = new Vector4f();
+        // Buffer for local space to world space matrix to upload to GL
+        FloatBuffer l2wBuffer = GLAllocation.createDirectFloatBuffer(16);
 
-            RenderEdge previousEdge = renderEdges.get(Math.floorMod(edgeIndex - 1, renderEdges.size()));
-            float angleDiff = (edge.getAngleY() - previousEdge.getAngleY() + 360.0F) % 360.0F;
+        for (Entry<IClientNetworkEdge> edgeEntry : entries) {
+            IClientNetworkEdge edge = edgeEntry.getValue();
+            Graph.Edge graphEdge = edge.getGraphEdge();
+            AbsoluteNetworkState state = edge.getNetwork().getState();
+            double fromAttachmentKey = state.offsetToAttachmentKey(graphEdge.getFromOffset(), partialTicks);
+            double toAttachmentKey = state.offsetToAttachmentKey(graphEdge.getToOffset(), partialTicks);
 
-            GlStateManager.pushMatrix();
-            GlStateManager.translate(pos.x - viewPos.x, pos.y - viewPos.y, pos.z - viewPos.z);
-            GlStateManager.scale(0.5D, 0.5D, 0.5D);
-            GlStateManager.rotate(-edge.getAngleY(), 0.0f, 1.0f, 0.0f);
-            GlStateManager.rotate(
-                    (angleDiff / 4.0F) *
-                    (float)(speedRatio * speedRatio) *
-                    (float)(Math.exp(-relativeOffset / (Measurements.UNIT_LENGTH * 2.0D))) *
-                    MathHelper.sin((float)(relativeOffset / (AbsoluteNetworkState.MAX_MOMENTUM * 2.0D)))
-                    , 1.0F, 0.0F, 0.0F);
-            GlStateManager.translate(0.0f, -0.5f, 0.0f);
+            List<MutableSortedIntMap.Entry<ItemStack>> attachments = state.getAttachmentsInRange((int) fromAttachmentKey, (int) toAttachmentKey);
+            if (!attachments.isEmpty()) {
+                EdgeAttachmentProjector projector = EdgeAttachmentProjector.build(edge);
 
-            renderItem.renderItem(entry.getValue(), ItemCameraTransforms.TransformType.FIXED);
+                for (MutableSortedIntMap.Entry<ItemStack> attachmentEntry : attachments) {
+                    double attachmentOffset = state.attachmentKeyToOffset(attachmentEntry.getKey(), partialTicks);
+                    // Local space to world space matrix
+                    Matrix4f l2w = projector.getL2WForAttachment(state.getMomentum(partialTicks), attachmentOffset, partialTicks);
 
-            GlStateManager.popMatrix();
+                    // Create world position of attachment for lighting calculation
+                    Matrix4f.transform(l2w, lPos, wPos);
+                    int light = world.getCombinedLight(new BlockPos(MathHelper.floor(wPos.x), MathHelper.floor(wPos.y), MathHelper.floor(wPos.z)), 0);
+                    OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float)(light & 0xFFFF), (float)((light >> 16) & 0xFFFF));
+
+                    // Store and flip to be ready for read
+                    l2w.store(l2wBuffer);
+                    l2wBuffer.flip();
+
+                    GlStateManager.pushMatrix();
+                    GlStateManager.translate(-viewPos.x, -viewPos.y, -viewPos.z);
+                    GlStateManager.multMatrix(l2wBuffer);
+                    renderItem.renderItem(attachmentEntry.getValue(), ItemCameraTransforms.TransformType.FIXED);
+                    GlStateManager.popMatrix();
+
+                    l2wBuffer.clear();
+                }
+            }
         }
 
-        Minecraft.getMinecraft().entityRenderer.disableLightmap();
+        GlStateManager.disableRescaleNormal();
     }
 
     public void renderOutline(LineProjection p, double x, double y, double z, float r, float g, float b, float a) {
@@ -188,7 +218,7 @@ public final class RenderClotheslineNetwork {
         }
     }
 
-    public void debugRender(RenderNetworkState state, double x, double y, double z, float partialTicks) {
+    /* public void debugRender(RenderNetworkState state, double x, double y, double z, float partialTicks) {
         TileEntityRendererDispatcher rendererDispatcher = TileEntityRendererDispatcher.instance;
         float yaw = rendererDispatcher.entityYaw;
         float pitch = rendererDispatcher.entityPitch;
@@ -213,5 +243,5 @@ public final class RenderClotheslineNetwork {
             Vec3d pos = edge.getProjection().projectRUF(-2.0D / 16.0D, 0.0D, edgePosScalar);
             debugRenderText(Integer.toString(entry.getKey()), pos.x - x, pos.y - y, pos.z - z, yaw, pitch, fontRenderer);
         }
-    }
+    } */
 }

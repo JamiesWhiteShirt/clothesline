@@ -4,6 +4,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -44,16 +45,6 @@ public final class AbsoluteTree {
         public int getPostMaxOffset() {
             return tree.maxOffset + key.getLength();
         }
-
-        private NetworkGraph.Edge getGraphEdgeForOffset(AbsoluteTree fromTree, int offset) {
-            if (offset < getPreMaxOffset()) {
-                return new NetworkGraph.Edge(key, fromTree.pos, tree.pos, getPreMinOffset(), getPreMaxOffset());
-            } else if (offset < getPostMinOffset()) {
-                return tree.getGraphEdgeForOffset(offset);
-            } else {
-                return new NetworkGraph.Edge(key.reverse(fromTree.pos), tree.pos, fromTree.pos, getPostMinOffset(), getPostMaxOffset());
-            }
-        }
     }
 
     public static AbsoluteTree empty(BlockPos pos, int offset) {
@@ -78,15 +69,6 @@ public final class AbsoluteTree {
 
     public int findEdgeKeyIndex(EdgeKey key) {
         return findEdgeKeyIndex(key, 0, edges.size());
-    }
-
-    public int findCornerOffset(EdgeKey key) {
-        int edgeIndex = findEdgeKeyIndex(key);
-        if (edgeIndex != edges.size()) {
-            return edges.get(edgeIndex).getPreMinOffset();
-        } else {
-            return maxOffset;
-        }
     }
 
     private final int minOffset;
@@ -142,34 +124,19 @@ public final class AbsoluteTree {
         return result;
     }
 
-    private NetworkGraph.Node buildGraph(NetworkGraph graph) {
-        NetworkGraph.Node node = graph.putNode(pos);
+    private GraphBuilder.NodeBuilder buildGraph(GraphBuilder graphBuilder) {
+        GraphBuilder.NodeBuilder nodeBuilder = graphBuilder.putNode(pos);
         for (Edge edge : edges) {
-            node.putEdge(edge.key, edge.tree.pos);
-            NetworkGraph.Node childNode = edge.tree.buildGraph(graph);
-            childNode.putEdge(edge.key.reverse(edge.tree.pos), pos);
+            nodeBuilder.putEdge(edge.key, edge.tree.pos);
+            GraphBuilder.NodeBuilder childNodeBuilder = edge.tree.buildGraph(graphBuilder);
+            childNodeBuilder.putEdge(edge.key.reverse(edge.tree.pos), pos);
         }
-        return node;
+        return nodeBuilder;
     }
 
-    public NetworkGraph toGraph() {
-        NetworkGraph graph = new NetworkGraph();
-        buildGraph(graph);
-        return graph;
-    }
-
-    public NetworkGraph.Edge getGraphEdgeForOffset(int offset) {
-        if (offset >= minOffset) {
-            for (Edge edge : edges) {
-                if (offset < edge.getPostMaxOffset()) {
-                    return edge.getGraphEdgeForOffset(this, offset);
-                }
-            }
-        }
-        throw new IllegalArgumentException("Offset is not in AbsoluteTree");
-    }
-
-    public Vec3d getPositionForOffset(int offset) {
-        return getGraphEdgeForOffset(offset).getPositionForOffset(offset);
+    public Graph buildGraph() {
+        GraphBuilder builder = new GraphBuilder();
+        buildGraph(builder);
+        return builder.build();
     }
 }

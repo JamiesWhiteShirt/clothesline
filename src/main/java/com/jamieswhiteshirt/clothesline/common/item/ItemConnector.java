@@ -1,10 +1,10 @@
 package com.jamieswhiteshirt.clothesline.common.item;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
-import com.jamieswhiteshirt.clothesline.api.IActivityMovement;
 import com.jamieswhiteshirt.clothesline.api.IConnector;
 import com.jamieswhiteshirt.clothesline.common.Util;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetConnectorPos;
+import com.jamieswhiteshirt.clothesline.hooks.api.IActivityMovement;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumAction;
@@ -26,9 +26,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public abstract class ItemConnector extends Item {
-    @CapabilityInject(IConnector.class)
-    private static final Capability<IConnector> CONNECTOR_CAPABILITY = Util.nonNullInjected();
-
     @CapabilityInject(IActivityMovement.class)
     private static final Capability<IActivityMovement> ACTIVITY_MOVEMENT_CAPABILITY = Util.nonNullInjected();
 
@@ -46,7 +43,7 @@ public abstract class ItemConnector extends Item {
 
     @Nullable
     public final BlockPos getFromPos(EntityLivingBase entity) {
-        IConnector connector = entity.getCapability(CONNECTOR_CAPABILITY, null);
+        IConnector connector = entity.getCapability(Clothesline.CONNECTOR_CAPABILITY, null);
         if (connector != null) {
             return connector.getPos();
         }
@@ -55,7 +52,7 @@ public abstract class ItemConnector extends Item {
 
     @Override
     public void onPlayerStoppedUsing(ItemStack stack, World world, EntityLivingBase entity, int timeLeft) {
-        IConnector connector = entity.getCapability(CONNECTOR_CAPABILITY, null);
+        IConnector connector = entity.getCapability(Clothesline.CONNECTOR_CAPABILITY, null);
         if (connector != null) {
             BlockPos from = connector.getPos();
             BlockPos to = toPos.get();
@@ -78,7 +75,7 @@ public abstract class ItemConnector extends Item {
 
     @Override
     public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        IConnector connector = player.getCapability(CONNECTOR_CAPABILITY, null);
+        IConnector connector = player.getCapability(Clothesline.CONNECTOR_CAPABILITY, null);
         if (connector != null && connectFrom(player, world, hand, pos)) {
             player.setActiveHand(hand);
             setConnectorPos(world, player, connector, pos);

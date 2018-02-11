@@ -1,7 +1,9 @@
 package com.jamieswhiteshirt.clothesline.common.block;
 
+import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.AbsoluteNetworkState;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
+import com.jamieswhiteshirt.clothesline.api.INetworkNode;
 import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineSoundEvents;
@@ -22,8 +24,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -31,9 +31,6 @@ import javax.annotation.Nullable;
 import java.util.Random;
 
 public class BlockClotheslineAnchor extends BlockDirectional {
-    @CapabilityInject(INetworkManager.class)
-    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = null;
-
     private static final AxisAlignedBB AABB_DOWN  = new AxisAlignedBB(6.0D / 16.0D,         0.0D, 6.0D / 16.0D, 10.0D / 16.0D, 12.0D / 16.0D, 10.0D / 16.0D);
     private static final AxisAlignedBB AABB_UP    = new AxisAlignedBB(6.0D / 16.0D, 4.0D / 16.0D, 6.0D / 16.0D, 10.0D / 16.0D,          1.0D, 10.0D / 16.0D);
     private static final AxisAlignedBB AABB_NORTH = new AxisAlignedBB(6.0D / 16.0D,         0.0D, 6.0D / 16.0D, 10.0D / 16.0D, 12.0D / 16.0D,          1.0D);
@@ -173,7 +170,7 @@ public class BlockClotheslineAnchor extends BlockDirectional {
 
     @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
-        INetworkManager manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
+        INetworkManager manager = world.getCapability(Clothesline.NETWORK_MANAGER_CAPABILITY, null);
         if (manager != null) {
             manager.destroy(pos);
         }
@@ -184,7 +181,7 @@ public class BlockClotheslineAnchor extends BlockDirectional {
     public void randomDisplayTick(IBlockState state, World world, BlockPos pos, Random rand) {
         TileEntity tileEntity = world.getTileEntity(pos);
         if (tileEntity instanceof TileEntityClotheslineAnchor) {
-            INetworkManager.INetworkNode networkNode = ((TileEntityClotheslineAnchor) tileEntity).getNetworkNode();
+            INetworkNode networkNode = ((TileEntityClotheslineAnchor) tileEntity).getNetworkNode();
             if (networkNode != null) {
                 AbsoluteNetworkState networkState = networkNode.getNetwork().getState();
                 int momentum = networkState.getMomentum();

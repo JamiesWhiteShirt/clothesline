@@ -1,5 +1,6 @@
 package com.jamieswhiteshirt.clothesline.api;
 
+import com.jamieswhiteshirt.rtree3i.RTree;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
@@ -7,36 +8,21 @@ import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.UUID;
 
-public interface INetworkManager {
-    interface INetworkNode {
-        Network getNetwork();
-
-        NetworkGraph.Node getGraphNode();
-    }
-
+public interface INetworkManager<T extends INetworkEdge> {
     Collection<Network> getNetworks();
 
     @Nullable
-    Network getNetworkByUUID(UUID uuid);
+    Network getNetworkById(int id);
 
     @Nullable
     INetworkNode getNetworkNodeByPos(BlockPos pos);
 
-    void addNetwork(Network network);
+    RTree<T> getNetworkEdges();
 
-    void removeNetwork(UUID networkUuid);
-
-    void setNetworks(Collection<Network> networks);
+    void removeNetwork(Network network);
 
     void update();
-
-    boolean connect(BlockPos from, BlockPos to);
-
-    void destroy(BlockPos pos);
-
-    void disconnect(BlockPos posA, BlockPos posB);
 
     void setNetworkState(Network network, AbsoluteNetworkState state);
 
@@ -51,6 +37,10 @@ public interface INetworkManager {
     void hitAttachment(Network network, EntityPlayer player, int attachmentKey);
 
     void addMomentum(Network network, int momentum);
+
+    boolean connect(BlockPos fromPos, BlockPos toPos);
+
+    void destroy(BlockPos pos);
 
     void addEventListener(INetworkManagerEventListener eventListener);
 

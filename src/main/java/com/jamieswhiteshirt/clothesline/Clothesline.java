@@ -1,15 +1,19 @@
 package com.jamieswhiteshirt.clothesline;
 
 import com.jamieswhiteshirt.clothesline.api.*;
+import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.common.*;
 import com.jamieswhiteshirt.clothesline.common.capability.*;
 import com.jamieswhiteshirt.clothesline.common.impl.Connector;
-import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
+import com.jamieswhiteshirt.clothesline.common.impl.ServerNetworkManager;
+import com.jamieswhiteshirt.clothesline.common.impl.SynchronizationListener;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetConnectorPos;
 import com.jamieswhiteshirt.clothesline.common.network.message.MessageSetNetworks;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
 import com.jamieswhiteshirt.clothesline.common.util.BasicNetwork;
-import com.jamieswhiteshirt.clothesline.core.event.MayPlaceBlockEvent;
+import com.jamieswhiteshirt.clothesline.hooks.api.MayPlaceBlockEvent;
+import com.jamieswhiteshirt.rtree3i.Box;
+import com.jamieswhiteshirt.rtree3i.RTree;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,8 +22,10 @@ import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
@@ -31,6 +37,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLFingerprintViolationEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -38,24 +45,31 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.stream.Collectors;
 
 @Mod(
-        modid = Clothesline.MODID,
-        version = Clothesline.VERSION,
-        name = "Clothesline",
-        dependencies = "required-after:clothesline_hooks"
+    modid = Clothesline.MODID,
+    version = Clothesline.VERSION,
+    name = "Clothesline",
+    dependencies = "required-after:clothesline-hooks",
+    certificateFingerprint = Clothesline.CERTIFICATE_FINGERPRINT
 )
 public class Clothesline {
     public static final String MODID = "clothesline";
-    public static final String VERSION = "1.12-0.0.0.0";
+    public static final String VERSION = "1.12.2-1.0.0.0-SNAPSHOT";
+    public static final String CERTIFICATE_FINGERPRINT = "3bae2d07b93a5971335cb2de15230c19c103db32";
 
     @CapabilityInject(INetworkManager.class)
-    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    public static final Capability<INetworkManager<? extends INetworkEdge>> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    @CapabilityInject(IServerNetworkManager.class)
+    public static final Capability<IServerNetworkManager<? extends INetworkEdge>> SERVER_NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    @CapabilityInject(IClientNetworkManager.class)
+    public static final Capability<IClientNetworkManager> CLIENT_NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
     @CapabilityInject(IConnector.class)
-    private static final Capability<IConnector> CONNECTOR_CAPABILITY = Util.nonNullInjected();
+    public static final Capability<IConnector> CONNECTOR_CAPABILITY = Util.nonNullInjected();
 
     @Mod.Instance
     public static Clothesline instance;
@@ -66,15 +80,16 @@ public class Clothesline {
     )
     public static CommonProxy proxy;
 
-    public static Logger logger;
+    public static final Logger logger = LogManager.getLogger(MODID);
 
     public final SimpleNetworkWrapper networkWrapper = NetworkRegistry.INSTANCE.newSimpleChannel(MODID);
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        logger = event.getModLog();
         MinecraftForge.EVENT_BUS.register(this);
-        CapabilityManager.INSTANCE.register(INetworkManager.class, new NetworkManagerStorage(), NetworkManager.class);
+        CapabilityManager.INSTANCE.register(INetworkManager.class, new DummyStorage<>(), new DummyFactory<>());
+        CapabilityManager.INSTANCE.register(IServerNetworkManager.class, new DummyStorage<>(), new DummyFactory<>());
+        CapabilityManager.INSTANCE.register(IClientNetworkManager.class, new DummyStorage<>(), new DummyFactory<>());
         CapabilityManager.INSTANCE.register(IConnector.class, new ConnectorStorage(), Connector::new);
         proxy.preInit(event);
     }
@@ -82,6 +97,12 @@ public class Clothesline {
     @EventHandler
     public void init(FMLInitializationEvent event) {
         proxy.init(event);
+    }
+
+    @EventHandler
+    public void onFingerprintViolation(FMLFingerprintViolationEvent event) {
+        logger.warn("The file " + event.getSource().getName() + " may have been tampered with.");
+        logger.warn("This version is NOT supported by the author.");
     }
 
     @SubscribeEvent
@@ -103,7 +124,12 @@ public class Clothesline {
 
     @SubscribeEvent
     public void attachWorldCapabilities(AttachCapabilitiesEvent<World> event) {
-        event.addCapability(new ResourceLocation(MODID, "network_manager"), new NetworkManagerProvider(proxy.createNetworkManager(event.getObject())));
+        World world = event.getObject();
+        if (world instanceof WorldServer) {
+            ServerNetworkManager manager = new ServerNetworkManager((WorldServer) world);
+            manager.addEventListener(new SynchronizationListener((WorldServer) world, Clothesline.instance.networkWrapper));
+            event.addCapability(new ResourceLocation(MODID, "network_manager"), new ServerNetworkManagerProvider(manager));
+        }
     }
 
     @SubscribeEvent
@@ -126,7 +152,7 @@ public class Clothesline {
     public void onEntityJoinWorld(EntityJoinWorldEvent event) {
         if (!event.getWorld().isRemote && event.getEntity() instanceof EntityPlayerMP) {
             EntityPlayerMP player = (EntityPlayerMP) event.getEntity();
-            INetworkManager manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
+            INetworkManager<? extends INetworkEdge> manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 networkWrapper.sendTo(new MessageSetNetworks(manager.getNetworks().stream().map(
                         BasicNetwork::fromAbsolute
@@ -147,29 +173,23 @@ public class Clothesline {
 
     @SubscribeEvent
     public void onMayPlaceBlock(MayPlaceBlockEvent event) {
-        AxisAlignedBB aabb = event.getState().getCollisionBoundingBox(event.getWorld(), event.getPos());
-        if (aabb != Block.NULL_AABB) {
-            INetworkManager manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
+        AxisAlignedBB blockAabb = event.getState().getCollisionBoundingBox(event.getWorld(), event.getPos());
+        if (blockAabb != Block.NULL_AABB) {
+            INetworkManager<? extends INetworkEdge> manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
-                for (Network network : manager.getNetworks()) {
-                    if (intersectsTree(aabb.offset(event.getPos()), network.getState().getTree())) {
-                        event.setCanceled(true);
-                        return;
-                    }
+                BlockPos pos = event.getPos();
+                AxisAlignedBB aabb = blockAabb.offset(pos);
+                Box box = Box.create(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+                boolean intersects = manager.getNetworkEdges().any(RTree.intersects(box), entry -> {
+                    Graph.Edge edge = entry.getValue().getGraphEdge();
+                    Vec3d fromVec = Measurements.midVec(edge.getFromKey());
+                    Vec3d toVec = Measurements.midVec(edge.getToKey());
+                    return aabb.calculateIntercept(fromVec, toVec) != null;
+                });
+                if (intersects) {
+                    event.setCanceled(true);
                 }
             }
         }
-    }
-
-    private boolean intersectsTree(AxisAlignedBB aabb, AbsoluteTree parent) {
-        Vec3d parentVec = Measurements.midVec(parent.getPos());
-        for (AbsoluteTree.Edge edge : parent.getEdges()) {
-            AbsoluteTree child = edge.getTree();
-            Vec3d childVec = Measurements.midVec(child.getPos());
-            if (aabb.calculateIntercept(parentVec, childVec) != null || intersectsTree(aabb, child)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

@@ -2,36 +2,31 @@ package com.jamieswhiteshirt.clothesline.common.util;
 
 import com.jamieswhiteshirt.clothesline.api.Network;
 
-import java.util.UUID;
-
 public class BasicNetwork {
     public static BasicNetwork fromAbsolute(Network network) {
-        return new BasicNetwork(
-                network.getUuid(),
-                BasicNetworkState.fromAbsolute(network.getState())
-        );
+        return new BasicNetwork(network.getId(), BasicPersistentNetwork.fromAbsolute(network.toPersistent()));
     }
 
-    private final UUID uuid;
-    private final BasicNetworkState state;
+    private final int id;
+    private final BasicPersistentNetwork persistentNetwork;
 
-    public BasicNetwork(UUID uuid, BasicNetworkState state) {
-        this.uuid = uuid;
-        this.state = state;
+    public BasicNetwork(int id, BasicPersistentNetwork persistentNetwork) {
+        this.id = id;
+        this.persistentNetwork = persistentNetwork;
     }
 
-    public UUID getUuid() {
-        return uuid;
+    public int getId() {
+        return id;
     }
 
-    public BasicNetworkState getState() {
-        return state;
+    public BasicPersistentNetwork getPersistentNetwork() {
+        return persistentNetwork;
     }
 
     public Network toAbsolute() {
         return new Network(
-                uuid,
-                state.toAbsolute()
+                id,
+                persistentNetwork.toAbsolute()
         );
     }
 }

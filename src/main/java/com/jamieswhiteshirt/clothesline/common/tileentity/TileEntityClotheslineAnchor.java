@@ -1,5 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.tileentity;
 
+import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.common.Util;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkItemHandler;
@@ -19,14 +20,12 @@ import net.minecraftforge.items.IItemHandler;
 import javax.annotation.Nullable;
 
 public class TileEntityClotheslineAnchor extends TileEntity implements ITickable {
-    @CapabilityInject(INetworkManager.class)
-    private static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
     @CapabilityInject(IItemHandler.class)
     private static final Capability<IItemHandler> ITEM_HANDLER_CAPABILITY = Util.nonNullInjected();
     private INetworkManager manager;
 
     @Nullable
-    public INetworkManager.INetworkNode getNetworkNode() {
+    public INetworkNode getNetworkNode() {
         if (manager != null) {
             return manager.getNetworkNodeByPos(pos);
         } else {
@@ -35,7 +34,7 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     }
 
     public void crank(int amount) {
-        INetworkManager.INetworkNode node = getNetworkNode();
+        INetworkNode node = getNetworkNode();
         if (node != null) {
             manager.addMomentum(node.getNetwork(), amount);
         }
@@ -44,7 +43,7 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     @Override
     public void setWorld(World world) {
         super.setWorld(world);
-        manager = world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
+        manager = world.getCapability(Clothesline.NETWORK_MANAGER_CAPABILITY, null);
     }
 
     @Override
@@ -56,7 +55,7 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
         if (capability == ITEM_HANDLER_CAPABILITY && facing != null) {
-            INetworkManager.INetworkNode node = getNetworkNode();
+            INetworkNode node = getNetworkNode();
             if (node != null) {
                 Network network = node.getNetwork();
                 EdgeKey edgeKey = new EdgeKey(pos, pos.offset(facing));
@@ -70,7 +69,7 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
         if (capability == ITEM_HANDLER_CAPABILITY && facing != null) {
-            INetworkManager.INetworkNode node = getNetworkNode();
+            INetworkNode node = getNetworkNode();
             return node != null;
         }
         return false;
