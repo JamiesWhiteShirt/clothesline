@@ -130,18 +130,6 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
     }
 
     @Override
-    public boolean useItem(INetwork network, EntityPlayer player, EnumHand hand, int attachmentKey) {
-        ItemStack stack = player.getHeldItem(hand);
-        if (!stack.isEmpty()) {
-            if (network.getState().getAttachment(attachmentKey).isEmpty()) {
-                player.setHeldItem(hand, network.insertItem(attachmentKey, stack, false));
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
     public void addEventListener(ResourceLocation key, INetworkManagerEventListener eventListener) {
         eventListeners.put(key, eventListener);
     }

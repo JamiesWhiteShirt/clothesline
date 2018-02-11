@@ -36,7 +36,7 @@ public class EdgeRaytraceHit extends NetworkRaytraceHit {
         INetwork network = edge.getNetwork();
         int attachmentKey = network.getState().offsetToAttachmentKey(offset);
         Clothesline.instance.networkChannel.sendToServer(new TryUseItemOnNetworkMessage(hand, network.getId(), attachmentKey));
-        return manager.useItem(network, player, hand, attachmentKey);
+        return network.useItem(player, hand, attachmentKey);
     }
 
     @Override

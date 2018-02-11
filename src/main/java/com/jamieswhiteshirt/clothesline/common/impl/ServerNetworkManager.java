@@ -5,7 +5,6 @@ import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.common.util.BasicTree;
 import com.jamieswhiteshirt.clothesline.common.util.RelativeNetworkState;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -74,15 +73,6 @@ public final class ServerNetworkManager extends NetworkManager<NetworkEdge> impl
     public void removeNetwork(INetwork network) {
         networksByUuid.remove(network.getUuid());
         super.removeNetwork(network);
-    }
-
-    @Override
-    public void hitAttachment(INetwork network, EntityPlayer player, int attachmentKey) {
-        ItemStack stack = network.getState().getAttachment(attachmentKey);
-        if (!stack.isEmpty()) {
-            network.setAttachment(attachmentKey, ItemStack.EMPTY);
-            dropAttachment(network.getState(), stack, attachmentKey);
-        }
     }
 
     @Nullable

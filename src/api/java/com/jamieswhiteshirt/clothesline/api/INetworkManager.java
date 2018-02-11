@@ -24,10 +24,6 @@ public interface INetworkManager<T extends INetworkEdge> {
 
     void update();
 
-    boolean useItem(INetwork network, EntityPlayer player, EnumHand hand, int attachmentKey);
-
-    void hitAttachment(INetwork network, EntityPlayer player, int attachmentKey);
-
     boolean connect(BlockPos fromPos, BlockPos toPos);
 
     void destroy(BlockPos pos);

@@ -7,8 +7,6 @@ import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.api.INetworkNode;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -33,11 +31,6 @@ public final class ClientNetworkManager extends NetworkManager<IClientNetworkEdg
     @Override
     public void addNetwork(INetwork network) {
         super.addNetwork(network);
-    }
-
-    @Override
-    public void hitAttachment(INetwork network, EntityPlayer player, int attachmentKey) {
-        network.setAttachment(attachmentKey, ItemStack.EMPTY);
     }
 
     @Override

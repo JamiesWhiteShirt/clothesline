@@ -4,8 +4,13 @@ import com.jamieswhiteshirt.clothesline.api.AbsoluteNetworkState;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.INetworkEventListener;
 import com.jamieswhiteshirt.clothesline.api.PersistentNetwork;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 
 import java.util.*;
 
@@ -49,6 +54,33 @@ public final class Network implements INetwork {
     @Override
     public void update() {
         state.update();
+    }
+
+    @Override
+    public boolean useItem(EntityPlayer player, EnumHand hand, int attachmentKey) {
+        ItemStack stack = player.getHeldItem(hand);
+        if (!stack.isEmpty()) {
+            if (state.getAttachment(attachmentKey).isEmpty()) {
+                player.setHeldItem(hand, insertItem(attachmentKey, stack, false));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void hitAttachment(EntityPlayer player, int attachmentKey) {
+        ItemStack stack = state.getAttachment(attachmentKey);
+        if (!stack.isEmpty()) {
+            setAttachment(attachmentKey, ItemStack.EMPTY);
+            World world = player.world;
+            if (!world.isRemote && world.getGameRules().getBoolean("doTileDrops")) {
+                Vec3d pos = state.getGraph().getPositionForOffset(state.attachmentKeyToOffset(attachmentKey));
+                EntityItem entityitem = new EntityItem(world, pos.x, pos.y - 0.5D, pos.z, stack);
+                entityitem.setDefaultPickupDelay();
+                world.spawnEntity(entityitem);
+            }
+        }
     }
 
     @Override

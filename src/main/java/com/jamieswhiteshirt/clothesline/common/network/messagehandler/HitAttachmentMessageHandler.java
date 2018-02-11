@@ -28,7 +28,7 @@ public class HitAttachmentMessageHandler implements IMessageHandler<HitAttachmen
                 INetwork network = manager.getNetworkById(message.networkId);
                 if (network != null) {
                     if (Validation.canReachAttachment(player, network, message.attachmentKey)) {
-                        manager.hitAttachment(network, player, message.attachmentKey);
+                        network.hitAttachment(player, message.attachmentKey);
                     }
 
                     // The client may have made an incorrect assumption.

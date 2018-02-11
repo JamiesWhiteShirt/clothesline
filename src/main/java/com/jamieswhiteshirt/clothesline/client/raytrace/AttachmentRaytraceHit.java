@@ -34,7 +34,7 @@ public class AttachmentRaytraceHit extends NetworkRaytraceHit {
     public boolean hitByEntity(IClientNetworkManager manager, EntityPlayer player) {
         INetwork network = edge.getNetwork();
         Clothesline.instance.networkChannel.sendToServer(new HitAttachmentMessage(network.getId(), attachmentKey));
-        manager.hitAttachment(network, player, attachmentKey);
+        network.hitAttachment(player, attachmentKey);
         return true;
     }
 

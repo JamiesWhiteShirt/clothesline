@@ -28,7 +28,7 @@ public class TryUseItemOnNetworkMessageHandler implements IMessageHandler<TryUse
                 INetwork network = manager.getNetworkById(message.networkId);
                 if (network != null) {
                     if (Validation.canReachAttachment(player, network, message.attachmentKey)) {
-                        manager.useItem(network, player, message.hand, message.attachmentKey);
+                        network.useItem(player, message.hand, message.attachmentKey);
                     }
 
                     // The client may have made an incorrect assumption.
