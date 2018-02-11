@@ -10,6 +10,6 @@ public class DummyMessageHandler implements IMessageHandler<IMessage, IMessage> 
     @Override
     @Nullable
     public IMessage onMessage(IMessage message, MessageContext ctx) {
-        return null;
+        throw new UnsupportedOperationException("This message handler should never have been called");
     }
 }
