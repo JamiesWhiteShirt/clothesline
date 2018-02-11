@@ -1,22 +1,22 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.Graph;
+import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.INetworkNode;
-import com.jamieswhiteshirt.clothesline.api.Network;
 
 import java.util.Objects;
 
 public final class NetworkNode implements INetworkNode {
-    private final Network network;
+    private final INetwork network;
     private final Graph.Node graphNode;
 
-    NetworkNode(Network network, Graph.Node graphNode) {
+    NetworkNode(INetwork network, Graph.Node graphNode) {
         this.network = network;
         this.graphNode = graphNode;
     }
 
     @Override
-    public Network getNetwork() {
+    public INetwork getNetwork() {
         return network;
     }
 

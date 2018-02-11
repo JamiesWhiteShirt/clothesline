@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class GraphBuilder {
+public final class GraphBuilder {
     public final class NodeBuilder {
         private final BlockPos key;
         private final List<Graph.Edge> edges = new ArrayList<>();

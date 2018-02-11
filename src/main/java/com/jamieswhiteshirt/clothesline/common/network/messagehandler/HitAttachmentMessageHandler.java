@@ -1,8 +1,8 @@
 package com.jamieswhiteshirt.clothesline.common.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
+import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.IServerNetworkManager;
-import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.common.network.message.HitAttachmentMessage;
 import com.jamieswhiteshirt.clothesline.common.network.message.RemoveAttachmentMessage;
 import com.jamieswhiteshirt.clothesline.common.network.message.SetAttachmentMessage;
@@ -25,7 +25,7 @@ public class HitAttachmentMessageHandler implements IMessageHandler<HitAttachmen
         world.addScheduledTask(() -> {
             IServerNetworkManager manager = world.getCapability(Clothesline.SERVER_NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
-                Network network = manager.getNetworkById(message.networkId);
+                INetwork network = manager.getNetworkById(message.networkId);
                 if (network != null) {
                     if (Validation.canReachAttachment(player, network, message.attachmentKey)) {
                         manager.hitAttachment(network, player, message.attachmentKey);

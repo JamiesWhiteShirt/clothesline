@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.api;
 
 public interface INetworkEdge {
-    Network getNetwork();
+    INetwork getNetwork();
 
     Graph.Edge getGraphEdge();
 }

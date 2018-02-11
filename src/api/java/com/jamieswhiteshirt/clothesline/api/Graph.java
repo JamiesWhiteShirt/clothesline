@@ -6,7 +6,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
 
-public class Graph {
+public final class Graph {
     public static final class Node {
         private final BlockPos key;
         private final List<Edge> edges;

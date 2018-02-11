@@ -1,8 +1,8 @@
 package com.jamieswhiteshirt.clothesline.common.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
+import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.IServerNetworkManager;
-import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.api.Graph;
 import com.jamieswhiteshirt.clothesline.common.network.message.HitNetworkMessage;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -22,7 +22,7 @@ public class HitNetworkMessageHandler implements IMessageHandler<HitNetworkMessa
         world.addScheduledTask(() -> {
             IServerNetworkManager manager = world.getCapability(Clothesline.SERVER_NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
-                Network network = manager.getNetworkById(message.networkId);
+                INetwork network = manager.getNetworkById(message.networkId);
                 if (network != null) {
                     Graph.Edge edge = network.getState().getGraph().getEdgeForOffset(message.offset);
                     if (Validation.canReachPos(player, edge.getPositionForOffset(message.offset))) {

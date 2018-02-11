@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.client.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
-import com.jamieswhiteshirt.clothesline.api.Network;
+import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.common.network.message.RemoveAttachmentMessage;
 import net.minecraft.client.Minecraft;
@@ -25,9 +25,9 @@ public class RemoveAttachmentMessageHandler implements IMessageHandler<RemoveAtt
             if (world != null) {
                 IClientNetworkManager manager = world.getCapability(Clothesline.CLIENT_NETWORK_MANAGER_CAPABILITY, null);
                 if (manager != null) {
-                    Network network = manager.getNetworkById(message.networkId);
+                    INetwork network = manager.getNetworkById(message.networkId);
                     if (network != null) {
-                        manager.setAttachment(network, message.attachmentKey, ItemStack.EMPTY);
+                        network.setAttachment(message.attachmentKey, ItemStack.EMPTY);
                     }
                 }
             }

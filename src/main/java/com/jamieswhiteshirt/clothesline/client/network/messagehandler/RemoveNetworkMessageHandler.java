@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.client.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
-import com.jamieswhiteshirt.clothesline.api.Network;
+import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.common.network.message.RemoveNetworkMessage;
 import net.minecraft.client.Minecraft;
@@ -24,7 +24,7 @@ public class RemoveNetworkMessageHandler implements IMessageHandler<RemoveNetwor
             if (world != null) {
                 IClientNetworkManager manager = world.getCapability(Clothesline.CLIENT_NETWORK_MANAGER_CAPABILITY, null);
                 if (manager != null) {
-                    Network network = manager.getNetworkById(message.networkId);
+                    INetwork network = manager.getNetworkById(message.networkId);
                     if (network != null) {
                         manager.removeNetwork(network);
                     }

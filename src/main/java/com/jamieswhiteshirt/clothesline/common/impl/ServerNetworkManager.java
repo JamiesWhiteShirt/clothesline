@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 public final class ServerNetworkManager extends NetworkManager<NetworkEdge> implements IServerNetworkManager<NetworkEdge> {
     private final WorldServer world;
-    private Map<UUID, Network> networksByUuid = new HashMap<>();
+    private Map<UUID, INetwork> networksByUuid = new HashMap<>();
     private int nextNetworkId = 0;
 
     public ServerNetworkManager(WorldServer world) {
@@ -51,50 +51,50 @@ public final class ServerNetworkManager extends NetworkManager<NetworkEdge> impl
     @Override
     public void reset(List<PersistentNetwork> data) {
         nextNetworkId = 0;
-        List<Network> networks = data.stream().map(persistent -> new Network(nextNetworkId++, persistent)).collect(Collectors.toList());
+        List<INetwork> networks = data.stream().map(persistent -> new Network(nextNetworkId++, persistent)).collect(Collectors.toList());
         this.networksByUuid = new HashMap<>();
-        for (Network network : networks) {
+        for (INetwork network : networks) {
             networksByUuid.put(network.getUuid(), network);
         }
         resetInternal(networks);
     }
 
     @Override
-    protected NetworkEdge createNetworkEdge(Network network, Graph.Edge graphEdge) {
+    protected NetworkEdge createNetworkEdge(INetwork network, Graph.Edge graphEdge) {
         return new NetworkEdge(network, graphEdge);
     }
 
     @Override
-    protected void addNetwork(Network network) {
+    protected void addNetwork(INetwork network) {
         networksByUuid.put(network.getUuid(), network);
         super.addNetwork(network);
     }
 
     @Override
-    public void removeNetwork(Network network) {
+    public void removeNetwork(INetwork network) {
         networksByUuid.remove(network.getUuid());
         super.removeNetwork(network);
     }
 
     @Override
-    public void hitAttachment(Network network, EntityPlayer player, int attachmentKey) {
+    public void hitAttachment(INetwork network, EntityPlayer player, int attachmentKey) {
         ItemStack stack = network.getState().getAttachment(attachmentKey);
         if (!stack.isEmpty()) {
-            setAttachment(network, attachmentKey, ItemStack.EMPTY);
+            network.setAttachment(attachmentKey, ItemStack.EMPTY);
             dropAttachment(network.getState(), stack, attachmentKey);
         }
     }
 
     @Nullable
     @Override
-    public final Network getNetworkByUuid(UUID uuid) {
+    public final INetwork getNetworkByUuid(UUID uuid) {
         return networksByUuid.get(uuid);
     }
 
-    private void extend(Network network, BlockPos fromPos, BlockPos toPos) {
+    private void extend(INetwork network, BlockPos fromPos, BlockPos toPos) {
         RelativeNetworkState relativeState = RelativeNetworkState.fromAbsolute(network.getState());
         relativeState.addEdge(fromPos, toPos);
-        setNetworkState(network, relativeState.toAbsolute());
+        network.setState(relativeState.toAbsolute());
     }
 
     @Override
@@ -102,10 +102,10 @@ public final class ServerNetworkManager extends NetworkManager<NetworkEdge> impl
         if (fromPos.equals(toPos)) {
             INetworkNode node = getNetworkNodeByPos(fromPos);
             if (node != null) {
-                Network network = node.getNetwork();
+                INetwork network = node.getNetwork();
                 RelativeNetworkState relativeState = RelativeNetworkState.fromAbsolute(network.getState());
                 relativeState.reroot(toPos);
-                setNetworkState(network, relativeState.toAbsolute());
+                network.setState(relativeState.toAbsolute());
             }
             return false;
         }
@@ -114,9 +114,9 @@ public final class ServerNetworkManager extends NetworkManager<NetworkEdge> impl
         INetworkNode toNode = getNetworkNodeByPos(toPos);
 
         if (fromNode != null) {
-            Network fromNetwork = fromNode.getNetwork();
+            INetwork fromNetwork = fromNode.getNetwork();
             if (toNode != null) {
-                Network toNetwork = toNode.getNetwork();
+                INetwork toNetwork = toNode.getNetwork();
 
                 if (fromNetwork == toNetwork) {
                     //TODO: Look into circular networks
@@ -137,7 +137,7 @@ public final class ServerNetworkManager extends NetworkManager<NetworkEdge> impl
             }
         } else {
             if (toNode != null) {
-                Network toNetwork = toNode.getNetwork();
+                INetwork toNetwork = toNode.getNetwork();
                 extend(toNetwork, toPos, fromPos);
             } else {
                 AbsoluteNetworkState state = AbsoluteNetworkState.createInitial(BasicTree.createInitial(fromPos, toPos).toAbsolute());
@@ -159,7 +159,7 @@ public final class ServerNetworkManager extends NetworkManager<NetworkEdge> impl
     public final void destroy(BlockPos pos) {
         INetworkNode node = getNetworkNodeByPos(pos);
         if (node != null) {
-            Network network = node.getNetwork();
+            INetwork network = node.getNetwork();
             RelativeNetworkState state = RelativeNetworkState.fromAbsolute(network.getState());
             state.reroot(pos);
             removeNetwork(network);
@@ -172,7 +172,7 @@ public final class ServerNetworkManager extends NetworkManager<NetworkEdge> impl
         INetworkNode nodeA = getNetworkNodeByPos(posA);
         INetworkNode nodeB = getNetworkNodeByPos(posB);
         if (nodeA != null && nodeB != null) {
-            Network network = nodeA.getNetwork();
+            INetwork network = nodeA.getNetwork();
             if (network == nodeB.getNetwork()) {
                 RelativeNetworkState state = RelativeNetworkState.fromAbsolute(network.getState());
                 state.reroot(posA);

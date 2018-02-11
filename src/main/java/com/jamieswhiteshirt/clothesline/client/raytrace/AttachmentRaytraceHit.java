@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.client.raytrace;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
-import com.jamieswhiteshirt.clothesline.api.Network;
+import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork;
@@ -32,7 +32,7 @@ public class AttachmentRaytraceHit extends NetworkRaytraceHit {
 
     @Override
     public boolean hitByEntity(IClientNetworkManager manager, EntityPlayer player) {
-        Network network = edge.getNetwork();
+        INetwork network = edge.getNetwork();
         Clothesline.instance.networkChannel.sendToServer(new HitAttachmentMessage(network.getId(), attachmentKey));
         manager.hitAttachment(network, player, attachmentKey);
         return true;

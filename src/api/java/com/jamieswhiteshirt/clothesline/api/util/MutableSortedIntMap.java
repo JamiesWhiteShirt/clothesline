@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class MutableSortedIntMap<T> {
-    public static class Entry<T> {
+public final class MutableSortedIntMap<T> {
+    public static final class Entry<T> {
         private final int key;
         private final T value;
 

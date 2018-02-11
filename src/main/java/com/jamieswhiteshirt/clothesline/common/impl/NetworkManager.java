@@ -7,20 +7,20 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.IntHashMap;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.*;
 
 public abstract class NetworkManager<T extends INetworkEdge> implements INetworkManager<T> {
-    private List<Network> networks = new ArrayList<>();
-    private IntHashMap<Network> networksById = new IntHashMap<>();
+    private List<INetwork> networks = new ArrayList<>();
+    private IntHashMap<INetwork> networksById = new IntHashMap<>();
     private Map<BlockPos, INetworkNode> networkNodesByPos = new HashMap<>();
     private RTree<T> networkEdges = RTree.create(new ConfigurationBuilder().star().build());
-    private final List<INetworkManagerEventListener> eventListeners = new ArrayList<>();
+    private final Map<ResourceLocation, INetworkManagerEventListener> eventListeners = new TreeMap<>();
 
-    private void unassignNetworkGraph(Network network) {
-        Graph graph = network.getState().getGraph();
+    private void unassignNetworkGraph(INetwork network, Graph graph) {
         for (Graph.Node graphNode : graph.getNodes()) {
             networkNodesByPos.remove(graphNode.getKey(), new NetworkNode(network, graphNode));
         }
@@ -30,8 +30,7 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
     }
 
 
-    private void assignNetworkGraph(Network network) {
-        Graph graph = network.getState().getGraph();
+    private void assignNetworkGraph(INetwork network, Graph graph) {
         for (Graph.Node graphNode : graph.getNodes()) {
             networkNodesByPos.put(graphNode.getKey(), new NetworkNode(network, graphNode));
         }
@@ -40,35 +39,56 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
         }
     }
 
-    protected abstract T createNetworkEdge(Network network, Graph.Edge graphEdge);
+    private static final ResourceLocation SPATIAL_INDEX_KEY = new ResourceLocation("clothesline", "spatial_index");
+
+    private void startIndexing(INetwork network) {
+        assignNetworkGraph(network, network.getState().getGraph());
+        network.addEventListener(SPATIAL_INDEX_KEY, new INetworkEventListener() {
+            @Override
+            public void onStateChanged(AbsoluteNetworkState previousState, AbsoluteNetworkState newState) {
+                unassignNetworkGraph(network, previousState.getGraph());
+                assignNetworkGraph(network, newState.getGraph());
+            }
+
+            @Override
+            public void onAttachmentChanged(int attachmentKey, ItemStack previousStack, ItemStack newStack) { }
+        });
+    }
+
+    private void stopIndexing(INetwork network) {
+        unassignNetworkGraph(network, network.getState().getGraph());
+        network.removeEventListener(SPATIAL_INDEX_KEY);
+    }
+
+    protected abstract T createNetworkEdge(INetwork network, Graph.Edge graphEdge);
 
     protected NetworkManager() { }
 
-    protected void resetInternal(List<Network> networks) {
+    protected void resetInternal(List<INetwork> networks) {
         this.networks = new ArrayList<>(networks);
         this.networksById = new IntHashMap<>();
-        for (Network network : networks) {
+        for (INetwork network : networks) {
             networksById.addKey(network.getId(), network);
         }
         this.networkNodesByPos = new HashMap<>();
         this.networkEdges = RTree.create(new ConfigurationBuilder().star().build());
-        for (Network network : networks) {
-            assignNetworkGraph(network);
+        for (INetwork network : networks) {
+            startIndexing(network);
         }
 
-        for (INetworkManagerEventListener eventListener : eventListeners) {
+        for (INetworkManagerEventListener eventListener : eventListeners.values()) {
             eventListener.onNetworksReset(getNetworks());
         }
     }
 
     @Override
-    public List<Network> getNetworks() {
+    public List<INetwork> getNetworks() {
         return networks;
     }
 
     @Nullable
     @Override
-    public Network getNetworkById(int id) {
+    public INetwork getNetworkById(int id) {
         return networksById.lookup(id);
     }
 
@@ -83,85 +103,38 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
         return networkEdges;
     }
 
-    protected void addNetwork(Network network) {
+    protected void addNetwork(INetwork network) {
         networks.add(network);
         networksById.addKey(network.getId(), network);
-        assignNetworkGraph(network);
+        startIndexing(network);
 
-        for (INetworkManagerEventListener eventListener : eventListeners) {
+        for (INetworkManagerEventListener eventListener : eventListeners.values()) {
             eventListener.onNetworkAdded(network);
         }
     }
 
     @Override
-    public void removeNetwork(Network network) {
+    public void removeNetwork(INetwork network) {
         networks.remove(network);
         networksById.removeObject(network.getId());
-        unassignNetworkGraph(network);
+        stopIndexing(network);
 
-        for (INetworkManagerEventListener eventListener : eventListeners) {
+        for (INetworkManagerEventListener eventListener : eventListeners.values()) {
             eventListener.onNetworkRemoved(network);
         }
     }
 
     @Override
     public final void update() {
-        getNetworks().forEach(Network::update);
-    }
-
-
-    @Override
-    public void setNetworkState(Network network, AbsoluteNetworkState state) {
-        unassignNetworkGraph(network);
-        network.setState(state);
-        assignNetworkGraph(network);
-
-        for (INetworkManagerEventListener eventListener : eventListeners) {
-            eventListener.onNetworkStateChanged(network, state);
-        }
+        getNetworks().forEach(INetwork::update);
     }
 
     @Override
-    public ItemStack insertItem(Network network, int attachmentKey, ItemStack stack, boolean simulate) {
-        if (!stack.isEmpty() && network.getState().getAttachment(attachmentKey).isEmpty()) {
-            if (!simulate) {
-                ItemStack insertedItem = stack.copy();
-                insertedItem.setCount(1);
-                setAttachment(network, attachmentKey, insertedItem);
-            }
-
-            ItemStack returnedStack = stack.copy();
-            returnedStack.shrink(1);
-            return returnedStack;
-        }
-        return stack;
-    }
-
-    @Override
-    public ItemStack extractItem(Network network, int attachmentKey, boolean simulate) {
-        ItemStack result = network.getState().getAttachment(attachmentKey);
-        if (!result.isEmpty() && !simulate) {
-            setAttachment(network, attachmentKey, ItemStack.EMPTY);
-        }
-        return result;
-    }
-
-    @Override
-    public void setAttachment(Network network, int attachmentKey, ItemStack stack) {
-        ItemStack previousStack = network.getState().getAttachment(attachmentKey);
-        network.getState().setAttachment(attachmentKey, stack);
-
-        for (INetworkManagerEventListener eventListener : eventListeners) {
-            eventListener.onAttachmentChanged(network, attachmentKey, previousStack, stack);
-        }
-    }
-
-    @Override
-    public boolean useItem(Network network, EntityPlayer player, EnumHand hand, int attachmentKey) {
+    public boolean useItem(INetwork network, EntityPlayer player, EnumHand hand, int attachmentKey) {
         ItemStack stack = player.getHeldItem(hand);
         if (!stack.isEmpty()) {
             if (network.getState().getAttachment(attachmentKey).isEmpty()) {
-                player.setHeldItem(hand, insertItem(network, attachmentKey, stack, false));
+                player.setHeldItem(hand, network.insertItem(attachmentKey, stack, false));
                 return true;
             }
         }
@@ -169,12 +142,12 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
     }
 
     @Override
-    public void addEventListener(INetworkManagerEventListener eventListener) {
-        eventListeners.add(eventListener);
+    public void addEventListener(ResourceLocation key, INetworkManagerEventListener eventListener) {
+        eventListeners.put(key, eventListener);
     }
 
     @Override
-    public void removeEventListener(INetworkManagerEventListener eventListener) {
-        eventListeners.remove(eventListener);
+    public void removeEventListener(ResourceLocation key) {
+        eventListeners.remove(key);
     }
 }

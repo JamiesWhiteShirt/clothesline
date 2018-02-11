@@ -1,22 +1,22 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.Graph;
+import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.INetworkEdge;
-import com.jamieswhiteshirt.clothesline.api.Network;
 
 import java.util.Objects;
 
 public class NetworkEdge implements INetworkEdge {
-    private final Network network;
+    private final INetwork network;
     private final Graph.Edge graphEdge;
 
-    public NetworkEdge(Network network, Graph.Edge graphEdge) {
+    public NetworkEdge(INetwork network, Graph.Edge graphEdge) {
         this.network = network;
         this.graphEdge = graphEdge;
     }
 
     @Override
-    public Network getNetwork() {
+    public INetwork getNetwork() {
         return network;
     }
 

@@ -1,8 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
-import com.jamieswhiteshirt.clothesline.api.INetworkManager;
+import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.Measurements;
-import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
@@ -11,12 +10,10 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 public final class NetworkItemHandler implements IItemHandler {
-    private final INetworkManager manager;
-    private final Network network;
+    private final INetwork network;
     private final int attachmentKey;
 
-    public NetworkItemHandler(INetworkManager manager, Network network, int attachmentKey) {
-        this.manager = manager;
+    public NetworkItemHandler(INetwork network, int attachmentKey) {
         this.network = network;
         this.attachmentKey = attachmentKey;
     }
@@ -48,13 +45,13 @@ public final class NetworkItemHandler implements IItemHandler {
     @Nonnull
     @Override
     public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-        return manager.insertItem(network, getCandidateAttachmentKey(), stack, simulate);
+        return network.insertItem(getCandidateAttachmentKey(), stack, simulate);
     }
 
     @Nonnull
     @Override
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
-        return manager.extractItem(network, getCandidateAttachmentKey(), simulate);
+        return network.extractItem(getCandidateAttachmentKey(), simulate);
     }
 
     @Override

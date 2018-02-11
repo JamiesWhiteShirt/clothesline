@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.client.raytrace;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
-import com.jamieswhiteshirt.clothesline.api.Network;
+import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork;
@@ -24,7 +24,7 @@ public class EdgeRaytraceHit extends NetworkRaytraceHit {
     @Override
     public boolean hitByEntity(IClientNetworkManager manager, EntityPlayer player) {
         int offset = (int) Math.round(this.offset);
-        Network network = edge.getNetwork();
+        INetwork network = edge.getNetwork();
         int attachmentKey = network.getState().offsetToAttachmentKey(offset);
         Clothesline.instance.networkChannel.sendToServer(new HitNetworkMessage(network.getId(), attachmentKey, offset));
         return true;
@@ -33,7 +33,7 @@ public class EdgeRaytraceHit extends NetworkRaytraceHit {
     @Override
     public boolean useItem(IClientNetworkManager manager, EntityPlayer player, EnumHand hand) {
         int offset = (int) Math.round(this.offset);
-        Network network = edge.getNetwork();
+        INetwork network = edge.getNetwork();
         int attachmentKey = network.getState().offsetToAttachmentKey(offset);
         Clothesline.instance.networkChannel.sendToServer(new TryUseItemOnNetworkMessage(hand, network.getId(), attachmentKey));
         return manager.useItem(network, player, hand, attachmentKey);

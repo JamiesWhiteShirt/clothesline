@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.client.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
-import com.jamieswhiteshirt.clothesline.api.Network;
+import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.common.network.message.SetAttachmentMessage;
 import net.minecraft.client.Minecraft;
@@ -24,9 +24,9 @@ public class SetAttachmentMessageHandler implements IMessageHandler<SetAttachmen
             if (world != null) {
                 IClientNetworkManager manager = world.getCapability(Clothesline.CLIENT_NETWORK_MANAGER_CAPABILITY, null);
                 if (manager != null) {
-                    Network network = manager.getNetworkById(message.networkId);
+                    INetwork network = manager.getNetworkById(message.networkId);
                     if (network != null) {
-                        manager.setAttachment(network, message.attachment.getKey(), message.attachment.getStack());
+                        network.setAttachment(message.attachment.getKey(), message.attachment.getStack());
                     }
                 }
             }

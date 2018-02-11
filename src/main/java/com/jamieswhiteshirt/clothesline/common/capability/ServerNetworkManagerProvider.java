@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common.capability;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
-import com.jamieswhiteshirt.clothesline.api.Network;
+import com.jamieswhiteshirt.clothesline.api.PersistentNetwork;
 import com.jamieswhiteshirt.clothesline.common.impl.ServerNetworkManager;
 import com.jamieswhiteshirt.clothesline.common.util.BasicPersistentNetwork;
 import com.jamieswhiteshirt.clothesline.common.util.NBTSerialization;
@@ -42,16 +42,16 @@ public class ServerNetworkManagerProvider implements ICapabilitySerializable<NBT
     @Nullable
     public NBTTagList serializeNBT() {
         return NBTSerialization.writePersistentNetworks(instance.getNetworks().stream().map(
-                Network::toPersistent
+            network -> new PersistentNetwork(network.getUuid(), network.getState())
         ).map(
-                BasicPersistentNetwork::fromAbsolute
+            BasicPersistentNetwork::fromAbsolute
         ).collect(Collectors.toList()));
     }
 
     @Override
     public void deserializeNBT(NBTTagList nbt) {
         instance.reset(NBTSerialization.readPersistentNetworks(nbt).stream().map(
-                BasicPersistentNetwork::toAbsolute
+            BasicPersistentNetwork::toAbsolute
         ).collect(Collectors.toList()));
     }
 }

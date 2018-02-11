@@ -1,8 +1,8 @@
 package com.jamieswhiteshirt.clothesline.client.renderer.tileentity;
 
+import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.INetworkNode;
 import com.jamieswhiteshirt.clothesline.api.Measurements;
-import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
 import com.jamieswhiteshirt.clothesline.common.block.BlockClotheslineAnchor;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
@@ -28,7 +28,7 @@ public class TileEntityClotheslineAnchorRenderer extends TileEntitySpecialRender
         INetworkNode node = te.getNetworkNode();
         float crankRotation = 0.0F;
         if (node != null) {
-            Network network = node.getNetwork();
+            INetwork network = node.getNetwork();
             float shift = network.getState().getShift() * partialTicks + network.getState().getPreviousShift() * (1.0F - partialTicks);
             crankRotation = -shift * 360.0F / Measurements.UNIT_LENGTH;
         }

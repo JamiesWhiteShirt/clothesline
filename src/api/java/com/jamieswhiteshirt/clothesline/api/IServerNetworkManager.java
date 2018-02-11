@@ -10,7 +10,7 @@ public interface IServerNetworkManager<T extends INetworkEdge> extends INetworkM
     void reset(List<PersistentNetwork> networks);
 
     @Nullable
-    Network getNetworkByUuid(UUID uuid);
+    INetwork getNetworkByUuid(UUID uuid);
 
     void disconnect(BlockPos posA, BlockPos posB);
 }

@@ -1,12 +1,12 @@
 package com.jamieswhiteshirt.clothesline.api.client;
 
+import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
-import com.jamieswhiteshirt.clothesline.api.Network;
 
 import java.util.List;
 
 public interface IClientNetworkManager extends INetworkManager<IClientNetworkEdge> {
-    void addNetwork(Network network);
+    void addNetwork(INetwork network);
 
-    void reset(List<Network> networks);
+    void reset(List<INetwork> networks);
 }

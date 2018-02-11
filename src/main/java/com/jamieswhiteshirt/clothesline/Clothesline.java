@@ -6,7 +6,7 @@ import com.jamieswhiteshirt.clothesline.common.*;
 import com.jamieswhiteshirt.clothesline.common.capability.*;
 import com.jamieswhiteshirt.clothesline.common.impl.Connector;
 import com.jamieswhiteshirt.clothesline.common.impl.ServerNetworkManager;
-import com.jamieswhiteshirt.clothesline.common.impl.SynchronizationListener;
+import com.jamieswhiteshirt.clothesline.common.impl.ManagerSynchronizationListener;
 import com.jamieswhiteshirt.clothesline.common.network.message.SetConnectorPosMessage;
 import com.jamieswhiteshirt.clothesline.common.network.message.SetNetworkMessage;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
@@ -42,7 +42,6 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.LogManager;
@@ -124,12 +123,14 @@ public class Clothesline {
         ClotheslineSoundEvents.registerSoundEvents(event);
     }
 
+    private static final ResourceLocation SYNCHRONIZATION_KEY = new ResourceLocation(MODID, "synchronization");
+
     @SubscribeEvent
     public void attachWorldCapabilities(AttachCapabilitiesEvent<World> event) {
         World world = event.getObject();
         if (world instanceof WorldServer) {
             ServerNetworkManager manager = new ServerNetworkManager((WorldServer) world);
-            manager.addEventListener(new SynchronizationListener((WorldServer) world, Clothesline.instance.networkChannel));
+            manager.addEventListener(SYNCHRONIZATION_KEY, new ManagerSynchronizationListener((WorldServer) world, Clothesline.instance.networkChannel));
             event.addCapability(new ResourceLocation(MODID, "network_manager"), new ServerNetworkManagerProvider(manager));
         }
     }

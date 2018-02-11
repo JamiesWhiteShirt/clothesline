@@ -1,10 +1,10 @@
 package com.jamieswhiteshirt.clothesline.client.impl;
 
 import com.jamieswhiteshirt.clothesline.api.Graph;
+import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.api.INetworkNode;
-import com.jamieswhiteshirt.clothesline.api.Network;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.player.EntityPlayer;
@@ -21,23 +21,23 @@ public final class ClientNetworkManager extends NetworkManager<IClientNetworkEdg
     }
 
     @Override
-    public void reset(List<Network> networks) {
+    public void reset(List<INetwork> networks) {
         resetInternal(networks);
     }
 
     @Override
-    protected ClientNetworkEdge createNetworkEdge(Network network, Graph.Edge graphEdge) {
+    protected ClientNetworkEdge createNetworkEdge(INetwork network, Graph.Edge graphEdge) {
         return new ClientNetworkEdge(network, graphEdge);
     }
 
     @Override
-    public void addNetwork(Network network) {
+    public void addNetwork(INetwork network) {
         super.addNetwork(network);
     }
 
     @Override
-    public void hitAttachment(Network network, EntityPlayer player, int attachmentKey) {
-        setAttachment(network, attachmentKey, ItemStack.EMPTY);
+    public void hitAttachment(INetwork network, EntityPlayer player, int attachmentKey) {
+        network.setAttachment(attachmentKey, ItemStack.EMPTY);
     }
 
     @Override
@@ -50,9 +50,9 @@ public final class ClientNetworkManager extends NetworkManager<IClientNetworkEdg
         INetworkNode toNode = getNetworkNodeByPos(toPos);
 
         if (fromNode != null) {
-            Network fromNetwork = fromNode.getNetwork();
+            INetwork fromNetwork = fromNode.getNetwork();
             if (toNode != null) {
-                Network toNetwork = toNode.getNetwork();
+                INetwork toNetwork = toNode.getNetwork();
 
                 //TODO: Look into circular networks
                 return fromNetwork != toNetwork;

@@ -58,10 +58,10 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
         if (capability == ITEM_HANDLER_CAPABILITY && facing != null) {
             INetworkNode node = getNetworkNode();
             if (node != null) {
-                Network network = node.getNetwork();
+                INetwork network = node.getNetwork();
                 EdgeKey edgeKey = new EdgeKey(pos, pos.offset(facing));
                 int attachmentKey = network.getState().offsetToAttachmentKey(node.getGraphNode().getCornerOffset(edgeKey));
-                return ITEM_HANDLER_CAPABILITY.cast(new NetworkItemHandler(manager, network, attachmentKey));
+                return ITEM_HANDLER_CAPABILITY.cast(new NetworkItemHandler(network, attachmentKey));
             }
         }
         return null;

@@ -1,10 +1,12 @@
 package com.jamieswhiteshirt.clothesline.common.util;
 
-import com.jamieswhiteshirt.clothesline.api.Network;
+import com.jamieswhiteshirt.clothesline.api.INetwork;
+import com.jamieswhiteshirt.clothesline.common.impl.Network;
+import com.jamieswhiteshirt.clothesline.api.PersistentNetwork;
 
 public class BasicNetwork {
-    public static BasicNetwork fromAbsolute(Network network) {
-        return new BasicNetwork(network.getId(), BasicPersistentNetwork.fromAbsolute(network.toPersistent()));
+    public static BasicNetwork fromAbsolute(INetwork network) {
+        return new BasicNetwork(network.getId(), BasicPersistentNetwork.fromAbsolute(new PersistentNetwork(network.getUuid(), network.getState())));
     }
 
     private final int id;
