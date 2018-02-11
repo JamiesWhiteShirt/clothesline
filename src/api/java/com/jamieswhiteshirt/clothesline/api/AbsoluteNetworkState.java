@@ -23,7 +23,6 @@ public final class AbsoluteNetworkState {
 
     private final AbsoluteTree tree;
     private final Graph graph;
-    private final Map<BlockPos, AbsoluteTree> posLookup;
     private final MutableSortedIntMap<ItemStack> attachments;
 
     public static AbsoluteNetworkState createInitial(AbsoluteTree tree) {
@@ -40,7 +39,6 @@ public final class AbsoluteNetworkState {
     public AbsoluteNetworkState(int previousShift, int shift, int previousMomentum, int momentum, AbsoluteTree tree, MutableSortedIntMap<ItemStack> attachments) {
         this.tree = tree;
         this.graph = tree.buildGraph();
-        this.posLookup = tree.createPositionLookup();
         this.attachments = attachments;
         this.previousShift = previousShift;
         this.previousMomentum = previousMomentum;
@@ -58,10 +56,6 @@ public final class AbsoluteNetworkState {
 
     public Graph getGraph() {
         return graph;
-    }
-
-    public AbsoluteTree getSubTree(BlockPos pos) {
-        return posLookup.get(pos);
     }
 
     public MutableSortedIntMap<ItemStack> getAttachments() {
