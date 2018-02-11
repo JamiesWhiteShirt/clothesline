@@ -2,7 +2,7 @@ package com.jamieswhiteshirt.clothesline.api;
 
 import java.util.UUID;
 
-public class PersistentNetwork {
+public final class PersistentNetwork {
     private final UUID uuid;
     private final AbsoluteNetworkState state;
 
