@@ -47,7 +47,7 @@ public final class Network implements INetwork {
         this.state = state;
 
         for (INetworkEventListener eventListener : eventListeners.values()) {
-            eventListener.onStateChanged(previousState, state);
+            eventListener.onStateChanged(this, previousState, state);
         }
     }
 
@@ -114,7 +114,7 @@ public final class Network implements INetwork {
         state.setAttachment(attachmentKey, stack);
 
         for (INetworkEventListener eventListener : eventListeners.values()) {
-            eventListener.onAttachmentChanged(attachmentKey, previousStack, stack);
+            eventListener.onAttachmentChanged(this, attachmentKey, previousStack, stack);
         }
     }
 

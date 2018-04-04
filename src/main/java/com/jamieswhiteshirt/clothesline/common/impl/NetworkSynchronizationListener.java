@@ -1,6 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.AbsoluteNetworkState;
+import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.INetworkEventListener;
 import com.jamieswhiteshirt.clothesline.common.network.message.RemoveAttachmentMessage;
 import com.jamieswhiteshirt.clothesline.common.network.message.SetAttachmentMessage;
@@ -11,29 +12,27 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 
 public class NetworkSynchronizationListener implements INetworkEventListener {
-    private final int networkId;
     private final int dimension;
-    private final SimpleNetworkWrapper networkWrapper;
+    private final SimpleNetworkWrapper networkChannel;
 
 
-    public NetworkSynchronizationListener(int networkId, int dimension, SimpleNetworkWrapper networkWrapper) {
-        this.networkId = networkId;
+    public NetworkSynchronizationListener(int dimension, SimpleNetworkWrapper networkChannel) {
         this.dimension = dimension;
-        this.networkWrapper = networkWrapper;
+        this.networkChannel = networkChannel;
     }
 
     @Override
-    public void onStateChanged(AbsoluteNetworkState previousState, AbsoluteNetworkState newState) {
-        networkWrapper.sendToDimension(new SetNetworkStateMessage(networkId, BasicNetworkState.fromAbsolute(newState)), dimension);
+    public void onStateChanged(INetwork network, AbsoluteNetworkState previousState, AbsoluteNetworkState newState) {
+        networkChannel.sendToDimension(new SetNetworkStateMessage(network.getId(), BasicNetworkState.fromAbsolute(newState)), dimension);
     }
 
     @Override
-    public void onAttachmentChanged(int attachmentKey, ItemStack previousStack, ItemStack newStack) {
+    public void onAttachmentChanged(INetwork network, int attachmentKey, ItemStack previousStack, ItemStack newStack) {
         if (!ItemStack.areItemStacksEqual(previousStack, newStack)) {
             if (!newStack.isEmpty()) {
-                networkWrapper.sendToDimension(new SetAttachmentMessage(networkId, new BasicAttachment(attachmentKey, newStack)), dimension);
+                networkChannel.sendToDimension(new SetAttachmentMessage(network.getId(), new BasicAttachment(attachmentKey, newStack)), dimension);
             } else {
-                networkWrapper.sendToDimension(new RemoveAttachmentMessage(networkId, attachmentKey), dimension);
+                networkChannel.sendToDimension(new RemoveAttachmentMessage(network.getId(), attachmentKey), dimension);
             }
         }
     }

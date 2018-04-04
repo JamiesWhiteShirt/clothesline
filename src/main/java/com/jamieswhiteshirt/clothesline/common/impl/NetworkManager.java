@@ -17,6 +17,16 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
     private Map<BlockPos, INetworkNode> networkNodesByPos = new HashMap<>();
     private RTree<T> networkEdges = RTree.create(new ConfigurationBuilder().star().build());
     private final Map<ResourceLocation, INetworkManagerEventListener> eventListeners = new TreeMap<>();
+    private final INetworkEventListener spatialIndexListener = new INetworkEventListener() {
+        @Override
+        public void onStateChanged(INetwork network, AbsoluteNetworkState previousState, AbsoluteNetworkState newState) {
+            unassignNetworkGraph(network, previousState.getGraph());
+            assignNetworkGraph(network, newState.getGraph());
+        }
+
+        @Override
+        public void onAttachmentChanged(INetwork network, int attachmentKey, ItemStack previousStack, ItemStack newStack) { }
+    };
 
     private void unassignNetworkGraph(INetwork network, Graph graph) {
         for (Graph.Node graphNode : graph.getNodes()) {
@@ -41,16 +51,7 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
 
     private void startIndexing(INetwork network) {
         assignNetworkGraph(network, network.getState().getGraph());
-        network.addEventListener(SPATIAL_INDEX_KEY, new INetworkEventListener() {
-            @Override
-            public void onStateChanged(AbsoluteNetworkState previousState, AbsoluteNetworkState newState) {
-                unassignNetworkGraph(network, previousState.getGraph());
-                assignNetworkGraph(network, newState.getGraph());
-            }
-
-            @Override
-            public void onAttachmentChanged(int attachmentKey, ItemStack previousStack, ItemStack newStack) { }
-        });
+        network.addEventListener(SPATIAL_INDEX_KEY, spatialIndexListener);
     }
 
     private void stopIndexing(INetwork network) {

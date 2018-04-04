@@ -1,6 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.INetwork;
+import com.jamieswhiteshirt.clothesline.api.INetworkEventListener;
 import com.jamieswhiteshirt.clothesline.api.INetworkManagerEventListener;
 import com.jamieswhiteshirt.clothesline.common.network.message.*;
 import com.jamieswhiteshirt.clothesline.common.util.BasicNetwork;
@@ -17,10 +18,12 @@ public class ManagerSynchronizationListener implements INetworkManagerEventListe
 
     private final int dimension;
     private final SimpleNetworkWrapper networkChannel;
+    private final INetworkEventListener networkSynchronizationListener;
 
     public ManagerSynchronizationListener(WorldServer world, SimpleNetworkWrapper networkChannel) {
         dimension = world.provider.getDimension();
         this.networkChannel = networkChannel;
+        this.networkSynchronizationListener = new NetworkSynchronizationListener(dimension, networkChannel);
     }
 
     @Override
@@ -33,7 +36,7 @@ public class ManagerSynchronizationListener implements INetworkManagerEventListe
     @Override
     public void onNetworkAdded(INetwork network) {
         networkChannel.sendToDimension(new AddNetworkMessage(BasicNetwork.fromAbsolute(network)), dimension);
-        network.addEventListener(SYNCHRONIZATION_KEY, new NetworkSynchronizationListener(network.getId(), dimension, networkChannel));
+        network.addEventListener(SYNCHRONIZATION_KEY, networkSynchronizationListener);
     }
 
     @Override
