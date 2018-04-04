@@ -16,6 +16,7 @@ import java.util.List;
 @SideOnly(Side.CLIENT)
 public final class ClientNetworkManager extends NetworkManager<IClientNetworkEdge> implements IClientNetworkManager {
     public ClientNetworkManager(WorldClient world) {
+        super(world);
     }
 
     @Override

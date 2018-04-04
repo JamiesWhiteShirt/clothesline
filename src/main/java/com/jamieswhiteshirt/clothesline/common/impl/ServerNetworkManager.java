@@ -23,6 +23,7 @@ public final class ServerNetworkManager extends NetworkManager<NetworkEdge> impl
     private int nextNetworkId = 0;
 
     public ServerNetworkManager(WorldServer world) {
+        super(world);
         this.world = world;
     }
 

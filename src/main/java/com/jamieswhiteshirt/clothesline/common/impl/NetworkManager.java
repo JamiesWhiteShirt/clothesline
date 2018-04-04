@@ -7,11 +7,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.IntHashMap;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.util.*;
 
 public abstract class NetworkManager<T extends INetworkEdge> implements INetworkManager<T> {
+    private final World world;
     private List<INetwork> networks = new ArrayList<>();
     private IntHashMap<INetwork> networksById = new IntHashMap<>();
     private Map<BlockPos, INetworkNode> networkNodesByPos = new HashMap<>();
@@ -61,7 +63,9 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
 
     protected abstract T createNetworkEdge(INetwork network, Graph.Edge graphEdge);
 
-    protected NetworkManager() { }
+    protected NetworkManager(World world) {
+        this.world = world;
+    }
 
     protected void resetInternal(List<INetwork> networks) {
         List<INetwork> previousNetworks = this.networks;
