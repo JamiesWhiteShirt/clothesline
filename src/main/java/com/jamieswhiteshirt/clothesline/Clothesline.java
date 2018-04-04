@@ -130,7 +130,7 @@ public class Clothesline {
         World world = event.getObject();
         if (world instanceof WorldServer) {
             ServerNetworkManager manager = new ServerNetworkManager((WorldServer) world);
-            manager.addEventListener(SYNCHRONIZATION_KEY, new ManagerSynchronizationListener((WorldServer) world, Clothesline.instance.networkChannel));
+            manager.addEventListener(SYNCHRONIZATION_KEY, new ManagerSynchronizationListener<>((WorldServer) world, Clothesline.instance.networkChannel));
             event.addCapability(new ResourceLocation(MODID, "network_manager"), new ServerNetworkManagerProvider(manager));
         }
     }

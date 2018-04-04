@@ -16,7 +16,7 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
     private IntHashMap<INetwork> networksById = new IntHashMap<>();
     private Map<BlockPos, INetworkNode> networkNodesByPos = new HashMap<>();
     private RTree<T> networkEdges = RTree.create(new ConfigurationBuilder().star().build());
-    private final Map<ResourceLocation, INetworkManagerEventListener> eventListeners = new TreeMap<>();
+    private final Map<ResourceLocation, INetworkManagerEventListener<T>> eventListeners = new TreeMap<>();
     private final INetworkEventListener spatialIndexListener = new INetworkEventListener() {
         @Override
         public void onStateChanged(INetwork network, AbsoluteNetworkState previousState, AbsoluteNetworkState newState) {
@@ -76,8 +76,8 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
             startIndexing(network);
         }
 
-        for (INetworkManagerEventListener eventListener : eventListeners.values()) {
-            eventListener.onNetworksReset(previousNetworks, this.networks);
+        for (INetworkManagerEventListener<T> eventListener : eventListeners.values()) {
+            eventListener.onNetworksReset(this, previousNetworks, this.networks);
         }
     }
 
@@ -108,8 +108,8 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
         networksById.addKey(network.getId(), network);
         startIndexing(network);
 
-        for (INetworkManagerEventListener eventListener : eventListeners.values()) {
-            eventListener.onNetworkAdded(network);
+        for (INetworkManagerEventListener<T> eventListener : eventListeners.values()) {
+            eventListener.onNetworkAdded(this, network);
         }
     }
 
@@ -119,8 +119,8 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
         networksById.removeObject(network.getId());
         stopIndexing(network);
 
-        for (INetworkManagerEventListener eventListener : eventListeners.values()) {
-            eventListener.onNetworkRemoved(network);
+        for (INetworkManagerEventListener<T> eventListener : eventListeners.values()) {
+            eventListener.onNetworkRemoved(this, network);
         }
     }
 
@@ -130,7 +130,7 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
     }
 
     @Override
-    public void addEventListener(ResourceLocation key, INetworkManagerEventListener eventListener) {
+    public void addEventListener(ResourceLocation key, INetworkManagerEventListener<T> eventListener) {
         eventListeners.put(key, eventListener);
     }
 

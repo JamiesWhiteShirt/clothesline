@@ -28,7 +28,7 @@ public interface INetworkManager<T extends INetworkEdge> {
 
     void destroy(BlockPos pos);
 
-    void addEventListener(ResourceLocation key, INetworkManagerEventListener eventListener);
+    void addEventListener(ResourceLocation key, INetworkManagerEventListener<T> eventListener);
 
     void removeEventListener(ResourceLocation key);
 }
