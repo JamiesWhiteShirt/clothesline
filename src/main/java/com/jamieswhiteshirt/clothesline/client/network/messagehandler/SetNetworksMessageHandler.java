@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class SetNetworksMessageHandler implements IMessageHandler<SetNetworkMessage, IMessage> {
     // This message may be received before the client world is actually assigned to Minecraft.
     // The network manager holds the world that will later be assigned to the client in this field.
-    private static final Field clientWorldController = ReflectionHelper.findField(NetHandlerPlayClient.class, "field_147300_g", "clientWorldController");
+    private static final Field clientWorldController = ReflectionHelper.findField(NetHandlerPlayClient.class, "field_147300_g", "world");
 
     @Override
     @Nullable
