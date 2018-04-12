@@ -20,28 +20,17 @@ import java.util.stream.Collectors;
 
 @SideOnly(Side.CLIENT)
 public class SetNetworksMessageHandler implements IMessageHandler<SetNetworkMessage, IMessage> {
-    // This message may be received before the client world is actually assigned to Minecraft.
-    // The network manager holds the world that will later be assigned to the client in this field.
-    private static final Field clientWorldController = ReflectionHelper.findField(NetHandlerPlayClient.class, "field_147300_g", "world");
-
     @Override
     @Nullable
     public IMessage onMessage(SetNetworkMessage message, MessageContext ctx) {
         Minecraft.getMinecraft().addScheduledTask(() -> {
-            WorldClient world = null;
-            try {
-                world = (WorldClient) clientWorldController.get(ctx.getClientHandler());
-            } catch (IllegalAccessException e) {
-                Clothesline.logger.error("Could not access client world for network sync", e);
-            }
-            if (world != null) {
-                IClientNetworkManager manager = world.getCapability(Clothesline.CLIENT_NETWORK_MANAGER_CAPABILITY, null);
-                if (manager != null) {
-                    manager.reset(message.networks.stream().map(
-                            BasicNetwork::toAbsolute
-                    ).collect(Collectors.toList()));
-                }
-            }
+            WorldClient world = ctx.getClientHandler().world;
+			IClientNetworkManager manager = world.getCapability(Clothesline.CLIENT_NETWORK_MANAGER_CAPABILITY, null);
+			if (manager != null) {
+				manager.reset(message.networks.stream().map(
+						BasicNetwork::toAbsolute
+				).collect(Collectors.toList()));
+			}
         });
         return null;
     }
