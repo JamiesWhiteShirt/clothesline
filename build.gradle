@@ -19,12 +19,12 @@ compileJava {
 }
 
 minecraft {
-    version = "1.12.2-14.23.3.2658"
+    version = "1.12.2-14.23.3.2665"
     runDir = "run"
 
     clientJvmArgs = serverJvmArgs = ["-Dfml.coreMods.load=$fmlCorePlugin"]
 
-    mappings = "snapshot_20180410"
+    mappings = "snapshot_20180414"
 }
 
 repositories {
