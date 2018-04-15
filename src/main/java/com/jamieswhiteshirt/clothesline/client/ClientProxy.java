@@ -24,6 +24,7 @@ import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineA
 import com.jamieswhiteshirt.clothesline.hooks.api.ClientStoppedUsingItemEvent;
 import com.jamieswhiteshirt.clothesline.hooks.api.GetMouseOverEvent;
 import com.jamieswhiteshirt.clothesline.hooks.api.RenderEntitiesEvent;
+import com.jamieswhiteshirt.clothesline.hooks.api.UseItemMovementEvent;
 import com.jamieswhiteshirt.rtree3i.Box;
 import com.jamieswhiteshirt.rtree3i.Entry;
 import net.minecraft.client.Minecraft;
@@ -123,6 +124,13 @@ public class ClientProxy extends CommonProxy {
 
                 event.setCanceled(true);
             }
+        }
+    }
+
+    @SubscribeEvent
+    public void onUseItemMovement(UseItemMovementEvent event) {
+        if (event.getItemStack().getItem() == ClotheslineItems.CLOTHESLINE) {
+            event.setMovementSlowed(false);
         }
     }
 

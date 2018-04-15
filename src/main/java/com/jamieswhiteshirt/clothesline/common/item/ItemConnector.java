@@ -2,33 +2,21 @@ package com.jamieswhiteshirt.clothesline.common.item;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.IConnector;
-import com.jamieswhiteshirt.clothesline.common.Util;
 import com.jamieswhiteshirt.clothesline.common.network.message.SetConnectorPosMessage;
-import com.jamieswhiteshirt.clothesline.hooks.api.IActivityMovement;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.Packet;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public abstract class ItemConnector extends Item {
-    @CapabilityInject(IActivityMovement.class)
-    private static final Capability<IActivityMovement> ACTIVITY_MOVEMENT_CAPABILITY = Util.nonNullInjected();
-
     private final ThreadLocal<BlockPos> toPos = new ThreadLocal<>();
 
     public abstract boolean connectFrom(EntityLivingBase entity, World world, EnumHand hand, BlockPos pos);
@@ -86,26 +74,8 @@ public abstract class ItemConnector extends Item {
 
     private void setConnectorPos(World world, EntityLivingBase entity, IConnector connector, @Nullable BlockPos pos) {
         if (!world.isRemote) {
-            Packet<?> packet = Clothesline.instance.networkChannel.getPacketFrom(new SetConnectorPosMessage(entity.getEntityId(), pos));
-            ((WorldServer) world).getEntityTracker().sendToTracking(entity, packet);
+            Clothesline.instance.networkChannel.sendToAllTracking(new SetConnectorPosMessage(entity.getEntityId(), pos), entity);
         }
         connector.setPos(pos);
-    }
-
-    @Nullable
-    @Override
-    public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable NBTTagCompound nbt) {
-        return new ICapabilityProvider() {
-            @Override
-            public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
-                return capability == ACTIVITY_MOVEMENT_CAPABILITY;
-            }
-
-            @Nullable
-            @Override
-            public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
-                return capability == ACTIVITY_MOVEMENT_CAPABILITY ? ACTIVITY_MOVEMENT_CAPABILITY.cast((IActivityMovement) player -> false) : null;
-            }
-        };
     }
 }
