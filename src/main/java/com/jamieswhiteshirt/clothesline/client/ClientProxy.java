@@ -6,6 +6,7 @@ import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.client.capability.ClientNetworkManagerProvider;
+import com.jamieswhiteshirt.clothesline.client.impl.ManagerSoundListener;
 import com.jamieswhiteshirt.clothesline.client.raytrace.EntityNetworkRaytraceHit;
 import com.jamieswhiteshirt.clothesline.client.impl.ClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.client.network.messagehandler.*;
@@ -63,6 +64,7 @@ import java.util.List;
 @SideOnly(Side.CLIENT)
 public class ClientProxy extends CommonProxy {
     private static final AxisAlignedBB attachmentBox = new AxisAlignedBB(-0.5D, -0.5D, -0.5D, 0.5D, 0.5D, 0.5D);
+    private static final ResourceLocation SOUND_KEY = new ResourceLocation(Clothesline.MODID, "sound");
 
     private RenderClotheslineNetwork renderClotheslineNetwork;
 
@@ -104,6 +106,7 @@ public class ClientProxy extends CommonProxy {
         World world = event.getObject();
         if (world instanceof WorldClient) {
             ClientNetworkManager manager = new ClientNetworkManager((WorldClient) world);
+            manager.addEventListener(SOUND_KEY, new ManagerSoundListener<>());
             event.addCapability(new ResourceLocation(Clothesline.MODID, "network_manager"), new ClientNetworkManagerProvider(manager));
         }
     }

@@ -20,6 +20,10 @@ public final class Graph {
             return key;
         }
 
+        public List<Edge> getEdges() {
+            return edges;
+        }
+
         private int floorEdgeIndex(EdgeKey key, int minIndex, int maxIndex) {
             if (minIndex != maxIndex) {
                 int middleIndex = (minIndex + maxIndex) / 2;

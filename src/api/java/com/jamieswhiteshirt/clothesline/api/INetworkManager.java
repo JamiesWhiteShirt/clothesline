@@ -8,6 +8,7 @@ import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Map;
 
 public interface INetworkManager<T extends INetworkEdge> {
     Collection<INetwork> getNetworks();
@@ -17,6 +18,9 @@ public interface INetworkManager<T extends INetworkEdge> {
 
     @Nullable
     INetworkNode getNetworkNodeByPos(BlockPos pos);
+
+    // TODO: This needs a spatial index
+    Map<BlockPos, INetworkNode> getNetworkNodes();
 
     RTree<T> getNetworkEdges();
 

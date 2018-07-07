@@ -186,10 +186,6 @@ public class BlockClotheslineAnchor extends BlockDirectional {
                 AbsoluteNetworkState networkState = networkNode.getNetwork().getState();
                 int momentum = networkState.getMomentum();
                 float pitch = 0.2F + 0.6F * ((float)momentum / AbsoluteNetworkState.MAX_MOMENTUM) + rand.nextFloat() * 0.1F;
-                if (rand.nextInt(8 * AbsoluteNetworkState.MAX_MOMENTUM) < momentum) {
-                    float volume = 0.5F + Measurements.UNIT_LENGTH * (float)networkState.getAttachments().size() / networkState.getLoopLength();
-                    world.playSound(Minecraft.getMinecraft().player, pos, ClotheslineSoundEvents.BLOCK_CLOTHESLINE_ANCHOR_ROPE, SoundCategory.BLOCKS, volume, pitch);
-                }
                 if (rand.nextInt(12 * AbsoluteNetworkState.MAX_MOMENTUM) < momentum) {
                     world.playSound(Minecraft.getMinecraft().player, pos, ClotheslineSoundEvents.BLOCK_CLOTHESLINE_ANCHOR_SQUEAK, SoundCategory.BLOCKS, 0.1F, pitch);
                 }

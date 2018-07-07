@@ -42,4 +42,8 @@ public class ManagerSynchronizationListener<T extends INetworkEdge> implements I
         networkChannel.sendToDimension(new RemoveNetworkMessage(network.getId()), dimension);
         network.removeEventListener(SYNCHRONIZATION_KEY);
     }
+
+    @Override
+    public void onUpdate(INetworkManager<T> networkManager) {
+    }
 }

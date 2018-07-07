@@ -103,6 +103,11 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
     }
 
     @Override
+    public Map<BlockPos, INetworkNode> getNetworkNodes() {
+        return networkNodesByPos;
+    }
+
+    @Override
     public RTree<T> getNetworkEdges() {
         return networkEdges;
     }

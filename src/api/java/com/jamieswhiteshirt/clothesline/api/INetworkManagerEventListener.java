@@ -8,4 +8,6 @@ public interface INetworkManagerEventListener<T extends INetworkEdge> {
     void onNetworkAdded(INetworkManager<T> networkManager, INetwork network);
 
     void onNetworkRemoved(INetworkManager<T> networkManager, INetwork network);
+
+    void onUpdate(INetworkManager<T> networkManager);
 }
