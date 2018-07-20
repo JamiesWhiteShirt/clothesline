@@ -1,6 +1,5 @@
 package com.jamieswhiteshirt.clothesline.api;
 
-import com.jamieswhiteshirt.rtree3i.Box;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -65,15 +64,13 @@ public final class Graph {
 
     public static final class Edge {
         private final EdgeKey key;
-        private final BlockPos fromKey;
-        private final BlockPos toKey;
+        private final Line line;
         private final int fromOffset;
         private final int toOffset;
 
-        public Edge(EdgeKey key, BlockPos fromKey, BlockPos toKey, int fromOffset, int toOffset) {
+        public Edge(EdgeKey key, Line line, int fromOffset, int toOffset) {
             this.key = key;
-            this.fromKey = fromKey;
-            this.toKey = toKey;
+            this.line = line;
             this.fromOffset = fromOffset;
             this.toOffset = toOffset;
         }
@@ -82,12 +79,8 @@ public final class Graph {
             return key;
         }
 
-        public BlockPos getFromKey() {
-            return fromKey;
-        }
-
-        public BlockPos getToKey() {
-            return toKey;
+        public Line getLine() {
+            return line;
         }
 
         public int getFromOffset() {
@@ -104,18 +97,7 @@ public final class Graph {
 
         public Vec3d getPositionForOffset(int offset) {
             double scalar = (double)(offset - getFromOffset()) / (getToOffset() - getFromOffset());
-            return Measurements.midVec(getFromKey()).scale(1.0D - scalar).add(Measurements.midVec(getToKey()).scale(scalar));
-        }
-
-        public Box getBox() {
-            return Box.create(
-                Math.min(fromKey.getX(), toKey.getX()),
-                Math.min(fromKey.getY(), toKey.getY()),
-                Math.min(fromKey.getZ(), toKey.getZ()),
-                Math.max(fromKey.getX(), toKey.getX()) + 1,
-                Math.max(fromKey.getY(), toKey.getY()) + 1,
-                Math.max(fromKey.getZ(), toKey.getZ()) + 1
-            );
+            return line.getPosition(scalar);
         }
 
         @Override
@@ -126,13 +108,12 @@ public final class Graph {
             return fromOffset == edge.fromOffset &&
                 toOffset == edge.toOffset &&
                 Objects.equals(key, edge.key) &&
-                Objects.equals(fromKey, edge.fromKey) &&
-                Objects.equals(toKey, edge.toKey);
+                Objects.equals(line, edge.line);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(key, fromKey, toKey, fromOffset, toOffset);
+            return Objects.hash(key, line, fromOffset, toOffset);
         }
     }
 

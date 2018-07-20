@@ -6,6 +6,7 @@ import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.api.INetworkNode;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
+import com.jamieswhiteshirt.clothesline.common.impl.NetworkNode;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
@@ -14,7 +15,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.List;
 
 @SideOnly(Side.CLIENT)
-public final class ClientNetworkManager extends NetworkManager<IClientNetworkEdge> implements IClientNetworkManager {
+public final class ClientNetworkManager extends NetworkManager<IClientNetworkEdge, INetworkNode> implements IClientNetworkManager {
     public ClientNetworkManager(WorldClient world) {
         super(world);
     }
@@ -25,8 +26,13 @@ public final class ClientNetworkManager extends NetworkManager<IClientNetworkEdg
     }
 
     @Override
-    protected ClientNetworkEdge createNetworkEdge(INetwork network, Graph.Edge graphEdge) {
+    protected ClientNetworkEdge createNetworkEdge(Graph.Edge graphEdge, INetwork network) {
         return new ClientNetworkEdge(network, graphEdge);
+    }
+
+    @Override
+    protected INetworkNode createNetworkNode(Graph.Node graphNode, INetwork network) {
+        return new NetworkNode(network, graphNode);
     }
 
     @Override
@@ -40,8 +46,8 @@ public final class ClientNetworkManager extends NetworkManager<IClientNetworkEdg
             return false;
         }
 
-        INetworkNode fromNode = getNetworkNodeByPos(fromPos);
-        INetworkNode toNode = getNetworkNodeByPos(toPos);
+        INetworkNode fromNode = getNodes().get(fromPos);
+        INetworkNode toNode = getNodes().get(toPos);
 
         if (fromNode != null) {
             INetwork fromNetwork = fromNode.getNetwork();

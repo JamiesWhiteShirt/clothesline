@@ -1,8 +1,10 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.*;
+import com.jamieswhiteshirt.rtree3i.Box;
+import com.jamieswhiteshirt.rtree3i.Configuration;
 import com.jamieswhiteshirt.rtree3i.ConfigurationBuilder;
-import com.jamieswhiteshirt.rtree3i.RTree;
+import com.jamieswhiteshirt.rtree3i.RTreeMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IntHashMap;
 import net.minecraft.util.ResourceLocation;
@@ -12,13 +14,24 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public abstract class NetworkManager<T extends INetworkEdge> implements INetworkManager<T> {
+public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkNode> implements INetworkManager<E, N> {
+    private static final Configuration configuration = new ConfigurationBuilder().star().build();
+
+    private static <E> RTreeMap<Line, E> createEdgesMap() {
+        return RTreeMap.create(configuration, Line::getBox);
+    }
+
+    private static <N> RTreeMap<BlockPos, N> createNodesMap() {
+        return RTreeMap.create(configuration, blockPos -> Box.create(blockPos.getX(), blockPos.getY(), blockPos.getZ(),
+            blockPos.getX() + 1, blockPos.getY() + 1, blockPos.getZ() + 1));
+    }
+
     private final World world;
     private List<INetwork> networks = new ArrayList<>();
     private IntHashMap<INetwork> networksById = new IntHashMap<>();
-    private Map<BlockPos, INetworkNode> networkNodesByPos = new HashMap<>();
-    private RTree<T> networkEdges = RTree.create(new ConfigurationBuilder().star().build());
-    private final Map<ResourceLocation, INetworkManagerEventListener<T>> eventListeners = new TreeMap<>();
+    private RTreeMap<Line, E> networkEdges = createEdgesMap();
+    private RTreeMap<BlockPos, N> networkNodes = createNodesMap();
+    private final Map<ResourceLocation, INetworkManagerEventListener<E, N>> eventListeners = new TreeMap<>();
     private final INetworkEventListener spatialIndexListener = new INetworkEventListener() {
         @Override
         public void onStateChanged(INetwork network, AbsoluteNetworkState previousState, AbsoluteNetworkState newState) {
@@ -32,20 +45,20 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
 
     private void unassignNetworkGraph(INetwork network, Graph graph) {
         for (Graph.Node graphNode : graph.getNodes()) {
-            networkNodesByPos.remove(graphNode.getKey(), new NetworkNode(network, graphNode));
+            networkNodes = networkNodes.remove(graphNode.getKey());
         }
         for (Graph.Edge graphEdge : graph.getEdges()) {
-            networkEdges = networkEdges.remove(graphEdge.getBox(), createNetworkEdge(network, graphEdge));
+            networkEdges = networkEdges.remove(graphEdge.getLine());
         }
     }
 
 
     private void assignNetworkGraph(INetwork network, Graph graph) {
         for (Graph.Node graphNode : graph.getNodes()) {
-            networkNodesByPos.put(graphNode.getKey(), new NetworkNode(network, graphNode));
+            networkNodes = networkNodes.put(graphNode.getKey(), createNetworkNode(graphNode, network));
         }
         for (Graph.Edge graphEdge : graph.getEdges()) {
-            networkEdges = networkEdges.add(graphEdge.getBox(), createNetworkEdge(network, graphEdge));
+            networkEdges = networkEdges.put(graphEdge.getLine(), createNetworkEdge(graphEdge, network));
         }
     }
 
@@ -61,7 +74,9 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
         network.removeEventListener(SPATIAL_INDEX_KEY);
     }
 
-    protected abstract T createNetworkEdge(INetwork network, Graph.Edge graphEdge);
+    protected abstract E createNetworkEdge(Graph.Edge graphEdge, INetwork network);
+
+    protected abstract N createNetworkNode(Graph.Node graphNode, INetwork network);
 
     protected NetworkManager(World world) {
         this.world = world;
@@ -74,13 +89,13 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
         for (INetwork network : networks) {
             networksById.addKey(network.getId(), network);
         }
-        this.networkNodesByPos = new HashMap<>();
-        this.networkEdges = RTree.create(new ConfigurationBuilder().star().build());
+        this.networkNodes = createNodesMap();
+        this.networkEdges = createEdgesMap();
         for (INetwork network : networks) {
             startIndexing(network);
         }
 
-        for (INetworkManagerEventListener<T> eventListener : eventListeners.values()) {
+        for (INetworkManagerEventListener<E, N> eventListener : eventListeners.values()) {
             eventListener.onNetworksReset(this, previousNetworks, this.networks);
         }
     }
@@ -96,19 +111,13 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
         return networksById.lookup(id);
     }
 
-    @Nullable
     @Override
-    public final INetworkNode getNetworkNodeByPos(BlockPos pos) {
-        return networkNodesByPos.get(pos);
+    public RTreeMap<BlockPos, N> getNodes() {
+        return networkNodes;
     }
 
     @Override
-    public Map<BlockPos, INetworkNode> getNetworkNodes() {
-        return networkNodesByPos;
-    }
-
-    @Override
-    public RTree<T> getNetworkEdges() {
+    public RTreeMap<Line, E> getEdges() {
         return networkEdges;
     }
 
@@ -117,7 +126,7 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
         networksById.addKey(network.getId(), network);
         startIndexing(network);
 
-        for (INetworkManagerEventListener<T> eventListener : eventListeners.values()) {
+        for (INetworkManagerEventListener<E, N> eventListener : eventListeners.values()) {
             eventListener.onNetworkAdded(this, network);
         }
     }
@@ -128,7 +137,7 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
         networksById.removeObject(network.getId());
         stopIndexing(network);
 
-        for (INetworkManagerEventListener<T> eventListener : eventListeners.values()) {
+        for (INetworkManagerEventListener<E, N> eventListener : eventListeners.values()) {
             eventListener.onNetworkRemoved(this, network);
         }
     }
@@ -139,7 +148,7 @@ public abstract class NetworkManager<T extends INetworkEdge> implements INetwork
     }
 
     @Override
-    public void addEventListener(ResourceLocation key, INetworkManagerEventListener<T> eventListener) {
+    public void addEventListener(ResourceLocation key, INetworkManagerEventListener<E, N> eventListener) {
         eventListeners.put(key, eventListener);
     }
 

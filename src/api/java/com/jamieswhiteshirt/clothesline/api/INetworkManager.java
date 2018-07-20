@@ -1,28 +1,21 @@
 package com.jamieswhiteshirt.clothesline.api;
 
-import com.jamieswhiteshirt.rtree3i.RTree;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.EnumHand;
+import com.jamieswhiteshirt.rtree3i.RTreeMap;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.Map;
 
-public interface INetworkManager<T extends INetworkEdge> {
+public interface INetworkManager<E extends INetworkEdge, N extends INetworkNode> {
     Collection<INetwork> getNetworks();
 
     @Nullable
     INetwork getNetworkById(int id);
 
-    @Nullable
-    INetworkNode getNetworkNodeByPos(BlockPos pos);
+    RTreeMap<Line, E> getEdges();
 
-    // TODO: This needs a spatial index
-    Map<BlockPos, INetworkNode> getNetworkNodes();
-
-    RTree<T> getNetworkEdges();
+    RTreeMap<BlockPos, N> getNodes();
 
     void removeNetwork(INetwork network);
 
@@ -32,7 +25,7 @@ public interface INetworkManager<T extends INetworkEdge> {
 
     void destroy(BlockPos pos);
 
-    void addEventListener(ResourceLocation key, INetworkManagerEventListener<T> eventListener);
+    void addEventListener(ResourceLocation key, INetworkManagerEventListener<E, N> eventListener);
 
     void removeEventListener(ResourceLocation key);
 }

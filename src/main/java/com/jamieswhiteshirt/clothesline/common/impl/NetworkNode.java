@@ -10,7 +10,7 @@ public final class NetworkNode implements INetworkNode {
     private final INetwork network;
     private final Graph.Node graphNode;
 
-    NetworkNode(INetwork network, Graph.Node graphNode) {
+    public NetworkNode(INetwork network, Graph.Node graphNode) {
         this.network = network;
         this.graphNode = graphNode;
     }

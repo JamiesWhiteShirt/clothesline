@@ -31,7 +31,7 @@ public final class GraphBuilder {
 
         public void putEdge(EdgeKey key, BlockPos toKey) {
             int minOffset = getMaxOffset();
-            Graph.Edge edge = new Graph.Edge(key, this.key, toKey, minOffset, minOffset + key.getLength());
+            Graph.Edge edge = new Graph.Edge(key, new Line(this.key, toKey), minOffset, minOffset + key.getLength());
             allEdges.add(edge);
             putEdge(edge, 0, edges.size());
         }

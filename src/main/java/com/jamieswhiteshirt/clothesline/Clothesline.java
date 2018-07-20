@@ -13,7 +13,6 @@ import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineA
 import com.jamieswhiteshirt.clothesline.common.util.BasicNetwork;
 import com.jamieswhiteshirt.clothesline.hooks.api.MayPlaceBlockEvent;
 import com.jamieswhiteshirt.rtree3i.Box;
-import com.jamieswhiteshirt.rtree3i.RTree;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -23,7 +22,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
@@ -63,9 +61,9 @@ public class Clothesline {
     public static final String CERTIFICATE_FINGERPRINT = "3bae2d07b93a5971335cb2de15230c19c103db32";
 
     @CapabilityInject(INetworkManager.class)
-    public static final Capability<INetworkManager<? extends INetworkEdge>> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    public static final Capability<INetworkManager<?, ?>> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
     @CapabilityInject(IServerNetworkManager.class)
-    public static final Capability<IServerNetworkManager<? extends INetworkEdge>> SERVER_NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    public static final Capability<IServerNetworkManager> SERVER_NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
     @CapabilityInject(IClientNetworkManager.class)
     public static final Capability<IClientNetworkManager> CLIENT_NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
     @CapabilityInject(IConnector.class)
@@ -156,7 +154,7 @@ public class Clothesline {
     public void onEntityJoinWorld(EntityJoinWorldEvent event) {
         if (!event.getWorld().isRemote && event.getEntity() instanceof EntityPlayerMP) {
             EntityPlayerMP player = (EntityPlayerMP) event.getEntity();
-            INetworkManager<? extends INetworkEdge> manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
+            INetworkManager<?, ?> manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 networkChannel.sendTo(new SetNetworkMessage(manager.getNetworks().stream().map(
                         BasicNetwork::fromAbsolute
@@ -179,17 +177,17 @@ public class Clothesline {
     public void onMayPlaceBlock(MayPlaceBlockEvent event) {
         AxisAlignedBB blockAabb = event.getState().getCollisionBoundingBox(event.getWorld(), event.getPos());
         if (blockAabb != Block.NULL_AABB) {
-            INetworkManager<? extends INetworkEdge> manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
+            INetworkManager<?, ?> manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 BlockPos pos = event.getPos();
                 AxisAlignedBB aabb = blockAabb.offset(pos);
                 Box box = Box.create(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
-                boolean intersects = manager.getNetworkEdges().any(RTree.intersects(box), entry -> {
-                    Graph.Edge edge = entry.getValue().getGraphEdge();
-                    Vec3d fromVec = Measurements.midVec(edge.getFromKey());
-                    Vec3d toVec = Measurements.midVec(edge.getToKey());
-                    return aabb.calculateIntercept(fromVec, toVec) != null;
-                });
+                boolean intersects = manager.getEdges()
+                    .values(box::intersects)
+                    .anyMatch(networkEdge -> {
+                        Line line = networkEdge.getGraphEdge().getLine();
+                        return aabb.calculateIntercept(line.getFromVec(), line.getToVec()) != null;
+                    });
                 if (intersects) {
                     event.setCanceled(true);
                 }

@@ -6,7 +6,8 @@ import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.rtree3i.Entry;
-import com.jamieswhiteshirt.rtree3i.RTree;
+import com.jamieswhiteshirt.rtree3i.RTreeMap;
+import com.jamieswhiteshirt.rtree3i.Selection;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.*;
@@ -29,7 +30,6 @@ import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector4f;
 
 import java.nio.FloatBuffer;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -102,12 +102,13 @@ public final class RenderClotheslineNetwork {
         }
     }
 
-    private void renderEdge(IBlockAccess world, IClientNetworkEdge e, double x, double y, double z, BufferBuilder bufferBuilder, float partialTicks) {
-        Graph.Edge ge = e.getGraphEdge();
-        int combinedLightFrom = world.getCombinedLight(ge.getFromKey(), 0);
-        int combinedLightTo = world.getCombinedLight(ge.getToKey(), 0);
-        double shift = e.getNetwork().getState().getShift(partialTicks);
-        renderEdge(ge.getFromOffset() - shift, ge.getToOffset() - shift, combinedLightFrom, combinedLightTo, e.getProjection(), bufferBuilder, x, y, z);
+    private void renderEdge(IBlockAccess world, IClientNetworkEdge edge, double x, double y, double z, BufferBuilder bufferBuilder, float partialTicks) {
+        Graph.Edge ge = edge.getGraphEdge();
+        Line line = ge.getLine();
+        int combinedLightFrom = world.getCombinedLight(line.getFromPos(), 0);
+        int combinedLightTo = world.getCombinedLight(line.getToPos(), 0);
+        double shift = edge.getNetwork().getState().getShift(partialTicks);
+        renderEdge(ge.getFromOffset() - shift, ge.getToOffset() - shift, combinedLightFrom, combinedLightTo, edge.getProjection(), bufferBuilder, x, y, z);
     }
 
     public void buildAndDrawEdgeQuads(Consumer<BufferBuilder> consumer) {
@@ -123,16 +124,15 @@ public final class RenderClotheslineNetwork {
         tessellator.draw();
     }
 
-    public void render(IBlockAccess world, RTree<IClientNetworkEdge> edgesTree, ICamera camera, double x, double y, double z, float partialTicks) {
+    public void render(IBlockAccess world, RTreeMap<Line, IClientNetworkEdge> edgesTree, ICamera camera, double x, double y, double z, float partialTicks) {
         Vec3d viewPos = new Vec3d(x, y, z);
 
-        Collection<Entry<IClientNetworkEdge>> entries = edgesTree.search(box -> camera.isBoundingBoxInFrustum(new AxisAlignedBB(box.x1(), box.y1(), box.z1(), box.x2(), box.y2(), box.z2())));
+        // Select all entries in the edge map intersecting with the camera frumstum
+        Selection<IClientNetworkEdge> edges = edgesTree
+            .values(box -> camera.isBoundingBoxInFrustum(new AxisAlignedBB(box.x1(), box.y1(), box.z1(), box.x2(), box.y2(), box.z2())));
 
-        buildAndDrawEdgeQuads(bufferBuilder -> {
-            for (Entry<IClientNetworkEdge> entry : entries) {
-                renderEdge(world, entry.getValue(), x, y, z, bufferBuilder, partialTicks);
-            }
-        });
+        // Draw the rope for all edges
+        buildAndDrawEdgeQuads(bufferBuilder -> edges.forEach(edge -> renderEdge(world, edge, x, y, z, bufferBuilder, partialTicks)));
 
         GlStateManager.enableRescaleNormal();
         GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
@@ -147,8 +147,7 @@ public final class RenderClotheslineNetwork {
         // Buffer for local space to world space matrix to upload to GL
         FloatBuffer l2wBuffer = GLAllocation.createDirectFloatBuffer(16);
 
-        for (Entry<IClientNetworkEdge> edgeEntry : entries) {
-            IClientNetworkEdge edge = edgeEntry.getValue();
+        edges.forEach(edge -> {
             Graph.Edge graphEdge = edge.getGraphEdge();
             AbsoluteNetworkState state = edge.getNetwork().getState();
             double fromAttachmentKey = state.offsetToAttachmentKey(graphEdge.getFromOffset(), partialTicks);
@@ -181,7 +180,7 @@ public final class RenderClotheslineNetwork {
                     l2wBuffer.clear();
                 }
             }
-        }
+        });
 
         GlStateManager.disableRescaleNormal();
     }
@@ -226,9 +225,9 @@ public final class RenderClotheslineNetwork {
 
         List<RenderEdge> renderEdges = state.getEdges();
         for (int i = 0; i < renderEdges.size(); i++) {
-            RenderEdge edge = renderEdges.get(i);
-            Vec3d pos = edge.getProjection().projectRUF(0.125D, 0.125D, 0.5D);
-            debugRenderText(i + ": " + edge.getAngleY(), pos.x - x, pos.y - y, pos.z - z, yaw, pitch, fontRenderer);
+            RenderEdge entry = renderEdges.get(i);
+            Vec3d pos = entry.getProjection().projectRUF(0.125D, 0.125D, 0.5D);
+            debugRenderText(i + ": " + entry.getAngleY(), pos.x - x, pos.y - y, pos.z - z, yaw, pitch, fontRenderer);
         }
 
         debugRenderTree(state.getTree(), x, y, z, yaw, pitch, fontRenderer);
@@ -237,10 +236,10 @@ public final class RenderClotheslineNetwork {
         for (MutableSortedIntMap.Entry<ItemStack> entry : state.getStacks().entries()) {
             double attachmentOffset = (entry.getKey() + shift) % state.getStacks().getMaxKey();
             int edgeIndex = state.getEdgeIndexForOffset((int)attachmentOffset);
-            RenderEdge edge = renderEdges.get(edgeIndex);
-            double relativeOffset = attachmentOffset - edge.getFromOffset();
-            double edgePosScalar = relativeOffset / (edge.getToOffset() - edge.getFromOffset());
-            Vec3d pos = edge.getProjection().projectRUF(-2.0D / 16.0D, 0.0D, edgePosScalar);
+            RenderEdge entry = renderEdges.get(edgeIndex);
+            double relativeOffset = attachmentOffset - entry.getFromOffset();
+            double edgePosScalar = relativeOffset / (entry.getToOffset() - entry.getFromOffset());
+            Vec3d pos = entry.getProjection().projectRUF(-2.0D / 16.0D, 0.0D, edgePosScalar);
             debugRenderText(Integer.toString(entry.getKey()), pos.x - x, pos.y - y, pos.z - z, yaw, pitch, fontRenderer);
         }
     } */

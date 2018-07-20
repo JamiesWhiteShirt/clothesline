@@ -27,7 +27,6 @@ import com.jamieswhiteshirt.clothesline.hooks.api.GetMouseOverEvent;
 import com.jamieswhiteshirt.clothesline.hooks.api.RenderEntitiesEvent;
 import com.jamieswhiteshirt.clothesline.hooks.api.UseItemMovementEvent;
 import com.jamieswhiteshirt.rtree3i.Box;
-import com.jamieswhiteshirt.rtree3i.Entry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -60,6 +59,7 @@ import org.lwjgl.util.vector.Vector4f;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @SideOnly(Side.CLIENT)
 public class ClientProxy extends CommonProxy {
@@ -239,7 +239,7 @@ public class ClientProxy extends CommonProxy {
                 IClientNetworkManager manager = world.getCapability(Clothesline.CLIENT_NETWORK_MANAGER_CAPABILITY, null);
                 if (manager != null) {
                     boolean showDebugInfo = Minecraft.getMinecraft().gameSettings.showDebugInfo;
-                    renderClotheslineNetwork.render(world, manager.getNetworkEdges(), event.getCamera(), x, y, z, partialTicks);
+                    renderClotheslineNetwork.render(world, manager.getEdges(), event.getCamera(), x, y, z, partialTicks);
                 }
 
                 if (Minecraft.getMinecraft().gameSettings.thirdPersonView <= 0) {
@@ -345,8 +345,9 @@ public class ClientProxy extends CommonProxy {
         );
 
         NetworkRaytraceHit hit = null;
-        for (Entry<IClientNetworkEdge> entry : manager.getNetworkEdges().search(box)) {
-            NetworkRaytraceHit hitCandidate = raytraceEdge(ray, entry.getValue(), maxDistanceSq, partialTicks);
+        List<IClientNetworkEdge> edges = manager.getEdges().values(box::intersects).collect(Collectors.toList());
+        for (IClientNetworkEdge edge : edges) {
+            NetworkRaytraceHit hitCandidate = raytraceEdge(ray, edge, maxDistanceSq, partialTicks);
             if (hitCandidate != null && hitCandidate.distanceSq < maxDistanceSq) {
                 maxDistanceSq = hitCandidate.distanceSq;
                 hit = hitCandidate;
@@ -359,9 +360,10 @@ public class ClientProxy extends CommonProxy {
     @Nullable
     private NetworkRaytraceHit raytraceEdge(Ray viewRay, IClientNetworkEdge edge, double maxDistanceSq, float partialTicks) {
         Graph.Edge graphEdge = edge.getGraphEdge();
+        LineProjection projection = edge.getProjection();
         NetworkRaytraceHit hit = null;
 
-        Ray edgeRay = new Ray(edge.getProjection().projectRUF(-2.0D / 16.0D, 0.0D, 0.0D), edge.getProjection().projectRUF(-2.0D / 16.0D, 0.0D, 1.0D));
+        Ray edgeRay = new Ray(projection.projectRUF(-2.0D / 16.0D, 0.0D, 0.0D), projection.projectRUF(-2.0D / 16.0D, 0.0D, 1.0D));
 
         double b = viewRay.delta.dotProduct(edgeRay.delta);
         Vec3d w0 = viewRay.from.subtract(edgeRay.from);
@@ -395,8 +397,8 @@ public class ClientProxy extends CommonProxy {
             Vector4f wHitVec = new Vector4f();
 
             EdgeAttachmentProjector projector = EdgeAttachmentProjector.build(edge);
-            for (MutableSortedIntMap.Entry<ItemStack> entry : attachments) {
-                double attachmentOffset = state.attachmentKeyToOffset(entry.getKey(), partialTicks);
+            for (MutableSortedIntMap.Entry<ItemStack> attachment : attachments) {
+                double attachmentOffset = state.attachmentKeyToOffset(attachment.getKey(), partialTicks);
                 // Local space to world space matrix
                 Matrix4f l2w = projector.getL2WForAttachment(state.getMomentum(partialTicks), attachmentOffset, partialTicks);
 
@@ -413,7 +415,7 @@ public class ClientProxy extends CommonProxy {
                     double distanceSq = new Vec3d(wHitVec.x, wHitVec.y, wHitVec.z).squareDistanceTo(viewRay.from);
                     if (distanceSq < maxDistanceSq) {
                         maxDistanceSq = distanceSq;
-                        hit = new AttachmentRaytraceHit(distanceSq, edge, entry.getKey(), l2w);
+                        hit = new AttachmentRaytraceHit(distanceSq, edge, attachment.getKey(), l2w);
                     }
                 }
             }

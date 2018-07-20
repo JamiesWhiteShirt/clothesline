@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public final class ServerNetworkManager extends NetworkManager<NetworkEdge> implements IServerNetworkManager<NetworkEdge> {
+public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INetworkNode> implements IServerNetworkManager {
     private final WorldServer world;
     private Map<UUID, INetwork> networksByUuid = new HashMap<>();
     private int nextNetworkId = 0;
@@ -60,8 +60,13 @@ public final class ServerNetworkManager extends NetworkManager<NetworkEdge> impl
     }
 
     @Override
-    protected NetworkEdge createNetworkEdge(INetwork network, Graph.Edge graphEdge) {
+    protected INetworkEdge createNetworkEdge(Graph.Edge graphEdge, INetwork network) {
         return new NetworkEdge(network, graphEdge);
+    }
+
+    @Override
+    protected INetworkNode createNetworkNode(Graph.Node graphNode, INetwork network) {
+        return new NetworkNode(network, graphNode);
     }
 
     @Override
@@ -91,7 +96,7 @@ public final class ServerNetworkManager extends NetworkManager<NetworkEdge> impl
     @Override
     public final boolean connect(BlockPos fromPos, BlockPos toPos) {
         if (fromPos.equals(toPos)) {
-            INetworkNode node = getNetworkNodeByPos(fromPos);
+            INetworkNode node = getNodes().get(fromPos);
             if (node != null) {
                 INetwork network = node.getNetwork();
                 RelativeNetworkState relativeState = RelativeNetworkState.fromAbsolute(network.getState());
@@ -101,8 +106,8 @@ public final class ServerNetworkManager extends NetworkManager<NetworkEdge> impl
             return false;
         }
 
-        INetworkNode fromNode = getNetworkNodeByPos(fromPos);
-        INetworkNode toNode = getNetworkNodeByPos(toPos);
+        INetworkNode fromNode = getNodes().get(fromPos);
+        INetworkNode toNode = getNodes().get(toPos);
 
         if (fromNode != null) {
             INetwork fromNetwork = fromNode.getNetwork();
@@ -148,7 +153,7 @@ public final class ServerNetworkManager extends NetworkManager<NetworkEdge> impl
 
     @Override
     public final void destroy(BlockPos pos) {
-        INetworkNode node = getNetworkNodeByPos(pos);
+        INetworkNode node = getNodes().get(pos);
         if (node != null) {
             INetwork network = node.getNetwork();
             RelativeNetworkState state = RelativeNetworkState.fromAbsolute(network.getState());
@@ -160,8 +165,8 @@ public final class ServerNetworkManager extends NetworkManager<NetworkEdge> impl
 
     @Override
     public void disconnect(BlockPos posA, BlockPos posB) {
-        INetworkNode nodeA = getNetworkNodeByPos(posA);
-        INetworkNode nodeB = getNetworkNodeByPos(posB);
+        INetworkNode nodeA = getNodes().get(posA);
+        INetworkNode nodeB = getNodes().get(posB);
         if (nodeA != null && nodeB != null) {
             INetwork network = nodeA.getNetwork();
             if (network == nodeB.getNetwork()) {

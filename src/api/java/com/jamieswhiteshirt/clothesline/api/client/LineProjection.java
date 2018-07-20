@@ -1,5 +1,6 @@
 package com.jamieswhiteshirt.clothesline.api.client;
 
+import com.jamieswhiteshirt.clothesline.api.Line;
 import net.minecraft.util.math.Vec3d;
 
 public final class LineProjection {
@@ -21,6 +22,10 @@ public final class LineProjection {
 
     public Vec3d projectTangentRU(double r, double u) {
         return right.scale(r).add(up.scale(u));
+    }
+
+    public static LineProjection create(Line line) {
+        return create(line.getFromVec(), line.getToVec());
     }
 
     public static LineProjection create(Vec3d from, Vec3d to) {

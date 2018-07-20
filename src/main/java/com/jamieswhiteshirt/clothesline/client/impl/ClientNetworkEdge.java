@@ -15,7 +15,7 @@ public class ClientNetworkEdge extends NetworkEdge implements IClientNetworkEdge
 
     public ClientNetworkEdge(INetwork network, Graph.Edge graphEdge) {
         super(network, graphEdge);
-        projection = LineProjection.create(Measurements.midVec(graphEdge.getFromKey()), Measurements.midVec(graphEdge.getToKey()));
+        projection = LineProjection.create(graphEdge.getLine());
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.jamieswhiteshirt.clothesline.common.impl;
 import com.jamieswhiteshirt.clothesline.api.Graph;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.INetworkEdge;
+import com.jamieswhiteshirt.rtree3i.Box;
 
 import java.util.Objects;
 

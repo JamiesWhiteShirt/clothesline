@@ -1,9 +1,6 @@
 package com.jamieswhiteshirt.clothesline.client.raytrace;
 
-import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
-import com.jamieswhiteshirt.clothesline.client.raytrace.NetworkRaytraceHit;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;

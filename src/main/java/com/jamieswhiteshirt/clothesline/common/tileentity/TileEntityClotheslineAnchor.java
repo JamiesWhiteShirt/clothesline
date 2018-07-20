@@ -22,12 +22,12 @@ import javax.annotation.Nullable;
 public class TileEntityClotheslineAnchor extends TileEntity implements ITickable {
     @CapabilityInject(IItemHandler.class)
     private static final Capability<IItemHandler> ITEM_HANDLER_CAPABILITY = Util.nonNullInjected();
-    private INetworkManager manager;
+    private INetworkManager<?, ?> manager;
 
     @Nullable
     public INetworkNode getNetworkNode() {
         if (manager != null) {
-            return manager.getNetworkNodeByPos(pos);
+            return manager.getNodes().get(pos);
         } else {
             return null;
         }

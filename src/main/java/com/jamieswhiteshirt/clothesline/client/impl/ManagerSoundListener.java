@@ -2,6 +2,7 @@ package com.jamieswhiteshirt.clothesline.client.impl;
 
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.client.audio.ClotheslineRopeSound;
+import com.jamieswhiteshirt.rtree3i.Box;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -13,10 +14,9 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @SideOnly(Side.CLIENT)
-public class ManagerSoundListener<T extends INetworkEdge> implements INetworkManagerEventListener<T> {
+public class ManagerSoundListener<E extends INetworkEdge, N extends INetworkNode> implements INetworkManagerEventListener<E, N> {
     private static final ResourceLocation SOUND_KEY = new ResourceLocation("clothesline", "sound");
 
     private final Map<BlockPos, ClotheslineRopeSound> anchorSounds = new HashMap<>();
@@ -60,39 +60,33 @@ public class ManagerSoundListener<T extends INetworkEdge> implements INetworkMan
     }
 
     @Override
-    public void onNetworksReset(INetworkManager<T> networkManager, List<INetwork> previousNetworks, List<INetwork> newNetworks) {
+    public void onNetworksReset(INetworkManager<E, N> networkManager, List<INetwork> previousNetworks, List<INetwork> newNetworks) {
         previousNetworks.forEach(this::unlistenTo);
         newNetworks.forEach(this::listenTo);
     }
 
     @Override
-    public void onNetworkAdded(INetworkManager<T> networkManager, INetwork network) {
+    public void onNetworkAdded(INetworkManager<E, N> networkManager, INetwork network) {
         listenTo(network);
     }
 
     @Override
-    public void onNetworkRemoved(INetworkManager<T> networkManager, INetwork network) {
+    public void onNetworkRemoved(INetworkManager<E, N> networkManager, INetwork network) {
         unlistenTo(network);
     }
 
     @Override
-    public void onUpdate(INetworkManager<T> networkManager) {
+    public void onUpdate(INetworkManager<E, N> networkManager) {
         /* EntityPlayerSP player = Minecraft.getMinecraft().player;
-        int minX = MathHelper.floor(player.posX - 10.0D);
-        int minY = MathHelper.floor(player.posY + player.getEyeHeight() - 10.0D);
-        int minZ = MathHelper.floor(player.posZ - 10.0D);
-        int maxX = MathHelper.floor(player.posX + 10.0D);
-        int maxY = MathHelper.floor(player.posY + player.getEyeHeight() + 10.0D);
-        int maxZ = MathHelper.floor(player.posZ + 10.0D);
-        List<INetworkNode> networkNodes = networkManager.getNetworkNodes().values().stream().filter(it -> {
-            BlockPos pos = it.getGraphNode().getKey();
-            int x = pos.getX();
-            int y = pos.getY();
-            int z = pos.getZ();
-            return x >= minX && y >= minY && z >= minZ && x < maxX && y < maxY && z < maxZ;
-        }).collect(Collectors.toList());
-
-        for (INetworkNode networkNode : networkNodes) {
-        } */
+        Box box = Box.create(
+            MathHelper.floor(player.posX - 10.0D),
+            MathHelper.floor(player.posY + player.getEyeHeight() - 10.0D),
+            MathHelper.floor(player.posZ - 10.0D),
+            MathHelper.ceil(player.posX + 10.0D),
+            MathHelper.ceil(player.posY + player.getEyeHeight() + 10.0D),
+            MathHelper.ceil(player.posZ + 10.0D)
+        );
+        networkManager.getNodes().entries(box::intersects).forEach(node -> {
+        }); */
     }
 }
