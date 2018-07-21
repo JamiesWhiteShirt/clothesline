@@ -1,4 +1,4 @@
-package com.jamieswhiteshirt.clothesline.common.impl;
+package com.jamieswhiteshirt.clothesline.common;
 
 import com.jamieswhiteshirt.clothesline.api.AbsoluteNetworkState;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
@@ -11,12 +11,12 @@ import com.jamieswhiteshirt.clothesline.common.util.BasicNetworkState;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 
-public class NetworkSynchronizationListener implements INetworkEventListener {
+public class SyncNetworkListener implements INetworkEventListener {
     private final int dimension;
     private final SimpleNetworkWrapper networkChannel;
 
 
-    public NetworkSynchronizationListener(int dimension, SimpleNetworkWrapper networkChannel) {
+    public SyncNetworkListener(int dimension, SimpleNetworkWrapper networkChannel) {
         this.dimension = dimension;
         this.networkChannel = networkChannel;
     }

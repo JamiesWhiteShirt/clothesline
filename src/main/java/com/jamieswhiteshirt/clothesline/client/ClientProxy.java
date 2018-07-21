@@ -6,7 +6,6 @@ import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.client.capability.ClientNetworkManagerProvider;
-import com.jamieswhiteshirt.clothesline.client.impl.ManagerSoundListener;
 import com.jamieswhiteshirt.clothesline.client.raytrace.EntityNetworkRaytraceHit;
 import com.jamieswhiteshirt.clothesline.client.impl.ClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.client.network.messagehandler.*;
@@ -106,7 +105,7 @@ public class ClientProxy extends CommonProxy {
         World world = event.getObject();
         if (world instanceof WorldClient) {
             ClientNetworkManager manager = new ClientNetworkManager((WorldClient) world);
-            manager.addEventListener(SOUND_KEY, new ManagerSoundListener<>());
+            manager.addEventListener(SOUND_KEY, new SoundNetworkManagerListener<>());
             event.addCapability(new ResourceLocation(Clothesline.MODID, "network_manager"), new ClientNetworkManagerProvider(manager));
         }
     }

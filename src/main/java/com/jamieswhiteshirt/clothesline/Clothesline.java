@@ -6,7 +6,7 @@ import com.jamieswhiteshirt.clothesline.common.*;
 import com.jamieswhiteshirt.clothesline.common.capability.*;
 import com.jamieswhiteshirt.clothesline.common.impl.Connector;
 import com.jamieswhiteshirt.clothesline.common.impl.ServerNetworkManager;
-import com.jamieswhiteshirt.clothesline.common.impl.ManagerSynchronizationListener;
+import com.jamieswhiteshirt.clothesline.common.SyncNetworkManagerListener;
 import com.jamieswhiteshirt.clothesline.common.network.message.SetConnectorPosMessage;
 import com.jamieswhiteshirt.clothesline.common.network.message.SetNetworkMessage;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
@@ -129,7 +129,7 @@ public class Clothesline {
         World world = event.getObject();
         if (world instanceof WorldServer) {
             ServerNetworkManager manager = new ServerNetworkManager((WorldServer) world);
-            manager.addEventListener(SYNCHRONIZATION_KEY, new ManagerSynchronizationListener<>((WorldServer) world, Clothesline.instance.networkChannel));
+            manager.addEventListener(SYNCHRONIZATION_KEY, new SyncNetworkManagerListener<>((WorldServer) world, Clothesline.instance.networkChannel));
             event.addCapability(new ResourceLocation(MODID, "network_manager"), new ServerNetworkManagerProvider(manager));
         }
     }

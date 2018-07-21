@@ -1,4 +1,4 @@
-package com.jamieswhiteshirt.clothesline.client.impl;
+package com.jamieswhiteshirt.clothesline.client;
 
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.client.audio.ClotheslineRopeSound;
@@ -16,7 +16,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.*;
 
 @SideOnly(Side.CLIENT)
-public class ManagerSoundListener<E extends INetworkEdge, N extends INetworkNode> implements INetworkManagerEventListener<E, N> {
+public class SoundNetworkManagerListener<E extends INetworkEdge, N extends INetworkNode> implements INetworkManagerEventListener<E, N> {
     private static final ResourceLocation SOUND_KEY = new ResourceLocation("clothesline", "sound");
 
     private final Map<BlockPos, ClotheslineRopeSound> anchorSounds = new HashMap<>();

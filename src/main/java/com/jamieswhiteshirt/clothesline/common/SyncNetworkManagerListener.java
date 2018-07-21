@@ -1,4 +1,4 @@
-package com.jamieswhiteshirt.clothesline.common.impl;
+package com.jamieswhiteshirt.clothesline.common;
 
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.common.network.message.*;
@@ -10,7 +10,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ManagerSynchronizationListener<E extends INetworkEdge, N extends INetworkNode> implements INetworkManagerEventListener<E, N> {
+public class SyncNetworkManagerListener<E extends INetworkEdge, N extends INetworkNode> implements INetworkManagerEventListener<E, N> {
     //TODO: This is currently syncing all networks in a dimension. This has to be tailored for each player
     private static final ResourceLocation SYNCHRONIZATION_KEY = new ResourceLocation("clothesline", "synchronization");
 
@@ -18,10 +18,10 @@ public class ManagerSynchronizationListener<E extends INetworkEdge, N extends IN
     private final SimpleNetworkWrapper networkChannel;
     private final INetworkEventListener networkSynchronizationListener;
 
-    public ManagerSynchronizationListener(WorldServer world, SimpleNetworkWrapper networkChannel) {
+    public SyncNetworkManagerListener(WorldServer world, SimpleNetworkWrapper networkChannel) {
         dimension = world.provider.getDimension();
         this.networkChannel = networkChannel;
-        this.networkSynchronizationListener = new NetworkSynchronizationListener(dimension, networkChannel);
+        this.networkSynchronizationListener = new SyncNetworkListener(dimension, networkChannel);
     }
 
     @Override
@@ -29,6 +29,12 @@ public class ManagerSynchronizationListener<E extends INetworkEdge, N extends IN
         networkChannel.sendToDimension(new SetNetworkMessage(newNetworks.stream().map(
                 BasicNetwork::fromAbsolute
         ).collect(Collectors.toList())), dimension);
+        for (INetwork network : previousNetworks) {
+            network.removeEventListener(SYNCHRONIZATION_KEY);
+        }
+        for (INetwork network : newNetworks) {
+            network.addEventListener(SYNCHRONIZATION_KEY, networkSynchronizationListener);
+        }
     }
 
     @Override
