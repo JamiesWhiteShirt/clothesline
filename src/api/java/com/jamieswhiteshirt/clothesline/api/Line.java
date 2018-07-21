@@ -1,5 +1,6 @@
 package com.jamieswhiteshirt.clothesline.api;
 
+import com.google.common.base.Preconditions;
 import com.jamieswhiteshirt.rtree3i.Box;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -11,6 +12,7 @@ public final class Line {
     private final BlockPos to;
 
     public Line(BlockPos from, BlockPos to) {
+        Preconditions.checkArgument(!Objects.equals(from, to));
         this.from = from;
         this.to = to;
     }

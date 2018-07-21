@@ -28,6 +28,7 @@ minecraft {
 }
 
 repositories {
+    mavenCentral()
     maven {
         url "https://oss.sonatype.org/content/repositories/snapshots"
     }
@@ -46,6 +47,12 @@ dependencies {
     compile "com.jamieswhiteshirt:rtree-3i-lite:0.1-SNAPSHOT"
     contained "com.jamieswhiteshirt:clothesline-hooks:1.12.2-1.0.0.0-SNAPSHOT"
     deobfCompile "com.jamieswhiteshirt:clothesline-hooks:1.12.2-1.0.0.0-SNAPSHOT"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.2.0"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.2.0"
+}
+
+test {
+    useJUnitPlatform()
 }
 
 processResources {

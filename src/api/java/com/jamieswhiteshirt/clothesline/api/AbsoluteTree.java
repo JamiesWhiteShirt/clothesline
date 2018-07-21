@@ -96,7 +96,7 @@ public final class AbsoluteTree {
         for (Edge edge : edges) {
             nodeBuilder.putEdge(edge.key, edge.tree.pos);
             GraphBuilder.NodeBuilder childNodeBuilder = edge.tree.buildGraph(graphBuilder);
-            childNodeBuilder.putEdge(edge.key.reverse(edge.tree.pos), pos);
+            childNodeBuilder.putEdge(edge.key.reverse(pos), pos);
         }
         return nodeBuilder;
     }

@@ -107,13 +107,12 @@ public final class Graph {
             Edge edge = (Edge) o;
             return fromOffset == edge.fromOffset &&
                 toOffset == edge.toOffset &&
-                Objects.equals(key, edge.key) &&
                 Objects.equals(line, edge.line);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(key, line, fromOffset, toOffset);
+            return Objects.hash(line, fromOffset, toOffset);
         }
     }
 
@@ -133,8 +132,8 @@ public final class Graph {
         }
     }
 
-    public Collection<Node> getNodes() {
-        return nodes.values();
+    public Map<BlockPos, Node> getNodes() {
+        return nodes;
     }
 
     public List<Edge> getEdges() {

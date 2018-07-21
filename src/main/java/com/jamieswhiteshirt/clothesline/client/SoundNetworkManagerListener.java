@@ -34,7 +34,7 @@ public class SoundNetworkManagerListener<E extends INetworkEdge, N extends INetw
     };
 
     private void listenTo(AbsoluteNetworkState state) {
-        for (Graph.Node node : state.getGraph().getNodes()) {
+        for (Graph.Node node : state.getGraph().getNodes().values()) {
             ClotheslineRopeSound sound = new ClotheslineRopeSound(state, node);
             anchorSounds.put(node.getKey(), sound);
             soundHandler.playSound(sound);
@@ -42,8 +42,8 @@ public class SoundNetworkManagerListener<E extends INetworkEdge, N extends INetw
     }
 
     private void unlistenTo(AbsoluteNetworkState state) {
-        for (Graph.Node node : state.getGraph().getNodes()) {
-            ClotheslineRopeSound sound = anchorSounds.remove(node.getKey());
+        for (BlockPos pos : state.getGraph().getNodes().keySet()) {
+            ClotheslineRopeSound sound = anchorSounds.remove(pos);
             if (sound != null) {
                 soundHandler.stopSound(sound);
             }

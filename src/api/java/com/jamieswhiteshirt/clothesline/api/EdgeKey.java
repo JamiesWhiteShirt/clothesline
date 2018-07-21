@@ -2,6 +2,8 @@ package com.jamieswhiteshirt.clothesline.api;
 
 import net.minecraft.util.math.BlockPos;
 
+import java.util.Objects;
+
 public final class EdgeKey implements Comparable<EdgeKey> {
     private final BlockPos pos;
     // TODO: Use something other than atan2 to compare angles.
@@ -48,5 +50,20 @@ public final class EdgeKey implements Comparable<EdgeKey> {
                 return pos.compareTo(o.pos);
             }
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        EdgeKey edgeKey = (EdgeKey) o;
+        return Float.compare(edgeKey.angle, angle) == 0 &&
+            length == edgeKey.length &&
+            Objects.equals(pos, edgeKey.pos);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pos, angle, length);
     }
 }

@@ -44,8 +44,8 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
     };
 
     private void unassignNetworkGraph(INetwork network, Graph graph) {
-        for (Graph.Node graphNode : graph.getNodes()) {
-            networkNodes = networkNodes.remove(graphNode.getKey());
+        for (BlockPos pos : graph.getNodes().keySet()) {
+            networkNodes = networkNodes.remove(pos);
         }
         for (Graph.Edge graphEdge : graph.getEdges()) {
             networkEdges = networkEdges.remove(graphEdge.getLine());
@@ -54,7 +54,7 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
 
 
     private void assignNetworkGraph(INetwork network, Graph graph) {
-        for (Graph.Node graphNode : graph.getNodes()) {
+        for (Graph.Node graphNode : graph.getNodes().values()) {
             networkNodes = networkNodes.put(graphNode.getKey(), createNetworkNode(graphNode, network));
         }
         for (Graph.Edge graphEdge : graph.getEdges()) {

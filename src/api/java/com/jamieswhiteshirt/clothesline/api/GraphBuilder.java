@@ -55,7 +55,9 @@ public final class GraphBuilder {
     }
 
     public Graph build() {
-        Map<BlockPos, Graph.Node> nodes = this.nodes.values().stream().map(nodeBuilder -> new Graph.Node(nodeBuilder.key, nodeBuilder.edges)).collect(Collectors.toMap(Graph.Node::getKey, Function.identity()));
+        Map<BlockPos, Graph.Node> nodes = this.nodes.values().stream()
+            .map(nodeBuilder -> new Graph.Node(nodeBuilder.key, nodeBuilder.edges))
+            .collect(Collectors.toMap(Graph.Node::getKey, Function.identity()));
         return new Graph(nodes, new ArrayList<>(allEdges));
     }
 }
