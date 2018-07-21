@@ -105,8 +105,15 @@ public class ClientProxy extends CommonProxy {
         World world = event.getObject();
         if (world instanceof WorldClient) {
             ClientNetworkManager manager = new ClientNetworkManager((WorldClient) world);
-            manager.addEventListener(SOUND_KEY, new SoundNetworkManagerListener<>());
+            MinecraftForge.EVENT_BUS.post(new NetworkManagerCreatedEvent(world, manager));
             event.addCapability(new ResourceLocation(Clothesline.MODID, "network_manager"), new ClientNetworkManagerProvider(manager));
+        }
+    }
+
+    @SubscribeEvent
+    public void onNetworkManagerCreated(NetworkManagerCreatedEvent event) {
+        if (event.getWorld().isRemote) {
+            event.getNetworkManager().addEventListener(SOUND_KEY, new SoundNetworkManagerListener<>());
         }
     }
 

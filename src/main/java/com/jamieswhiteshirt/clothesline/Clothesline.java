@@ -129,8 +129,16 @@ public class Clothesline {
         World world = event.getObject();
         if (world instanceof WorldServer) {
             ServerNetworkManager manager = new ServerNetworkManager((WorldServer) world);
-            manager.addEventListener(SYNCHRONIZATION_KEY, new SyncNetworkManagerListener<>((WorldServer) world, Clothesline.instance.networkChannel));
+            MinecraftForge.EVENT_BUS.post(new NetworkManagerCreatedEvent(world, manager));
             event.addCapability(new ResourceLocation(MODID, "network_manager"), new ServerNetworkManagerProvider(manager));
+        }
+    }
+
+    @SubscribeEvent
+    public void onNetworkManagerCreatedEvent(NetworkManagerCreatedEvent event) {
+        World world = event.getWorld();
+        if (world instanceof WorldServer) {
+            event.getNetworkManager().addEventListener(SYNCHRONIZATION_KEY, new SyncNetworkManagerListener<>((WorldServer) world, networkChannel));
         }
     }
 
