@@ -28,23 +28,4 @@ public class Measurements {
         double dz = to.getZ() - from.getZ();
         return (int)(UNIT_LENGTH * StrictMath.sqrt(dx * dx + dy * dy + dz * dz));
     }
-
-    /**
-     * Compare two block positions relative to a origin position.
-     * Compares the global angleY of posA and posB.
-     * If the angleY comparison is nonzero, the return value is the angle comparison.
-     * Otherwise, the return value is posA compared to posB.
-     * @param origin
-     * @param posA
-     * @param posB
-     * @return
-     */
-    public static int compareGlobal(BlockPos origin, BlockPos posA, BlockPos posB) {
-        int angleComparison = Float.compare(calculateGlobalAngleY(origin, posA), calculateGlobalAngleY(origin, posB));
-        if (angleComparison == 0) {
-            return posA.compareTo(posB);
-        } else {
-            return angleComparison;
-        }
-    }
 }

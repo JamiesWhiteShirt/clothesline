@@ -51,26 +51,6 @@ public final class AbsoluteTree {
         return new AbsoluteTree(pos, Collections.emptyList(), offset, offset);
     }
 
-    private int findEdgeKeyIndex(EdgeKey key, int minIndex, int maxIndex) {
-        if (minIndex != maxIndex) {
-            int middleIndex = (minIndex + maxIndex) / 2;
-            int comparison = key.compareTo(edges.get(middleIndex).getKey());
-            if (comparison < 0) {
-                return findEdgeKeyIndex(key, minIndex, middleIndex);
-            } else if (comparison > 0) {
-                return findEdgeKeyIndex(key, middleIndex + 1, maxIndex);
-            } else {
-                return middleIndex;
-            }
-        } else {
-            return minIndex;
-        }
-    }
-
-    public int findEdgeKeyIndex(EdgeKey key) {
-        return findEdgeKeyIndex(key, 0, edges.size());
-    }
-
     private final int minOffset;
     private final int maxOffset;
     private final BlockPos pos;
@@ -109,19 +89,6 @@ public final class AbsoluteTree {
 
     public boolean isEmpty() {
         return edges.isEmpty();
-    }
-
-    private void buildPositionLookup(HashMap<BlockPos, AbsoluteTree> result) {
-        result.put(pos, this);
-        for (Edge edge : edges) {
-            edge.getTree().buildPositionLookup(result);
-        }
-    }
-
-    public Map<BlockPos, AbsoluteTree> createPositionLookup() {
-        HashMap<BlockPos, AbsoluteTree> result = new HashMap<>();
-        buildPositionLookup(result);
-        return result;
     }
 
     private GraphBuilder.NodeBuilder buildGraph(GraphBuilder graphBuilder) {
