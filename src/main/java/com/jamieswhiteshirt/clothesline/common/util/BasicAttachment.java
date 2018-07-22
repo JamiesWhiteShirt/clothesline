@@ -2,7 +2,9 @@ package com.jamieswhiteshirt.clothesline.common.util;
 
 import net.minecraft.item.ItemStack;
 
-public class BasicAttachment {
+import java.util.Objects;
+
+public final class BasicAttachment {
     private final int key;
     private final ItemStack stack;
 
@@ -17,5 +19,27 @@ public class BasicAttachment {
 
     public ItemStack getStack() {
         return stack;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BasicAttachment that = (BasicAttachment) o;
+        return key == that.key &&
+            ItemStack.areItemStacksEqual(stack, that.stack);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key, stack);
+    }
+
+    @Override
+    public String toString() {
+        return "BasicAttachment{" +
+            "key=" + key +
+            ", stack=" + stack +
+            '}';
     }
 }

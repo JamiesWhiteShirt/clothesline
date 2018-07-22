@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public final class MutableSortedIntMap<T> {
@@ -22,6 +23,28 @@ public final class MutableSortedIntMap<T> {
 
         public T getValue() {
             return value;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Entry<?> entry = (Entry<?>) o;
+            return key == entry.key &&
+                Objects.equals(value, entry.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(key, value);
+        }
+
+        @Override
+        public String toString() {
+            return "Entry{" +
+                "key=" + key +
+                ", value=" + value +
+                '}';
         }
     }
 
@@ -134,5 +157,27 @@ public final class MutableSortedIntMap<T> {
         return new MutableSortedIntMap<>(new ArrayList<>(entries.subList(minIndex, maxIndex).stream().map(
                 entry -> new MutableSortedIntMap.Entry<>(entry.getKey() - minKey, entry.getValue())
         ).collect(Collectors.toList())), maxKey - minKey);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MutableSortedIntMap<?> that = (MutableSortedIntMap<?>) o;
+        return maxKey == that.maxKey &&
+            Objects.equals(entries, that.entries);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(entries, maxKey);
+    }
+
+    @Override
+    public String toString() {
+        return "MutableSortedIntMap{" +
+            "entries=" + entries +
+            ", maxKey=" + maxKey +
+            '}';
     }
 }

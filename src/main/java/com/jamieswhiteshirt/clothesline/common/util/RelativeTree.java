@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
  * All edges and subtrees are relative to each other, which means this structure is suitable for operations that
  * modify the structure of the network.
  */
-public class RelativeTree {
-    public static class SplitResult {
+public final class RelativeTree {
+    public static final class SplitResult {
         private final RelativeTree tree;
         private final List<RelativeTree> subTrees;
 
@@ -33,7 +33,7 @@ public class RelativeTree {
         }
     }
 
-    private static class Edge {
+    private static final class Edge {
         private final EdgeKey key;
         private final MutableSortedIntMap<ItemStack> preAttachments;
         private final RelativeTree tree;
@@ -41,10 +41,10 @@ public class RelativeTree {
 
         private static Edge fromAbsolute(AbsoluteTree.Edge edge, MutableSortedIntMap<ItemStack> attachments) {
             return new Edge(
-                    edge.getKey(),
-                    attachments.shiftedSubMap(edge.getPreMinOffset(), edge.getPreMaxOffset()),
-                    RelativeTree.fromAbsolute(edge.getTree(), attachments),
-                    attachments.shiftedSubMap(edge.getPostMinOffset(), edge.getPostMaxOffset())
+                edge.getKey(),
+                attachments.shiftedSubMap(edge.getPreMinOffset(), edge.getPreMaxOffset()),
+                RelativeTree.fromAbsolute(edge.getTree(), attachments),
+                attachments.shiftedSubMap(edge.getPostMinOffset(), edge.getPostMaxOffset())
             );
         }
 
@@ -71,7 +71,7 @@ public class RelativeTree {
         ArrayList<RelativeTree.Edge> edges = new ArrayList<>(absoluteTree.getEdges().size());
         edges.sort(Comparator.comparing(a -> a.key));
         return new RelativeTree(absoluteTree.getPos(), absoluteTree.getEdges().stream().map(
-                edge -> Edge.fromAbsolute(edge, attachments)
+            edge -> Edge.fromAbsolute(edge, attachments)
         ).collect(Collectors.toList()));
     }
 
@@ -173,7 +173,7 @@ public class RelativeTree {
 
     public SplitResult splitNode() {
         List<Edge> edges = this.edges.stream().map(
-                edge -> new Edge(edge.key, edge.preAttachments, empty(edge.tree.pos), edge.postAttachments)
+            edge -> new Edge(edge.key, edge.preAttachments, empty(edge.tree.pos), edge.postAttachments)
         ).collect(Collectors.toList());
         RelativeTree tree = new RelativeTree(pos, edges);
         return new SplitResult(tree, this.edges.stream().map(edge -> edge.tree).collect(Collectors.toList()));
@@ -184,13 +184,13 @@ public class RelativeTree {
             Edge edge = this.edges.get(i);
             if (edge.key.getPos().equals(edgePos)) {
                 RelativeTree edgeTree = new RelativeTree(
-                        this.pos,
-                        new ArrayList<>(Collections.singletonList(new Edge(
-                                edge.key,
-                                edge.preAttachments,
-                                empty(edge.tree.pos),
-                                edge.postAttachments
-                        )))
+                    this.pos,
+                    new ArrayList<>(Collections.singletonList(new Edge(
+                        edge.key,
+                        edge.preAttachments,
+                        empty(edge.tree.pos),
+                        edge.postAttachments
+                    )))
                 );
 
                 RelativeTree pastEdgeTree = edge.tree;

@@ -7,9 +7,10 @@ import net.minecraft.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class BasicNetworkState {
+public final class BasicNetworkState {
     public static BasicNetworkState fromAbsolute(AbsoluteNetworkState state) {
         return new BasicNetworkState(
                 state.getShift(),
@@ -65,5 +66,31 @@ public class BasicNetworkState {
                 tree,
                 attachments
         );
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BasicNetworkState that = (BasicNetworkState) o;
+        return shift == that.shift &&
+            momentum == that.momentum &&
+            Objects.equals(tree, that.tree) &&
+            Objects.equals(attachments, that.attachments);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(shift, momentum, tree, attachments);
+    }
+
+    @Override
+    public String toString() {
+        return "BasicNetworkState{" +
+            "shift=" + shift +
+            ", momentum=" + momentum +
+            ", tree=" + tree +
+            ", attachments=" + attachments +
+            '}';
     }
 }

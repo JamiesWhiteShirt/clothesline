@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * Children are expected to be ordered by {@link EdgeKey#compareTo(EdgeKey)} of their
  * their {@link #getPos()} with this {@link #getPos()} as the origin.
  */
-public class BasicTree {
+public final class BasicTree {
     public static BasicTree fromAbsolute(AbsoluteTree absoluteTree) {
         return new BasicTree(absoluteTree.getPos(), absoluteTree.getChildren().stream().map(BasicTree::fromAbsolute).collect(Collectors.toList()));
     }
@@ -52,5 +52,27 @@ public class BasicTree {
 
     public AbsoluteTree toAbsolute() {
         return toAbsolute(0);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BasicTree basicTree = (BasicTree) o;
+        return Objects.equals(pos, basicTree.pos) &&
+            Objects.equals(children, basicTree.children);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pos, children);
+    }
+
+    @Override
+    public String toString() {
+        return "BasicTree{" +
+            "pos=" + pos +
+            ", children=" + children +
+            '}';
     }
 }

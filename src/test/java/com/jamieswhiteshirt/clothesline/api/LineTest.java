@@ -23,4 +23,15 @@ class LineTest {
         Assertions.assertEquals(line.getToPos(), toPos);
         Assertions.assertEquals(line.getToVec(), toVec);
     }
+
+    @Test
+    void positionInterpolatesFromTo() {
+        BlockPos fromPos = new BlockPos(1, 0, 0);
+        Vec3d fromVec = new Vec3d(1.5, 0.5, 0.5);
+        BlockPos toPos = new BlockPos(0, 1, 0);
+        Vec3d toVec = new Vec3d(0.5, 1.5, 0.5);
+        Line line = new Line(fromPos, toPos);
+        Assertions.assertEquals(line.getPosition(0.0D), fromVec);
+        Assertions.assertEquals(line.getPosition(1.0D), toVec);
+    }
 }

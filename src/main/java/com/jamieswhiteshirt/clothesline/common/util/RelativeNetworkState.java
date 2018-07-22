@@ -11,8 +11,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class RelativeNetworkState {
-    public static class SplitResult {
+public final class RelativeNetworkState {
+    public static final class SplitResult {
         private final RelativeNetworkState state;
         private final List<RelativeNetworkState> subStates;
 
@@ -34,8 +34,8 @@ public class RelativeNetworkState {
         MutableSortedIntMap<ItemStack> attachments = state.getAttachments();
         int midAttachmentKey = state.offsetToAttachmentKey(0);
         MutableSortedIntMap<ItemStack> shiftedItemStacks = MutableSortedIntMap.concatenate(Arrays.asList(
-                attachments.shiftedSubMap(midAttachmentKey, attachments.getMaxKey()),
-                attachments.shiftedSubMap(0, midAttachmentKey)
+            attachments.shiftedSubMap(midAttachmentKey, attachments.getMaxKey()),
+            attachments.shiftedSubMap(0, midAttachmentKey)
         ));
         RelativeTree tree = RelativeTree.fromAbsolute(state.getTree(), shiftedItemStacks);
         return new RelativeNetworkState(state.getMomentum(), tree);
@@ -66,20 +66,20 @@ public class RelativeNetworkState {
     public SplitResult splitRoot() {
         RelativeTree.SplitResult result = treeRoot.splitNode();
         return new SplitResult(
-                new RelativeNetworkState(momentum, result.getTree()),
-                result.getSubTrees().stream().filter(tree -> !tree.isEmpty()).map(
-                        tree -> new RelativeNetworkState(momentum, tree)
-                ).collect(Collectors.toList())
+            new RelativeNetworkState(momentum, result.getTree()),
+            result.getSubTrees().stream().filter(tree -> !tree.isEmpty()).map(
+                tree -> new RelativeNetworkState(momentum, tree)
+            ).collect(Collectors.toList())
         );
     }
 
     public SplitResult splitEdge(BlockPos pos) {
         RelativeTree.SplitResult result = treeRoot.splitEdge(pos);
         return new SplitResult(
-                new RelativeNetworkState(momentum, result.getTree()),
-                result.getSubTrees().stream().filter(tree -> !tree.isEmpty()).map(
-                        tree -> new RelativeNetworkState(momentum, tree)
-                ).collect(Collectors.toList())
+            new RelativeNetworkState(momentum, result.getTree()),
+            result.getSubTrees().stream().filter(tree -> !tree.isEmpty()).map(
+                tree -> new RelativeNetworkState(momentum, tree)
+            ).collect(Collectors.toList())
         );
     }
 

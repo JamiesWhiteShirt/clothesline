@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
  * Immutable data structure of a network as a tree. Values are absolute.
  */
 public final class AbsoluteTree {
-    public static class Edge {
+    public static final class Edge {
         private final EdgeKey key;
         private final int preMinOffset;
         private final AbsoluteTree tree;
@@ -44,6 +44,31 @@ public final class AbsoluteTree {
 
         public int getPostMaxOffset() {
             return tree.maxOffset + key.getLength();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Edge edge = (Edge) o;
+            return preMinOffset == edge.preMinOffset &&
+                Objects.equals(key, edge.key) &&
+                Objects.equals(tree, edge.tree);
+        }
+
+        @Override
+        public int hashCode() {
+
+            return Objects.hash(key, preMinOffset, tree);
+        }
+
+        @Override
+        public String toString() {
+            return "Edge{" +
+                "key=" + key +
+                ", preMinOffset=" + preMinOffset +
+                ", tree=" + tree +
+                '}';
         }
     }
 
@@ -105,5 +130,31 @@ public final class AbsoluteTree {
         GraphBuilder builder = new GraphBuilder();
         buildGraph(builder);
         return builder.build();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AbsoluteTree that = (AbsoluteTree) o;
+        return minOffset == that.minOffset &&
+            maxOffset == that.maxOffset &&
+            Objects.equals(pos, that.pos) &&
+            Objects.equals(edges, that.edges);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(minOffset, maxOffset, pos, edges);
+    }
+
+    @Override
+    public String toString() {
+        return "AbsoluteTree{" +
+            "minOffset=" + minOffset +
+            ", maxOffset=" + maxOffset +
+            ", pos=" + pos +
+            ", edges=" + edges +
+            '}';
     }
 }
