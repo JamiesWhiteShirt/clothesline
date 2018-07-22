@@ -3,7 +3,7 @@ package com.jamieswhiteshirt.clothesline.common.impl;
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.common.util.BasicTree;
-import com.jamieswhiteshirt.clothesline.common.util.RelativeNetworkState;
+import com.jamieswhiteshirt.clothesline.common.util.NetworkStateBuilder;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -27,7 +27,7 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
         this.world = world;
     }
 
-    private void dropAttachment(AbsoluteNetworkState state, ItemStack stack, int attachmentKey) {
+    private void dropAttachment(NetworkState state, ItemStack stack, int attachmentKey) {
         if (!stack.isEmpty() && world.getGameRules().getBoolean("doTileDrops")) {
             Vec3d pos = state.getGraph().getPositionForOffset(state.attachmentKeyToOffset(attachmentKey));
             EntityItem entityitem = new EntityItem(world, pos.x, pos.y - 0.5D, pos.z, stack);
@@ -36,13 +36,13 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
         }
     }
 
-    private void dropNetworkItems(AbsoluteNetworkState state) {
+    private void dropNetworkItems(NetworkState state) {
         for (MutableSortedIntMap.Entry<ItemStack> entry : state.getAttachments().entries()) {
             dropAttachment(state, entry.getValue(), entry.getKey());
         }
     }
 
-    private Network createAndAddNetwork(AbsoluteNetworkState state) {
+    private Network createAndAddNetwork(NetworkState state) {
         Network network = new Network(nextNetworkId++, new PersistentNetwork(UUID.randomUUID(), state));
         addNetwork(network);
         return network;
@@ -88,7 +88,7 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
     }
 
     private void extend(INetwork network, BlockPos fromPos, BlockPos toPos) {
-        RelativeNetworkState relativeState = RelativeNetworkState.fromAbsolute(network.getState());
+        NetworkStateBuilder relativeState = NetworkStateBuilder.fromAbsolute(network.getState());
         relativeState.addEdge(fromPos, toPos);
         network.setState(relativeState.toAbsolute());
     }
@@ -99,7 +99,7 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
             INetworkNode node = getNodes().get(fromPos);
             if (node != null) {
                 INetwork network = node.getNetwork();
-                RelativeNetworkState relativeState = RelativeNetworkState.fromAbsolute(network.getState());
+                NetworkStateBuilder relativeState = NetworkStateBuilder.fromAbsolute(network.getState());
                 relativeState.reroot(toPos);
                 network.setState(relativeState.toAbsolute());
             }
@@ -122,8 +122,8 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
                 removeNetwork(fromNetwork);
                 removeNetwork(toNetwork);
 
-                RelativeNetworkState fromState = RelativeNetworkState.fromAbsolute(fromNetwork.getState());
-                RelativeNetworkState toState = RelativeNetworkState.fromAbsolute(toNetwork.getState());
+                NetworkStateBuilder fromState = NetworkStateBuilder.fromAbsolute(fromNetwork.getState());
+                NetworkStateBuilder toState = NetworkStateBuilder.fromAbsolute(toNetwork.getState());
                 toState.reroot(toPos);
                 fromState.addSubState(fromPos, toState);
 
@@ -136,7 +136,7 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
                 INetwork toNetwork = toNode.getNetwork();
                 extend(toNetwork, toPos, fromPos);
             } else {
-                AbsoluteNetworkState state = AbsoluteNetworkState.createInitial(BasicTree.createInitial(fromPos, toPos).toAbsolute());
+                NetworkState state = NetworkState.createInitial(BasicTree.createInitial(fromPos, toPos).toAbsolute());
                 createAndAddNetwork(state);
             }
         }
@@ -144,8 +144,8 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
         return true;
     }
 
-    private void applySplitResult(RelativeNetworkState.SplitResult splitResult) {
-        for (RelativeNetworkState subState : splitResult.getSubStates()) {
+    private void applySplitResult(NetworkStateBuilder.SplitResult splitResult) {
+        for (NetworkStateBuilder subState : splitResult.getSubStates()) {
             createAndAddNetwork(subState.toAbsolute());
         }
         dropNetworkItems(splitResult.getState().toAbsolute());
@@ -156,7 +156,7 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
         INetworkNode node = getNodes().get(pos);
         if (node != null) {
             INetwork network = node.getNetwork();
-            RelativeNetworkState state = RelativeNetworkState.fromAbsolute(network.getState());
+            NetworkStateBuilder state = NetworkStateBuilder.fromAbsolute(network.getState());
             state.reroot(pos);
             removeNetwork(network);
             applySplitResult(state.splitRoot());
@@ -170,7 +170,7 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
         if (nodeA != null && nodeB != null) {
             INetwork network = nodeA.getNetwork();
             if (network == nodeB.getNetwork()) {
-                RelativeNetworkState state = RelativeNetworkState.fromAbsolute(network.getState());
+                NetworkStateBuilder state = NetworkStateBuilder.fromAbsolute(network.getState());
                 state.reroot(posA);
                 removeNetwork(network);
                 applySplitResult(state.splitEdge(posB));

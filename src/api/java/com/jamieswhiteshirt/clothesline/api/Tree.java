@@ -1,22 +1,20 @@
 package com.jamieswhiteshirt.clothesline.api;
 
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * Immutable data structure of a network as a tree. Values are absolute.
  */
-public final class AbsoluteTree {
+public final class Tree {
     public static final class Edge {
         private final EdgeKey key;
         private final int preMinOffset;
-        private final AbsoluteTree tree;
+        private final Tree tree;
 
-        public Edge(EdgeKey key, int preMinOffset, AbsoluteTree tree) {
+        public Edge(EdgeKey key, int preMinOffset, Tree tree) {
             this.key = key;
             this.preMinOffset = preMinOffset;
             this.tree = tree;
@@ -26,7 +24,7 @@ public final class AbsoluteTree {
             return key;
         }
 
-        public AbsoluteTree getTree() {
+        public Tree getTree() {
             return tree;
         }
 
@@ -72,8 +70,8 @@ public final class AbsoluteTree {
         }
     }
 
-    public static AbsoluteTree empty(BlockPos pos, int offset) {
-        return new AbsoluteTree(pos, Collections.emptyList(), offset, offset);
+    public static Tree empty(BlockPos pos, int offset) {
+        return new Tree(pos, Collections.emptyList(), offset, offset);
     }
 
     private final int minOffset;
@@ -81,7 +79,7 @@ public final class AbsoluteTree {
     private final BlockPos pos;
     private final List<Edge> edges;
 
-    public AbsoluteTree(BlockPos pos, List<Edge> edges, int minOffset, int maxOffset) {
+    public Tree(BlockPos pos, List<Edge> edges, int minOffset, int maxOffset) {
         this.pos = pos;
         this.edges = edges;
         this.minOffset = minOffset;
@@ -104,7 +102,7 @@ public final class AbsoluteTree {
         return edges;
     }
 
-    public List<AbsoluteTree> getChildren() {
+    public List<Tree> getChildren() {
         return edges.stream().map(edge -> edge.tree).collect(Collectors.toList());
     }
 
@@ -136,7 +134,7 @@ public final class AbsoluteTree {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AbsoluteTree that = (AbsoluteTree) o;
+        Tree that = (Tree) o;
         return minOffset == that.minOffset &&
             maxOffset == that.maxOffset &&
             Objects.equals(pos, that.pos) &&
@@ -150,7 +148,7 @@ public final class AbsoluteTree {
 
     @Override
     public String toString() {
-        return "AbsoluteTree{" +
+        return "Tree{" +
             "minOffset=" + minOffset +
             ", maxOffset=" + maxOffset +
             ", pos=" + pos +

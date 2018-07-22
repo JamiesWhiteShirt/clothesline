@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common.util;
 
 import com.jamieswhiteshirt.clothesline.api.EdgeKey;
-import com.jamieswhiteshirt.clothesline.api.AbsoluteTree;
+import com.jamieswhiteshirt.clothesline.api.Tree;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
  * their {@link #getPos()} with this {@link #getPos()} as the origin.
  */
 public final class BasicTree {
-    public static BasicTree fromAbsolute(AbsoluteTree absoluteTree) {
-        return new BasicTree(absoluteTree.getPos(), absoluteTree.getChildren().stream().map(BasicTree::fromAbsolute).collect(Collectors.toList()));
+    public static BasicTree fromAbsolute(Tree tree) {
+        return new BasicTree(tree.getPos(), tree.getChildren().stream().map(BasicTree::fromAbsolute).collect(Collectors.toList()));
     }
 
     public static BasicTree createInitial(BlockPos fromPos, BlockPos toPos) {
@@ -37,20 +37,20 @@ public final class BasicTree {
         return children;
     }
 
-    private AbsoluteTree toAbsolute(int fromOffset) {
+    private Tree toAbsolute(int fromOffset) {
         int toOffset = fromOffset;
-        ArrayList<AbsoluteTree.Edge> edges = new ArrayList<>(children.size());
+        ArrayList<Tree.Edge> edges = new ArrayList<>(children.size());
         for (BasicTree child : children) {
             EdgeKey key = new EdgeKey(pos, child.pos);
-            AbsoluteTree staticChild = child.toAbsolute(toOffset + key.getLength());
-            AbsoluteTree.Edge staticEdge = new AbsoluteTree.Edge(key, toOffset, staticChild);
+            Tree staticChild = child.toAbsolute(toOffset + key.getLength());
+            Tree.Edge staticEdge = new Tree.Edge(key, toOffset, staticChild);
             edges.add(staticEdge);
             toOffset = staticEdge.getPostMaxOffset();
         }
-        return new AbsoluteTree(pos, edges, fromOffset, toOffset);
+        return new Tree(pos, edges, fromOffset, toOffset);
     }
 
-    public AbsoluteTree toAbsolute() {
+    public Tree toAbsolute() {
         return toAbsolute(0);
     }
 

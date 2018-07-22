@@ -1,8 +1,7 @@
 package com.jamieswhiteshirt.clothesline.client.renderer;
 
-import com.jamieswhiteshirt.clothesline.api.AbsoluteNetworkState;
+import com.jamieswhiteshirt.clothesline.api.NetworkState;
 import com.jamieswhiteshirt.clothesline.api.Graph;
-import com.jamieswhiteshirt.clothesline.api.INetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
@@ -27,7 +26,7 @@ public final class EdgeAttachmentProjector {
     }
 
     public static EdgeAttachmentProjector build(IClientNetworkEdge edge) {
-        AbsoluteNetworkState state = edge.getNetwork().getState();
+        NetworkState state = edge.getNetwork().getState();
         Graph.Edge previousGraphEdge = state.getGraph().getEdgeForOffset(Math.floorMod(edge.getGraphEdge().getFromOffset() - 1, state.getLoopLength()));
         float angleY = edge.getGraphEdge().getKey().getAngle();
         float angleDiff = (angleY - previousGraphEdge.getKey().getAngle() + 360.0F) % 360.0F;
@@ -41,7 +40,7 @@ public final class EdgeAttachmentProjector {
     }
 
     public Matrix4f getL2WForAttachment(double momentum, double offset, float partialTicks) {
-        float speedRatio = (float) momentum / AbsoluteNetworkState.MAX_MOMENTUM;
+        float speedRatio = (float) momentum / NetworkState.MAX_MOMENTUM;
         float swingMax = angleDiff / 4.0F * speedRatio * speedRatio;
         double relativeOffset = offset - fromOffset;
         double edgePosScalar = relativeOffset / (toOffset - fromOffset);
@@ -49,7 +48,7 @@ public final class EdgeAttachmentProjector {
 
         float swingAngle = swingMax *
             (float)(Math.exp(-relativeOffset / (Measurements.UNIT_LENGTH * 2.0D))) *
-            MathHelper.sin((float)(relativeOffset / (AbsoluteNetworkState.MAX_MOMENTUM * 2.0D)));
+            MathHelper.sin((float)(relativeOffset / (NetworkState.MAX_MOMENTUM * 2.0D)));
 
         return new Matrix4f()
             .translate(new Vector3f((float) pos.x, (float) pos.y, (float) pos.z))

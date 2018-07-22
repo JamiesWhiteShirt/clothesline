@@ -3,17 +3,15 @@ package com.jamieswhiteshirt.clothesline.api;
 import com.jamieswhiteshirt.clothesline.api.util.MathUtil;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * State container for a network.
  * The structure of the network is immutable, while the attachments and their keys are mutable.
  * Performant for manipulation of attachments on the network.
  */
-public final class AbsoluteNetworkState {
+public final class NetworkState {
     public static final int MAX_MOMENTUM = 40;
 
     private int previousShift;
@@ -21,12 +19,12 @@ public final class AbsoluteNetworkState {
     private int previousMomentum;
     private int momentum;
 
-    private final AbsoluteTree tree;
+    private final Tree tree;
     private final Graph graph;
     private final MutableSortedIntMap<ItemStack> attachments;
 
-    public static AbsoluteNetworkState createInitial(AbsoluteTree tree) {
-        return new AbsoluteNetworkState(
+    public static NetworkState createInitial(Tree tree) {
+        return new NetworkState(
                 0,
                 0,
                 0,
@@ -36,7 +34,7 @@ public final class AbsoluteNetworkState {
         );
     }
 
-    public AbsoluteNetworkState(int previousShift, int shift, int previousMomentum, int momentum, AbsoluteTree tree, MutableSortedIntMap<ItemStack> attachments) {
+    public NetworkState(int previousShift, int shift, int previousMomentum, int momentum, Tree tree, MutableSortedIntMap<ItemStack> attachments) {
         this.tree = tree;
         this.graph = tree.buildGraph();
         this.attachments = attachments;
@@ -50,7 +48,7 @@ public final class AbsoluteNetworkState {
         return Math.floorMod(i, getLoopLength());
     }
 
-    public AbsoluteTree getTree() {
+    public Tree getTree() {
         return tree;
     }
 

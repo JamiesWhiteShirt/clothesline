@@ -14,28 +14,28 @@ class Networks {
     static BlockPos posA = new BlockPos(0, 0, 0);
     static BlockPos posB = new BlockPos(1, 0, 0);
 
-    static AbsoluteTree absoluteTreeAB = new AbsoluteTree(
+    static Tree treeAB = new Tree(
         posA,
         Collections.singletonList(
-            new AbsoluteTree.Edge(new EdgeKey(posA, posB), 0, AbsoluteTree.empty(posB, Measurements.UNIT_LENGTH))
+            new Tree.Edge(new EdgeKey(posA, posB), 0, Tree.empty(posB, Measurements.UNIT_LENGTH))
         ),
         0, Measurements.UNIT_LENGTH * 2
     );
     static MutableSortedIntMap<ItemStack> attachmentsAB = MutableSortedIntMap.empty(Measurements.UNIT_LENGTH * 2);
-    static AbsoluteNetworkState absoluteNetworkStateAB = new AbsoluteNetworkState(0, 0, 0, 0, absoluteTreeAB, attachmentsAB);
-    static PersistentNetwork persistentNetworkAB = new PersistentNetwork(new UUID(0, 0), absoluteNetworkStateAB);
+    static NetworkState networkStateAB = new NetworkState(0, 0, 0, 0, treeAB, attachmentsAB);
+    static PersistentNetwork persistentNetworkAB = new PersistentNetwork(new UUID(0, 0), networkStateAB);
     static Network networkAB = new Network(0, persistentNetworkAB);
 
-    static AbsoluteTree absoluteTreeBA = new AbsoluteTree(
+    static Tree treeBA = new Tree(
         posB,
         Collections.singletonList(
-            new AbsoluteTree.Edge(new EdgeKey(posB, posA), 0, AbsoluteTree.empty(posA, Measurements.UNIT_LENGTH))
+            new Tree.Edge(new EdgeKey(posB, posA), 0, Tree.empty(posA, Measurements.UNIT_LENGTH))
         ),
         0, Measurements.UNIT_LENGTH * 2
     );
     static MutableSortedIntMap<ItemStack> attachmentsBA = MutableSortedIntMap.empty(Measurements.UNIT_LENGTH * 2);
-    static AbsoluteNetworkState absoluteNetworkStateBA = new AbsoluteNetworkState(0, 0, 0, 0, absoluteTreeBA, attachmentsBA);
-    static PersistentNetwork persistentNetworkBA = new PersistentNetwork(new UUID(0, 0), absoluteNetworkStateBA);
+    static NetworkState networkStateBA = new NetworkState(0, 0, 0, 0, treeBA, attachmentsBA);
+    static PersistentNetwork persistentNetworkBA = new PersistentNetwork(new UUID(0, 0), networkStateBA);
     static Network networkBA = new Network(0, persistentNetworkBA);
 
     static void assertNetworksEquivalent(Network a, Network b) {
@@ -44,7 +44,7 @@ class Networks {
         assertNetworkStatesEquivalent(a.getState(), b.getState());
     }
 
-    static void assertNetworkStatesEquivalent(AbsoluteNetworkState a, AbsoluteNetworkState b) {
+    static void assertNetworkStatesEquivalent(NetworkState a, NetworkState b) {
         Assertions.assertEquals(a.getShift(), b.getShift());
         Assertions.assertEquals(a.getMomentum(), b.getMomentum());
         Assertions.assertEquals(a.getTree(), b.getTree());

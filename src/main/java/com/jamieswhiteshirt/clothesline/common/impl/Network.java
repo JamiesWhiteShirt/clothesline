@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
-import com.jamieswhiteshirt.clothesline.api.AbsoluteNetworkState;
+import com.jamieswhiteshirt.clothesline.api.NetworkState;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.INetworkEventListener;
 import com.jamieswhiteshirt.clothesline.api.PersistentNetwork;
@@ -17,7 +17,7 @@ import java.util.*;
 public final class Network implements INetwork {
     private final int id;
     private final UUID uuid;
-    private AbsoluteNetworkState state;
+    private NetworkState state;
     private final Map<ResourceLocation, INetworkEventListener> eventListeners = new TreeMap<>();
 
     public Network(int id, PersistentNetwork persistentNetwork) {
@@ -37,13 +37,13 @@ public final class Network implements INetwork {
     }
 
     @Override
-    public AbsoluteNetworkState getState() {
+    public NetworkState getState() {
         return state;
     }
 
     @Override
-    public void setState(AbsoluteNetworkState state) {
-        AbsoluteNetworkState previousState = this.state;
+    public void setState(NetworkState state) {
+        NetworkState previousState = this.state;
         this.state = state;
 
         for (INetworkEventListener eventListener : eventListeners.values()) {

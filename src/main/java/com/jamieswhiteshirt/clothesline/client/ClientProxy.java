@@ -393,7 +393,7 @@ public class ClientProxy extends CommonProxy {
             }
         }
 
-        AbsoluteNetworkState state = edge.getNetwork().getState();
+        NetworkState state = edge.getNetwork().getState();
         double fromAttachmentKey = state.offsetToAttachmentKey(graphEdge.getFromOffset(), partialTicks);
         double toAttachmentKey = state.offsetToAttachmentKey(graphEdge.getToOffset(), partialTicks);
         List<MutableSortedIntMap.Entry<ItemStack>> attachments = state.getAttachmentsInRange((int) fromAttachmentKey, (int) toAttachmentKey);

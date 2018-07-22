@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common.util;
 
-import com.jamieswhiteshirt.clothesline.api.AbsoluteTree;
-import com.jamieswhiteshirt.clothesline.api.AbsoluteNetworkState;
+import com.jamieswhiteshirt.clothesline.api.Tree;
+import com.jamieswhiteshirt.clothesline.api.NetworkState;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -11,40 +11,40 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public final class RelativeNetworkState {
+public final class NetworkStateBuilder {
     public static final class SplitResult {
-        private final RelativeNetworkState state;
-        private final List<RelativeNetworkState> subStates;
+        private final NetworkStateBuilder state;
+        private final List<NetworkStateBuilder> subStates;
 
-        public SplitResult(RelativeNetworkState state, List<RelativeNetworkState> subStates) {
+        public SplitResult(NetworkStateBuilder state, List<NetworkStateBuilder> subStates) {
             this.state = state;
             this.subStates = subStates;
         }
 
-        public RelativeNetworkState getState() {
+        public NetworkStateBuilder getState() {
             return state;
         }
 
-        public List<RelativeNetworkState> getSubStates() {
+        public List<NetworkStateBuilder> getSubStates() {
             return subStates;
         }
     }
 
-    public static RelativeNetworkState fromAbsolute(AbsoluteNetworkState state) {
+    public static NetworkStateBuilder fromAbsolute(NetworkState state) {
         MutableSortedIntMap<ItemStack> attachments = state.getAttachments();
         int midAttachmentKey = state.offsetToAttachmentKey(0);
         MutableSortedIntMap<ItemStack> shiftedItemStacks = MutableSortedIntMap.concatenate(Arrays.asList(
             attachments.shiftedSubMap(midAttachmentKey, attachments.getMaxKey()),
             attachments.shiftedSubMap(0, midAttachmentKey)
         ));
-        RelativeTree tree = RelativeTree.fromAbsolute(state.getTree(), shiftedItemStacks);
-        return new RelativeNetworkState(state.getMomentum(), tree);
+        TreeBuilder tree = TreeBuilder.fromAbsolute(state.getTree(), shiftedItemStacks);
+        return new NetworkStateBuilder(state.getMomentum(), tree);
     }
 
     private int momentum;
-    private RelativeTree treeRoot;
+    private TreeBuilder treeRoot;
 
-    private RelativeNetworkState(int momentum, RelativeTree treeRoot) {
+    private NetworkStateBuilder(int momentum, TreeBuilder treeRoot) {
         this.momentum = momentum;
         this.treeRoot = treeRoot;
     }
@@ -54,38 +54,38 @@ public final class RelativeNetworkState {
     }
 
     public void addEdge(BlockPos fromPos, BlockPos toPos) {
-        treeRoot.addChild(fromPos, RelativeTree.empty(toPos));
+        treeRoot.addChild(fromPos, TreeBuilder.empty(toPos));
         momentum /= 2;
     }
 
-    public void addSubState(BlockPos fromPos, RelativeNetworkState other) {
+    public void addSubState(BlockPos fromPos, NetworkStateBuilder other) {
         treeRoot.addChild(fromPos, other.treeRoot);
         momentum = (momentum + other.momentum) / 2;
     }
 
     public SplitResult splitRoot() {
-        RelativeTree.SplitResult result = treeRoot.splitNode();
+        TreeBuilder.SplitResult result = treeRoot.splitNode();
         return new SplitResult(
-            new RelativeNetworkState(momentum, result.getTree()),
+            new NetworkStateBuilder(momentum, result.getTree()),
             result.getSubTrees().stream().filter(tree -> !tree.isEmpty()).map(
-                tree -> new RelativeNetworkState(momentum, tree)
+                tree -> new NetworkStateBuilder(momentum, tree)
             ).collect(Collectors.toList())
         );
     }
 
     public SplitResult splitEdge(BlockPos pos) {
-        RelativeTree.SplitResult result = treeRoot.splitEdge(pos);
+        TreeBuilder.SplitResult result = treeRoot.splitEdge(pos);
         return new SplitResult(
-            new RelativeNetworkState(momentum, result.getTree()),
+            new NetworkStateBuilder(momentum, result.getTree()),
             result.getSubTrees().stream().filter(tree -> !tree.isEmpty()).map(
-                tree -> new RelativeNetworkState(momentum, tree)
+                tree -> new NetworkStateBuilder(momentum, tree)
             ).collect(Collectors.toList())
         );
     }
 
-    public AbsoluteNetworkState toAbsolute() {
+    public NetworkState toAbsolute() {
         LinkedList<MutableSortedIntMap<ItemStack>> attachmentsList = new LinkedList<>();
-        AbsoluteTree absoluteTree = treeRoot.toAbsolute(attachmentsList, 0);
-        return new AbsoluteNetworkState(0, 0, momentum, momentum, absoluteTree, MutableSortedIntMap.concatenate(attachmentsList));
+        Tree tree = treeRoot.toAbsolute(attachmentsList, 0);
+        return new NetworkState(0, 0, momentum, momentum, tree, MutableSortedIntMap.concatenate(attachmentsList));
     }
 }

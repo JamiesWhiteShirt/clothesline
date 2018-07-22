@@ -8,15 +8,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
-class AbsoluteTreeTest {
+class TreeTest {
     @Test
     void buildsSimpleGraph() {
         BlockPos posA = new BlockPos(0, 0, 0);
         BlockPos posB = new BlockPos(1, 0, 0);
-        AbsoluteTree tree = new AbsoluteTree(
-            posA, Collections.singletonList(new AbsoluteTree.Edge(
+        Tree tree = new Tree(
+            posA, Collections.singletonList(new Tree.Edge(
                 new EdgeKey(posA, posB), 0,
-                new AbsoluteTree(posB, Collections.emptyList(), Measurements.UNIT_LENGTH, Measurements.UNIT_LENGTH)
+                new Tree(posB, Collections.emptyList(), Measurements.UNIT_LENGTH, Measurements.UNIT_LENGTH)
             )), 0, Measurements.UNIT_LENGTH * 2
         );
 

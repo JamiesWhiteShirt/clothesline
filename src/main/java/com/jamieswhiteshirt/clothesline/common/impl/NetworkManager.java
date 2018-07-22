@@ -34,7 +34,7 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
     private final Map<ResourceLocation, INetworkManagerEventListener<E, N>> eventListeners = new TreeMap<>();
     private final INetworkEventListener spatialIndexListener = new INetworkEventListener() {
         @Override
-        public void onStateChanged(INetwork network, AbsoluteNetworkState previousState, AbsoluteNetworkState newState) {
+        public void onStateChanged(INetwork network, NetworkState previousState, NetworkState newState) {
             unassignNetworkGraph(network, previousState.getGraph());
             assignNetworkGraph(network, newState.getGraph());
         }

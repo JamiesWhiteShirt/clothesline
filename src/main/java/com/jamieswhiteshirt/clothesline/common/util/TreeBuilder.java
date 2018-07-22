@@ -14,21 +14,21 @@ import java.util.stream.Collectors;
  * All edges and subtrees are relative to each other, which means this structure is suitable for operations that
  * modify the structure of the network.
  */
-public final class RelativeTree {
+public final class TreeBuilder {
     public static final class SplitResult {
-        private final RelativeTree tree;
-        private final List<RelativeTree> subTrees;
+        private final TreeBuilder tree;
+        private final List<TreeBuilder> subTrees;
 
-        public SplitResult(RelativeTree tree, List<RelativeTree> subTrees) {
+        public SplitResult(TreeBuilder tree, List<TreeBuilder> subTrees) {
             this.tree = tree;
             this.subTrees = subTrees;
         }
 
-        public RelativeTree getTree() {
+        public TreeBuilder getTree() {
             return tree;
         }
 
-        public List<RelativeTree> getSubTrees() {
+        public List<TreeBuilder> getSubTrees() {
             return subTrees;
         }
     }
@@ -36,47 +36,47 @@ public final class RelativeTree {
     private static final class Edge {
         private final EdgeKey key;
         private final MutableSortedIntMap<ItemStack> preAttachments;
-        private final RelativeTree tree;
+        private final TreeBuilder tree;
         private final MutableSortedIntMap<ItemStack> postAttachments;
 
-        private static Edge fromAbsolute(AbsoluteTree.Edge edge, MutableSortedIntMap<ItemStack> attachments) {
+        private static Edge fromAbsolute(Tree.Edge edge, MutableSortedIntMap<ItemStack> attachments) {
             return new Edge(
                 edge.getKey(),
                 attachments.shiftedSubMap(edge.getPreMinOffset(), edge.getPreMaxOffset()),
-                RelativeTree.fromAbsolute(edge.getTree(), attachments),
+                TreeBuilder.fromAbsolute(edge.getTree(), attachments),
                 attachments.shiftedSubMap(edge.getPostMinOffset(), edge.getPostMaxOffset())
             );
         }
 
-        private Edge(EdgeKey key, MutableSortedIntMap<ItemStack> preAttachments, RelativeTree tree, MutableSortedIntMap<ItemStack> postAttachments) {
+        private Edge(EdgeKey key, MutableSortedIntMap<ItemStack> preAttachments, TreeBuilder tree, MutableSortedIntMap<ItemStack> postAttachments) {
             this.key = key;
             this.preAttachments = preAttachments;
             this.tree = tree;
             this.postAttachments = postAttachments;
         }
 
-        private Edge reverse(RelativeTree parent) {
+        private Edge reverse(TreeBuilder parent) {
             return new Edge(key.reverse(parent.pos), postAttachments, parent, preAttachments);
         }
 
-        private AbsoluteTree.Edge toAbsolute(List<MutableSortedIntMap<ItemStack>> attachmentsList, int fromOffset, RelativeTree from) {
+        private Tree.Edge toAbsolute(List<MutableSortedIntMap<ItemStack>> attachmentsList, int fromOffset, TreeBuilder from) {
             attachmentsList.add(preAttachments);
-            AbsoluteTree absoluteTree = tree.toAbsolute(attachmentsList, fromOffset + key.getLength(), key.reverse(from.pos));
+            Tree tree = this.tree.toAbsolute(attachmentsList, fromOffset + key.getLength(), key.reverse(from.pos));
             attachmentsList.add(postAttachments);
-            return new AbsoluteTree.Edge(key, fromOffset, absoluteTree);
+            return new Tree.Edge(key, fromOffset, tree);
         }
     }
 
-    public static RelativeTree fromAbsolute(AbsoluteTree absoluteTree, MutableSortedIntMap<ItemStack> attachments) {
-        ArrayList<RelativeTree.Edge> edges = new ArrayList<>(absoluteTree.getEdges().size());
+    public static TreeBuilder fromAbsolute(Tree tree, MutableSortedIntMap<ItemStack> attachments) {
+        ArrayList<TreeBuilder.Edge> edges = new ArrayList<>(tree.getEdges().size());
         edges.sort(Comparator.comparing(a -> a.key));
-        return new RelativeTree(absoluteTree.getPos(), absoluteTree.getEdges().stream().map(
+        return new TreeBuilder(tree.getPos(), tree.getEdges().stream().map(
             edge -> Edge.fromAbsolute(edge, attachments)
         ).collect(Collectors.toList()));
     }
 
-    public static RelativeTree empty(BlockPos pos) {
-        return new RelativeTree(pos, Collections.emptyList());
+    public static TreeBuilder empty(BlockPos pos) {
+        return new TreeBuilder(pos, Collections.emptyList());
     }
 
     private int findEdgeKeyIndex(EdgeKey edgeKey, int minIndex, int maxIndex) {
@@ -102,7 +102,7 @@ public final class RelativeTree {
     private final BlockPos pos;
     private final List<Edge> edges;
 
-    private RelativeTree(BlockPos pos, List<Edge> edges) {
+    private TreeBuilder(BlockPos pos, List<Edge> edges) {
         this.pos = pos;
         this.edges = edges;
     }
@@ -115,7 +115,7 @@ public final class RelativeTree {
         return edges.isEmpty();
     }
 
-    public boolean addChild(BlockPos pos, RelativeTree child) {
+    public boolean addChild(BlockPos pos, TreeBuilder child) {
         if (this.pos.equals(pos)) {
             addChild(child);
             return true;
@@ -129,7 +129,7 @@ public final class RelativeTree {
         }
     }
 
-    private void addChild(RelativeTree child) {
+    private void addChild(TreeBuilder child) {
         EdgeKey key = new EdgeKey(pos, child.pos);
         addEdge(new Edge(key, MutableSortedIntMap.empty(key.getLength()), child, MutableSortedIntMap.empty(key.getLength())));
     }
@@ -144,14 +144,14 @@ public final class RelativeTree {
     }
 
     @Nullable
-    private RelativeTree rerootInner(BlockPos pos) {
+    private TreeBuilder rerootInner(BlockPos pos) {
         if (this.pos.equals(pos)) {
             return this;
         } else {
             for (int i = 0; i < edges.size(); i++) {
                 Edge edge = edges.get(i);
-                RelativeTree childTree = edge.tree;
-                RelativeTree rerooted = childTree.rerootInner(pos);
+                TreeBuilder childTree = edge.tree;
+                TreeBuilder rerooted = childTree.rerootInner(pos);
                 if (rerooted != null) {
                     removeEdge(i);
                     childTree.addEdge(edge.reverse(this));
@@ -162,12 +162,12 @@ public final class RelativeTree {
         }
     }
 
-    public RelativeTree reroot(BlockPos pos) {
-        RelativeTree rerooted = rerootInner(pos);
+    public TreeBuilder reroot(BlockPos pos) {
+        TreeBuilder rerooted = rerootInner(pos);
         if (rerooted != null) {
             return rerooted;
         } else {
-            throw new IllegalArgumentException("Position is not in RelativeTree");
+            throw new IllegalArgumentException("Position is not in TreeBuilder");
         }
     }
 
@@ -175,7 +175,7 @@ public final class RelativeTree {
         List<Edge> edges = this.edges.stream().map(
             edge -> new Edge(edge.key, edge.preAttachments, empty(edge.tree.pos), edge.postAttachments)
         ).collect(Collectors.toList());
-        RelativeTree tree = new RelativeTree(pos, edges);
+        TreeBuilder tree = new TreeBuilder(pos, edges);
         return new SplitResult(tree, this.edges.stream().map(edge -> edge.tree).collect(Collectors.toList()));
     }
 
@@ -183,7 +183,7 @@ public final class RelativeTree {
         for (int i = 0; i < this.edges.size(); i++) {
             Edge edge = this.edges.get(i);
             if (edge.key.getPos().equals(edgePos)) {
-                RelativeTree edgeTree = new RelativeTree(
+                TreeBuilder edgeTree = new TreeBuilder(
                     this.pos,
                     new ArrayList<>(Collections.singletonList(new Edge(
                         edge.key,
@@ -193,44 +193,44 @@ public final class RelativeTree {
                     )))
                 );
 
-                RelativeTree pastEdgeTree = edge.tree;
+                TreeBuilder pastEdgeTree = edge.tree;
 
                 List<Edge> restEdges = new ArrayList<>(this.edges.size() - 1);
                 restEdges.addAll(this.edges.subList(0, i));
                 restEdges.addAll(this.edges.subList(i + 1, this.edges.size()));
-                RelativeTree restTree = new RelativeTree(this.pos, restEdges);
+                TreeBuilder restTree = new TreeBuilder(this.pos, restEdges);
 
                 return new SplitResult(edgeTree, Arrays.asList(restTree, pastEdgeTree));
             }
         }
-        throw new IllegalArgumentException("Position is not in RelativeTree");
+        throw new IllegalArgumentException("Position is not in TreeBuilder");
     }
 
-    public AbsoluteTree toAbsolute(List<MutableSortedIntMap<ItemStack>> stacksList, int fromOffset) {
+    public Tree toAbsolute(List<MutableSortedIntMap<ItemStack>> stacksList, int fromOffset) {
         int toOffset = fromOffset;
-        ArrayList<AbsoluteTree.Edge> treeEdges = new ArrayList<>(edges.size());
+        ArrayList<Tree.Edge> treeEdges = new ArrayList<>(edges.size());
         for (Edge edge : edges) {
-            AbsoluteTree.Edge staticEdge = edge.toAbsolute(stacksList, toOffset, this);
+            Tree.Edge staticEdge = edge.toAbsolute(stacksList, toOffset, this);
             treeEdges.add(staticEdge);
             toOffset = staticEdge.getPostMaxOffset();
         }
-        return new AbsoluteTree(pos, treeEdges, fromOffset, toOffset);
+        return new Tree(pos, treeEdges, fromOffset, toOffset);
     }
 
-    private AbsoluteTree toAbsolute(List<MutableSortedIntMap<ItemStack>> stacksList, int fromOffset, EdgeKey fromEdgeKey) {
+    private Tree toAbsolute(List<MutableSortedIntMap<ItemStack>> stacksList, int fromOffset, EdgeKey fromEdgeKey) {
         int toOffset = fromOffset;
         int splitIndex = findEdgeKeyIndex(fromEdgeKey);
-        ArrayList<AbsoluteTree.Edge> treeEdges = new ArrayList<>(edges.size());
+        ArrayList<Tree.Edge> treeEdges = new ArrayList<>(edges.size());
         for (Edge edge : edges.subList(splitIndex, edges.size())) {
-            AbsoluteTree.Edge staticEdge = edge.toAbsolute(stacksList, toOffset, this);
+            Tree.Edge staticEdge = edge.toAbsolute(stacksList, toOffset, this);
             treeEdges.add(staticEdge);
             toOffset = staticEdge.getPostMaxOffset();
         }
         for (Edge edge : edges.subList(0, splitIndex)) {
-            AbsoluteTree.Edge staticEdge = edge.toAbsolute(stacksList, toOffset, this);
+            Tree.Edge staticEdge = edge.toAbsolute(stacksList, toOffset, this);
             treeEdges.add(staticEdge);
             toOffset = staticEdge.getPostMaxOffset();
         }
-        return new AbsoluteTree(pos, treeEdges, fromOffset, toOffset);
+        return new Tree(pos, treeEdges, fromOffset, toOffset);
     }
 }

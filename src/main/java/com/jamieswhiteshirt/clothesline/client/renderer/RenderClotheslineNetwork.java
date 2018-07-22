@@ -5,7 +5,6 @@ import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
-import com.jamieswhiteshirt.rtree3i.Entry;
 import com.jamieswhiteshirt.rtree3i.RTreeMap;
 import com.jamieswhiteshirt.rtree3i.Selection;
 import net.minecraft.client.Minecraft;
@@ -149,7 +148,7 @@ public final class RenderClotheslineNetwork {
 
         edges.forEach(edge -> {
             Graph.Edge graphEdge = edge.getGraphEdge();
-            AbsoluteNetworkState state = edge.getNetwork().getState();
+            NetworkState state = edge.getNetwork().getState();
             double fromAttachmentKey = state.offsetToAttachmentKey(graphEdge.getFromOffset(), partialTicks);
             double toAttachmentKey = state.offsetToAttachmentKey(graphEdge.getToOffset(), partialTicks);
 
@@ -205,11 +204,11 @@ public final class RenderClotheslineNetwork {
         EntityRenderer.drawNameplate(fontRenderer, msg, (float)x, (float)y, (float)z, 0, yaw, pitch, false, false);
     }
 
-    private void debugRenderTree(AbsoluteTree absoluteTree, double x, double y, double z, float yaw, float pitch, FontRenderer fontRenderer) {
-        List<AbsoluteTree> children = absoluteTree.getChildren();
+    private void debugRenderTree(Tree tree, double x, double y, double z, float yaw, float pitch, FontRenderer fontRenderer) {
+        List<Tree> children = tree.getChildren();
         for (int i = 0; i < children.size(); i++) {
-            AbsoluteTree child = children.get(i);
-            Vec3d pos = new Vec3d(absoluteTree.getPos()).scale(0.75D).add(new Vec3d(child.getPos()).scale(0.25D)).addVector(0.5D, 0.5D, 0.5D);
+            Tree child = children.get(i);
+            Vec3d pos = new Vec3d(tree.getPos()).scale(0.75D).add(new Vec3d(child.getPos()).scale(0.25D)).addVector(0.5D, 0.5D, 0.5D);
 
             debugRenderText(Integer.toString(i), pos.x - x, pos.y - y, pos.z - z, yaw, pitch, fontRenderer);
 

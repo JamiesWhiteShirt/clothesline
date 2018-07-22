@@ -2,14 +2,11 @@ package com.jamieswhiteshirt.clothesline.client;
 
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.client.audio.ClotheslineRopeSound;
-import com.jamieswhiteshirt.rtree3i.Box;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -23,7 +20,7 @@ public class SoundNetworkManagerListener<E extends INetworkEdge, N extends INetw
     private final SoundHandler soundHandler = Minecraft.getMinecraft().getSoundHandler();
     private final INetworkEventListener networkSoundListener = new INetworkEventListener() {
         @Override
-        public void onStateChanged(INetwork network, AbsoluteNetworkState previousState, AbsoluteNetworkState newState) {
+        public void onStateChanged(INetwork network, NetworkState previousState, NetworkState newState) {
             unlistenTo(previousState);
             listenTo(newState);
         }
@@ -33,7 +30,7 @@ public class SoundNetworkManagerListener<E extends INetworkEdge, N extends INetw
         }
     };
 
-    private void listenTo(AbsoluteNetworkState state) {
+    private void listenTo(NetworkState state) {
         for (Graph.Node node : state.getGraph().getNodes().values()) {
             ClotheslineRopeSound sound = new ClotheslineRopeSound(state, node);
             anchorSounds.put(node.getKey(), sound);
@@ -41,7 +38,7 @@ public class SoundNetworkManagerListener<E extends INetworkEdge, N extends INetw
         }
     }
 
-    private void unlistenTo(AbsoluteNetworkState state) {
+    private void unlistenTo(NetworkState state) {
         for (BlockPos pos : state.getGraph().getNodes().keySet()) {
             ClotheslineRopeSound sound = anchorSounds.remove(pos);
             if (sound != null) {
