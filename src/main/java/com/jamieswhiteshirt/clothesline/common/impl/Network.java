@@ -109,6 +109,11 @@ public final class Network implements INetwork {
     }
 
     @Override
+    public ItemStack getAttachment(int attachmentKey) {
+        return state.getAttachment(attachmentKey);
+    }
+
+    @Override
     public void setAttachment(int attachmentKey, ItemStack stack) {
         ItemStack previousStack = state.getAttachment(attachmentKey);
         state.setAttachment(attachmentKey, stack);

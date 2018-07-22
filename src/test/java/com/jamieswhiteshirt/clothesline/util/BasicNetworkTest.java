@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 class BasicNetworkTest {
     @Test
     void persistsEquivalency() {
-        Network a = Networks.networkAB;
+        Network a = NetworkTests.ab.network;
         BasicNetwork basicNetwork = BasicNetwork.fromAbsolute(a);
         Network b = basicNetwork.toAbsolute();
-        Networks.assertNetworksEquivalent(a, b);
+        NetworkTests.assertNetworksEquivalent(a, b);
     }
 }

@@ -32,8 +32,8 @@ class MutableSortedIntMapTest {
         map.put(7, 7);
         map.put(1, 1);
         List<MutableSortedIntMap.Entry<Integer>> entries = map.entries();
-        for (int i = 0; i < entries.size() - 1; i++) {
-            Assertions.assertTrue(entries.get(i).getKey() < entries.get(i + 1).getKey());
+        for (int i = 1; i < entries.size(); i++) {
+            Assertions.assertTrue(entries.get(i - 1).getKey() < entries.get(i).getKey());
         }
     }
 

@@ -65,18 +65,37 @@ public final class TreeBuilder {
             attachmentsList.add(postAttachments);
             return new Tree.Edge(key, fromOffset, tree);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Edge edge = (Edge) o;
+            return Objects.equals(key, edge.key) &&
+                Objects.equals(preAttachments, edge.preAttachments) &&
+                Objects.equals(tree, edge.tree) &&
+                Objects.equals(postAttachments, edge.postAttachments);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(key, preAttachments, tree, postAttachments);
+        }
     }
 
     public static TreeBuilder fromAbsolute(Tree tree, MutableSortedIntMap<ItemStack> attachments) {
         ArrayList<TreeBuilder.Edge> edges = new ArrayList<>(tree.getEdges().size());
         edges.sort(Comparator.comparing(a -> a.key));
-        return new TreeBuilder(tree.getPos(), tree.getEdges().stream().map(
-            edge -> Edge.fromAbsolute(edge, attachments)
-        ).collect(Collectors.toList()));
+        return new TreeBuilder(
+            tree.getPos(),
+            tree.getEdges().stream()
+                .map(edge -> Edge.fromAbsolute(edge, attachments))
+                .collect(Collectors.toList())
+        );
     }
 
-    public static TreeBuilder empty(BlockPos pos) {
-        return new TreeBuilder(pos, Collections.emptyList());
+    public static TreeBuilder emptyRoot(BlockPos root) {
+        return new TreeBuilder(root, new ArrayList<>());
     }
 
     private int findEdgeKeyIndex(EdgeKey edgeKey, int minIndex, int maxIndex) {
@@ -172,9 +191,9 @@ public final class TreeBuilder {
     }
 
     public SplitResult splitNode() {
-        List<Edge> edges = this.edges.stream().map(
-            edge -> new Edge(edge.key, edge.preAttachments, empty(edge.tree.pos), edge.postAttachments)
-        ).collect(Collectors.toList());
+        List<Edge> edges = this.edges.stream()
+            .map(edge -> new Edge(edge.key, edge.preAttachments, emptyRoot(edge.tree.pos), edge.postAttachments))
+            .collect(Collectors.toList());
         TreeBuilder tree = new TreeBuilder(pos, edges);
         return new SplitResult(tree, this.edges.stream().map(edge -> edge.tree).collect(Collectors.toList()));
     }
@@ -188,7 +207,7 @@ public final class TreeBuilder {
                     new ArrayList<>(Collections.singletonList(new Edge(
                         edge.key,
                         edge.preAttachments,
-                        empty(edge.tree.pos),
+                        emptyRoot(edge.tree.pos),
                         edge.postAttachments
                     )))
                 );
@@ -232,5 +251,19 @@ public final class TreeBuilder {
             toOffset = staticEdge.getPostMaxOffset();
         }
         return new Tree(pos, treeEdges, fromOffset, toOffset);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TreeBuilder that = (TreeBuilder) o;
+        return Objects.equals(pos, that.pos) &&
+            Objects.equals(edges, that.edges);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pos, edges);
     }
 }

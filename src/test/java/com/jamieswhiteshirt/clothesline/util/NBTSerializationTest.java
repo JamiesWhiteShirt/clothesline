@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 
 class NBTSerializationTest {
     @Test
-    void persistentNetworkSerializesCorrectly() {
-        BasicPersistentNetwork written = BasicPersistentNetwork.fromAbsolute(Networks.persistentNetworkAB);
+    void persistsPersistentNetworkEquality() {
+        BasicPersistentNetwork written = BasicPersistentNetwork.fromAbsolute(NetworkTests.ab.persistentNetwork);
         NBTTagCompound nbtTagCompound = NBTSerialization.writePersistentNetwork(written);
         BasicPersistentNetwork read = NBTSerialization.readPersistentNetwork(nbtTagCompound);
         Assertions.assertEquals(written, read);

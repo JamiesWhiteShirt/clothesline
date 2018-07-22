@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 
 class ByteBufSerializationTest {
     @Test
-    void networkSerializesCorrectly() {
-        BasicNetwork written = BasicNetwork.fromAbsolute(Networks.networkAB);
+    void persistsNetworkEquality() {
+        BasicNetwork written = BasicNetwork.fromAbsolute(NetworkTests.ab.network);
         ByteBuf buf = Unpooled.buffer();
         ByteBufSerialization.writeNetwork(buf, written);
         BasicNetwork read = ByteBufSerialization.readNetwork(buf);

@@ -26,6 +26,8 @@ public interface INetwork {
 
     ItemStack extractItem(int attachmentKey, boolean simulate);
 
+    ItemStack getAttachment(int attachmentKey);
+
     void setAttachment(int attachmentKey, ItemStack stack);
 
     void addEventListener(ResourceLocation key, INetworkEventListener eventListener);

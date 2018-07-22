@@ -9,6 +9,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public final class NetworkStateBuilder {
@@ -41,6 +42,10 @@ public final class NetworkStateBuilder {
         return new NetworkStateBuilder(state.getMomentum(), tree);
     }
 
+    public static NetworkStateBuilder emptyRoot(int momentum, BlockPos root) {
+        return new NetworkStateBuilder(momentum, TreeBuilder.emptyRoot(root));
+    }
+
     private int momentum;
     private TreeBuilder treeRoot;
 
@@ -54,7 +59,7 @@ public final class NetworkStateBuilder {
     }
 
     public void addEdge(BlockPos fromPos, BlockPos toPos) {
-        treeRoot.addChild(fromPos, TreeBuilder.empty(toPos));
+        treeRoot.addChild(fromPos, TreeBuilder.emptyRoot(toPos));
         momentum /= 2;
     }
 
@@ -67,9 +72,10 @@ public final class NetworkStateBuilder {
         TreeBuilder.SplitResult result = treeRoot.splitNode();
         return new SplitResult(
             new NetworkStateBuilder(momentum, result.getTree()),
-            result.getSubTrees().stream().filter(tree -> !tree.isEmpty()).map(
-                tree -> new NetworkStateBuilder(momentum, tree)
-            ).collect(Collectors.toList())
+            result.getSubTrees().stream()
+                .filter(tree -> !tree.isEmpty())
+                .map(tree -> new NetworkStateBuilder(momentum, tree))
+                .collect(Collectors.toList())
         );
     }
 
@@ -77,9 +83,10 @@ public final class NetworkStateBuilder {
         TreeBuilder.SplitResult result = treeRoot.splitEdge(pos);
         return new SplitResult(
             new NetworkStateBuilder(momentum, result.getTree()),
-            result.getSubTrees().stream().filter(tree -> !tree.isEmpty()).map(
-                tree -> new NetworkStateBuilder(momentum, tree)
-            ).collect(Collectors.toList())
+            result.getSubTrees().stream()
+                .filter(tree -> !tree.isEmpty())
+                .map(tree -> new NetworkStateBuilder(momentum, tree))
+                .collect(Collectors.toList())
         );
     }
 
@@ -87,5 +94,19 @@ public final class NetworkStateBuilder {
         LinkedList<MutableSortedIntMap<ItemStack>> attachmentsList = new LinkedList<>();
         Tree tree = treeRoot.toAbsolute(attachmentsList, 0);
         return new NetworkState(0, 0, momentum, momentum, tree, MutableSortedIntMap.concatenate(attachmentsList));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        NetworkStateBuilder that = (NetworkStateBuilder) o;
+        return momentum == that.momentum &&
+            Objects.equals(treeRoot, that.treeRoot);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(momentum, treeRoot);
     }
 }
