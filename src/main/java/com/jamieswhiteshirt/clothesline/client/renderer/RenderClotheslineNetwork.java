@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.item.ItemStack;
@@ -31,15 +32,16 @@ import org.lwjgl.util.vector.Vector4f;
 import java.nio.FloatBuffer;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @SideOnly(Side.CLIENT)
 public final class RenderClotheslineNetwork {
     private static final ResourceLocation TEXTURE = new ResourceLocation(Clothesline.MODID, "textures/misc/clothesline.png");
     private static final VertexFormat VERTEX_FORMAT = new VertexFormat()
-            .addElement(DefaultVertexFormats.POSITION_3F)
-            .addElement(DefaultVertexFormats.NORMAL_3B)
-            .addElement(DefaultVertexFormats.TEX_2F)
-            .addElement(DefaultVertexFormats.TEX_2S);
+        .addElement(DefaultVertexFormats.POSITION_3F)
+        .addElement(DefaultVertexFormats.NORMAL_3B)
+        .addElement(DefaultVertexFormats.TEX_2F)
+        .addElement(DefaultVertexFormats.TEX_2S);
     private static final double[] RIGHT_MULTIPLIERS = new double[] { -1.0D, -1.0D, 1.0D, 1.0D, -1.0D };
     private static final double[] UP_MULTIPLIERS = new double[] { -1.0D, 1.0D, 1.0D, -1.0D, -1.0D };
     private static final double[] NORMAL_RIGHT_MULTIPLIERS = new double[] { -1.0D, 0.0D, 1.0D, 0.0D };
@@ -79,24 +81,24 @@ public final class RenderClotheslineNetwork {
 
             Vec3d normal = p.projectTangentRU(nr, nu);
             posNormal(bufferBuilder, p.projectRUF(
-                    (r1 - 4.0D) / 32.0D,
-                    u1 / 32.0D,
-                    0.0D
+                (r1 - 4.0D) / 32.0D,
+                u1 / 32.0D,
+                0.0D
             ).subtract(x, y, z), normal).tex(0.0D, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
             posNormal(bufferBuilder, p.projectRUF(
-                    (r2 - 4.0D) / 32.0D,
-                    u2 / 32.0D,
-                    0.0D
+                (r2 - 4.0D) / 32.0D,
+                u2 / 32.0D,
+                0.0D
             ).subtract(x, y, z), normal).tex(1.0D, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
             posNormal(bufferBuilder, p.projectRUF(
-                    (r2 - 4.0D) / 32.0D,
-                    u2 / 32.0D,
-                    1.0D
+                (r2 - 4.0D) / 32.0D,
+                u2 / 32.0D,
+                1.0D
             ).subtract(x, y, z), normal).tex(1.0D, vTo).lightmap(lightTo1, lightTo2).endVertex();
             posNormal(bufferBuilder, p.projectRUF(
-                    (r1 - 4.0D) / 32.0D,
-                    u1 / 32.0D,
-                    1.0D
+                (r1 - 4.0D) / 32.0D,
+                u1 / 32.0D,
+                1.0D
             ).subtract(x, y, z), normal).tex(0.0D, vTo).lightmap(lightTo1, lightTo2).endVertex();
         }
     }
@@ -123,11 +125,11 @@ public final class RenderClotheslineNetwork {
         tessellator.draw();
     }
 
-    public void render(IBlockAccess world, RTreeMap<Line, IClientNetworkEdge> edgesTree, ICamera camera, double x, double y, double z, float partialTicks) {
+    public void render(IBlockAccess world, RTreeMap<Line, IClientNetworkEdge> edgesMap, ICamera camera, double x, double y, double z, float partialTicks) {
         Vec3d viewPos = new Vec3d(x, y, z);
 
-        // Select all entries in the edge map intersecting with the camera frumstum
-        Selection<IClientNetworkEdge> edges = edgesTree
+        // Select all entries in the edge map intersecting with the camera frustum
+        Selection<IClientNetworkEdge> edges = edgesMap
             .values(box -> camera.isBoundingBoxInFrustum(new AxisAlignedBB(box.x1(), box.y1(), box.z1(), box.x2(), box.y2(), box.z2())));
 
         // Draw the rope for all edges
@@ -216,30 +218,29 @@ public final class RenderClotheslineNetwork {
         }
     }
 
-    /* public void debugRender(RenderNetworkState state, double x, double y, double z, float partialTicks) {
+    public void debugRender(
+        RTreeMap<BlockPos, INetworkNode> nodesMap,
+        RTreeMap<Line, IClientNetworkEdge> edgesMap,
+        ICamera camera, double x, double y, double z, float partialTicks
+    ) {
         TileEntityRendererDispatcher rendererDispatcher = TileEntityRendererDispatcher.instance;
         float yaw = rendererDispatcher.entityYaw;
         float pitch = rendererDispatcher.entityPitch;
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
 
-        List<RenderEdge> renderEdges = state.getEdges();
-        for (int i = 0; i < renderEdges.size(); i++) {
-            RenderEdge entry = renderEdges.get(i);
-            Vec3d pos = entry.getProjection().projectRUF(0.125D, 0.125D, 0.5D);
-            debugRenderText(i + ": " + entry.getAngleY(), pos.x - x, pos.y - y, pos.z - z, yaw, pitch, fontRenderer);
-        }
+        // Select all edges in the edges map intersecting with the camera frustum
+        Selection<IClientNetworkEdge> edges = edgesMap
+            .values(box -> camera.isBoundingBoxInFrustum(new AxisAlignedBB(box.x1(), box.y1(), box.z1(), box.x2(), box.y2(), box.z2())));
 
-        debugRenderTree(state.getTree(), x, y, z, yaw, pitch, fontRenderer);
-
-        double shift = state.getShift(partialTicks);
-        for (MutableSortedIntMap.Entry<ItemStack> entry : state.getStacks().entries()) {
-            double attachmentOffset = (entry.getKey() + shift) % state.getStacks().getMaxKey();
-            int edgeIndex = state.getEdgeIndexForOffset((int)attachmentOffset);
-            RenderEdge entry = renderEdges.get(edgeIndex);
-            double relativeOffset = attachmentOffset - entry.getFromOffset();
-            double edgePosScalar = relativeOffset / (entry.getToOffset() - entry.getFromOffset());
-            Vec3d pos = entry.getProjection().projectRUF(-2.0D / 16.0D, 0.0D, edgePosScalar);
-            debugRenderText(Integer.toString(entry.getKey()), pos.x - x, pos.y - y, pos.z - z, yaw, pitch, fontRenderer);
-        }
-    } */
+        edges.forEach(edge -> {
+            Graph.Edge graphEdge = edge.getGraphEdge();
+            BlockPos nodePos = graphEdge.getLine().getFromPos();
+            INetworkNode node = nodesMap.get(nodePos);
+            Graph.Node graphNode = node.getGraphNode();
+            int nodeIndex = graphNode.getEdges().indexOf(graphEdge);
+            int networkIndex = edge.getNetwork().getState().getGraph().getEdges().indexOf(graphEdge);
+            Vec3d pos = edge.getProjection().projectRUF(-0.125D, 0.125D, 0.5D);
+            debugRenderText(nodeIndex + " " + networkIndex, pos.x - x, pos.y - y, pos.z - z, yaw, pitch, fontRenderer);
+        });
+    }
 }

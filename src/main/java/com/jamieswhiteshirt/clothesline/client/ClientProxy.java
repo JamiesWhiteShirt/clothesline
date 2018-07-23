@@ -246,6 +246,9 @@ public class ClientProxy extends CommonProxy {
                 if (manager != null) {
                     boolean showDebugInfo = Minecraft.getMinecraft().gameSettings.showDebugInfo;
                     renderClotheslineNetwork.render(world, manager.getEdges(), event.getCamera(), x, y, z, partialTicks);
+                    if (showDebugInfo) {
+                        renderClotheslineNetwork.debugRender(manager.getNodes(), manager.getEdges(), event.getCamera(), x, y, z, event.getPartialTicks());
+                    }
                 }
 
                 if (Minecraft.getMinecraft().gameSettings.thirdPersonView <= 0) {
