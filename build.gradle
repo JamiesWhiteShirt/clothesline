@@ -1,7 +1,7 @@
 buildscript {
     repositories {
         jcenter()
-        maven { url = "http://files.minecraftforge.net/maven" }
+        maven { url = 'http://files.minecraftforge.net/maven' }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
@@ -10,31 +10,28 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'jacoco'
 
-version = "1.12.2-1.0.0.0-SNAPSHOT"
-group = "com.jamieswhiteshirt" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "clothesline"
+version = '1.12.2-1.0.0.0-SNAPSHOT'
+group = 'com.jamieswhiteshirt'
+archivesBaseName = 'clothesline'
 
-sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
-compileJava {
-    sourceCompatibility = targetCompatibility = '1.8'
-}
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
 minecraft {
-    version = "1.12.2-14.23.3.2665"
-    runDir = "run"
+    version = '1.12.2-14.23.3.2665'
+    runDir = 'run'
 
-    clientJvmArgs = serverJvmArgs = ["-Dfml.coreMods.load=$fmlCorePlugin"]
+    clientJvmArgs = serverJvmArgs = ['-Dfml.coreMods.load=$fmlCorePlugin']
 
-    mappings = "snapshot_20180414"
+    mappings = 'snapshot_20180414'
 }
 
 repositories {
     jcenter()
     maven {
-        url "https://oss.sonatype.org/content/repositories/snapshots"
+        url 'https://oss.sonatype.org/content/repositories/snapshots'
     }
     maven {
-        url "http://maven.jamieswhiteshirt.com/libs-snapshot/"
+        url 'http://maven.jamieswhiteshirt.com/libs-snapshot/'
     }
 }
 
@@ -44,13 +41,13 @@ configurations {
 }
 
 dependencies {
-    contained "com.jamieswhiteshirt:rtree-3i-lite:0.1-SNAPSHOT"
-    compile "com.jamieswhiteshirt:rtree-3i-lite:0.1-SNAPSHOT"
-    contained "com.jamieswhiteshirt:clothesline-hooks:1.12.2-1.0.0.0-SNAPSHOT"
-    deobfCompile "com.jamieswhiteshirt:clothesline-hooks:1.12.2-1.0.0.0-SNAPSHOT"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.2.0"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.2.0"
-    testCompile "org.mockito:mockito-core:2.+"
+    contained 'com.jamieswhiteshirt:rtree-3i-lite:0.1-SNAPSHOT'
+    compile 'com.jamieswhiteshirt:rtree-3i-lite:0.1-SNAPSHOT'
+    contained 'com.jamieswhiteshirt:clothesline-hooks:1.12.2-1.0.0.0-SNAPSHOT'
+    deobfCompile 'com.jamieswhiteshirt:clothesline-hooks:1.12.2-1.0.0.0-SNAPSHOT'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.2.+'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.2.+'
+    testCompile 'org.mockito:mockito-core:2.+'
 }
 
 test {
@@ -62,13 +59,12 @@ jacocoTestReport {
 }
 
 processResources {
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
+    inputs.property 'version', project.version
+    inputs.property 'mcversion', project.minecraft.version
 
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
                 
-        // replace version and mcversion
         expand 'version':project.version, 'mcversion':project.minecraft.version
     }
         
@@ -88,7 +84,7 @@ jar {
 
     manifest {
         attributes([
-                'ContainedDeps': configurations.contained.files.collect { it.name }.join(" "),
+                'ContainedDeps': configurations.contained.files.collect { it.name }.join(' '),
                 'Maven-Artifact': "${project.group}:${project.archivesBaseName}:${project.version}",
                 'Timestamp': System.currentTimeMillis(),
                 'FMLAT': 'clothesline_at.cfg'
