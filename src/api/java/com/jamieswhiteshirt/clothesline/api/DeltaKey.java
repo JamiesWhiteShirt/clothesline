@@ -71,4 +71,13 @@ public final class DeltaKey implements Comparable<DeltaKey> {
     public int hashCode() {
         return Objects.hash(angle, length, delta);
     }
+
+    @Override
+    public String toString() {
+        return "DeltaKey{" +
+            "angle=" + angle +
+            ", length=" + length +
+            ", delta=" + delta +
+            '}';
+    }
 }
