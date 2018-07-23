@@ -12,9 +12,9 @@ public interface INetwork {
 
     UUID getUuid();
 
-    NetworkState getState();
+    INetworkState getState();
 
-    void setState(NetworkState state);
+    void setState(INetworkState state);
 
     void update();
 

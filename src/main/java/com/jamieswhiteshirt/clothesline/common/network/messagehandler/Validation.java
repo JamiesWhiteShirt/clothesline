@@ -1,13 +1,13 @@
 package com.jamieswhiteshirt.clothesline.common.network.messagehandler;
 
-import com.jamieswhiteshirt.clothesline.api.NetworkState;
+import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.math.Vec3d;
 
 public class Validation {
     public static boolean canReachAttachment(EntityPlayerMP player, INetwork network, int attachmentKey) {
-        NetworkState state = network.getState();
+        INetworkState state = network.getState();
         return canReachPos(player, state.getGraph().getPositionForOffset(state.attachmentKeyToOffset(attachmentKey)));
     }
 

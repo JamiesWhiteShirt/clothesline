@@ -32,7 +32,6 @@ import org.lwjgl.util.vector.Vector4f;
 import java.nio.FloatBuffer;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 @SideOnly(Side.CLIENT)
 public final class RenderClotheslineNetwork {
@@ -150,7 +149,7 @@ public final class RenderClotheslineNetwork {
 
         edges.forEach(edge -> {
             Graph.Edge graphEdge = edge.getGraphEdge();
-            NetworkState state = edge.getNetwork().getState();
+            INetworkState state = edge.getNetwork().getState();
             double fromAttachmentKey = state.offsetToAttachmentKey(graphEdge.getFromOffset(), partialTicks);
             double toAttachmentKey = state.offsetToAttachmentKey(graphEdge.getToOffset(), partialTicks);
 

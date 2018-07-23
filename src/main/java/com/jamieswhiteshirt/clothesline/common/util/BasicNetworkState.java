@@ -1,6 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common.util;
 
-import com.jamieswhiteshirt.clothesline.api.NetworkState;
+import com.jamieswhiteshirt.clothesline.api.INetworkState;
+import com.jamieswhiteshirt.clothesline.common.impl.NetworkState;
 import com.jamieswhiteshirt.clothesline.api.Tree;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import net.minecraft.item.ItemStack;
@@ -11,7 +12,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public final class BasicNetworkState {
-    public static BasicNetworkState fromAbsolute(NetworkState state) {
+    public static BasicNetworkState fromAbsolute(INetworkState state) {
         return new BasicNetworkState(
                 state.getShift(),
                 state.getMomentum(),
@@ -50,7 +51,7 @@ public final class BasicNetworkState {
         return attachments;
     }
 
-    public NetworkState toAbsolute() {
+    public INetworkState toAbsolute() {
         Tree tree = this.tree.toAbsolute();
         MutableSortedIntMap<ItemStack> attachments = new MutableSortedIntMap<>(
                 new ArrayList<>(this.attachments.stream().map(

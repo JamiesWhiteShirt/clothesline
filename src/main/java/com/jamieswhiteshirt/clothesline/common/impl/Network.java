@@ -1,9 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
-import com.jamieswhiteshirt.clothesline.api.NetworkState;
-import com.jamieswhiteshirt.clothesline.api.INetwork;
-import com.jamieswhiteshirt.clothesline.api.INetworkEventListener;
-import com.jamieswhiteshirt.clothesline.api.PersistentNetwork;
+import com.jamieswhiteshirt.clothesline.api.*;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -17,7 +14,7 @@ import java.util.*;
 public final class Network implements INetwork {
     private final int id;
     private final UUID uuid;
-    private NetworkState state;
+    private INetworkState state;
     private final Map<ResourceLocation, INetworkEventListener> eventListeners = new TreeMap<>();
 
     public Network(int id, PersistentNetwork persistentNetwork) {
@@ -37,13 +34,13 @@ public final class Network implements INetwork {
     }
 
     @Override
-    public NetworkState getState() {
+    public INetworkState getState() {
         return state;
     }
 
     @Override
-    public void setState(NetworkState state) {
-        NetworkState previousState = this.state;
+    public void setState(INetworkState state) {
+        INetworkState previousState = this.state;
         this.state = state;
 
         for (INetworkEventListener eventListener : eventListeners.values()) {

@@ -36,7 +36,7 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     public void crank(int amount) {
         INetworkNode node = getNetworkNode();
         if (node != null) {
-            NetworkState networkState = node.getNetwork().getState();
+            INetworkState networkState = node.getNetwork().getState();
             networkState.setMomentum(networkState.getMomentum() + amount);
         }
     }

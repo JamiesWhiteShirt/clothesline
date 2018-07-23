@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common.block;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
-import com.jamieswhiteshirt.clothesline.api.NetworkState;
+import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.api.INetworkNode;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
@@ -182,10 +182,10 @@ public class BlockClotheslineAnchor extends BlockDirectional {
         if (tileEntity instanceof TileEntityClotheslineAnchor) {
             INetworkNode networkNode = ((TileEntityClotheslineAnchor) tileEntity).getNetworkNode();
             if (networkNode != null) {
-                NetworkState networkState = networkNode.getNetwork().getState();
+                INetworkState networkState = networkNode.getNetwork().getState();
                 int momentum = networkState.getMomentum();
-                float pitch = 0.2F + 0.6F * ((float)momentum / NetworkState.MAX_MOMENTUM) + rand.nextFloat() * 0.1F;
-                if (rand.nextInt(12 * NetworkState.MAX_MOMENTUM) < momentum) {
+                float pitch = 0.2F + 0.6F * ((float)momentum / INetworkState.MAX_MOMENTUM) + rand.nextFloat() * 0.1F;
+                if (rand.nextInt(12 * INetworkState.MAX_MOMENTUM) < momentum) {
                     world.playSound(Minecraft.getMinecraft().player, pos, ClotheslineSoundEvents.BLOCK_CLOTHESLINE_ANCHOR_SQUEAK, SoundCategory.BLOCKS, 0.1F, pitch);
                 }
             }

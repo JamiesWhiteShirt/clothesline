@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.util;
 
-import com.jamieswhiteshirt.clothesline.api.NetworkState;
+import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.Tree;
 import com.jamieswhiteshirt.clothesline.common.util.NetworkStateBuilder;
 import net.minecraft.util.math.BlockPos;
@@ -22,9 +22,9 @@ class NetworkStateBuilderTest {
 
     @Test
     void persistsEquivalence() {
-        NetworkState a = NetworkTests.ab.state;
+        INetworkState a = NetworkTests.ab.state;
         NetworkStateBuilder builder = NetworkStateBuilder.fromAbsolute(a);
-        NetworkState b = builder.toAbsolute();
+        INetworkState b = builder.toAbsolute();
         NetworkTests.assertNetworkStatesEquivalent(a, b);
     }
 
@@ -32,7 +32,7 @@ class NetworkStateBuilderTest {
     void canMakeAB() {
         NetworkStateBuilder builder = NetworkStateBuilder.emptyRoot(0, NetworkTests.posA);
         builder.addEdge(NetworkTests.posA, NetworkTests.posB);
-        NetworkState state = builder.toAbsolute();
+        INetworkState state = builder.toAbsolute();
         NetworkTests.assertNetworkStatesEquivalent(state, NetworkTests.ab.state);
     }
 

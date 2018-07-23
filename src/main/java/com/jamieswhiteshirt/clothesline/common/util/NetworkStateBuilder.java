@@ -1,7 +1,8 @@
 package com.jamieswhiteshirt.clothesline.common.util;
 
+import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.Tree;
-import com.jamieswhiteshirt.clothesline.api.NetworkState;
+import com.jamieswhiteshirt.clothesline.common.impl.NetworkState;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -31,7 +32,7 @@ public final class NetworkStateBuilder {
         }
     }
 
-    public static NetworkStateBuilder fromAbsolute(NetworkState state) {
+    public static NetworkStateBuilder fromAbsolute(INetworkState state) {
         MutableSortedIntMap<ItemStack> attachments = state.getAttachments();
         int midAttachmentKey = state.offsetToAttachmentKey(0);
         MutableSortedIntMap<ItemStack> shiftedItemStacks = MutableSortedIntMap.concatenate(Arrays.asList(
@@ -90,7 +91,7 @@ public final class NetworkStateBuilder {
         );
     }
 
-    public NetworkState toAbsolute() {
+    public INetworkState toAbsolute() {
         LinkedList<MutableSortedIntMap<ItemStack>> attachmentsList = new LinkedList<>();
         Tree tree = treeRoot.toAbsolute(attachmentsList, 0);
         return new NetworkState(0, 0, momentum, momentum, tree, MutableSortedIntMap.concatenate(attachmentsList));

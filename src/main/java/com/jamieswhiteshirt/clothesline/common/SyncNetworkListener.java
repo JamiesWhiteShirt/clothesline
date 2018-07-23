@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common;
 
-import com.jamieswhiteshirt.clothesline.api.NetworkState;
+import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.INetworkEventListener;
 import com.jamieswhiteshirt.clothesline.common.network.message.RemoveAttachmentMessage;
@@ -22,7 +22,7 @@ public class SyncNetworkListener implements INetworkEventListener {
     }
 
     @Override
-    public void onStateChanged(INetwork network, NetworkState previousState, NetworkState newState) {
+    public void onStateChanged(INetwork network, INetworkState previousState, INetworkState newState) {
         networkChannel.sendToDimension(new SetNetworkStateMessage(network.getId(), BasicNetworkState.fromAbsolute(newState)), dimension);
     }
 

@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.impl;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkEventListener;
-import com.jamieswhiteshirt.clothesline.api.NetworkState;
+import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.PersistentNetwork;
 import com.jamieswhiteshirt.clothesline.common.impl.Network;
 import com.jamieswhiteshirt.clothesline.common.util.NetworkStateBuilder;
@@ -79,12 +79,12 @@ class NetworkTest {
         INetworkEventListener eventListener = Mockito.mock(INetworkEventListener.class);
         network.addEventListener(eventListenerKey, eventListener);
 
-        NetworkState stateA = network.getState();
+        INetworkState stateA = network.getState();
         BlockPos posA = new BlockPos(0, 0, 0);
         BlockPos posB = new BlockPos(2, 0, 0);
         NetworkStateBuilder stateBuilder = NetworkStateBuilder.emptyRoot(0, posA);
         stateBuilder.addEdge(posA, posB);
-        NetworkState stateB = stateBuilder.toAbsolute();
+        INetworkState stateB = stateBuilder.toAbsolute();
 
         network.setState(stateB);
         network.setState(stateA);

@@ -1,6 +1,11 @@
-package com.jamieswhiteshirt.clothesline.api;
+package com.jamieswhiteshirt.clothesline.impl;
 
+import com.jamieswhiteshirt.clothesline.api.DeltaKey;
+import com.jamieswhiteshirt.clothesline.api.INetworkState;
+import com.jamieswhiteshirt.clothesline.api.Measurements;
+import com.jamieswhiteshirt.clothesline.api.Tree;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
+import com.jamieswhiteshirt.clothesline.common.impl.NetworkState;
 import net.minecraft.init.Bootstrap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -17,7 +22,7 @@ class NetworkStateTest {
         Bootstrap.register();
     }
 
-    NetworkState state;
+    INetworkState state;
 
     @BeforeEach
     void resetState() {

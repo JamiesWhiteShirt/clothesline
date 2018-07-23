@@ -3,6 +3,7 @@ package com.jamieswhiteshirt.clothesline.util;
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.common.impl.Network;
+import com.jamieswhiteshirt.clothesline.common.impl.NetworkState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import org.junit.jupiter.api.Assertions;
@@ -19,7 +20,7 @@ class NetworkTests {
         final BlockPos to;
         final Tree tree;
         final MutableSortedIntMap<ItemStack> attachments;
-        final NetworkState state;
+        final INetworkState state;
         final PersistentNetwork persistentNetwork;
         final Network network;
 
@@ -48,7 +49,7 @@ class NetworkTests {
         assertNetworkStatesEquivalent(expected.getState(), actual.getState());
     }
 
-    static void assertNetworkStatesEquivalent(NetworkState expected, NetworkState actual) {
+    static void assertNetworkStatesEquivalent(INetworkState expected, INetworkState actual) {
         Assertions.assertEquals(expected.getShift(), actual.getShift());
         Assertions.assertEquals(expected.getMomentum(), actual.getMomentum());
         Assertions.assertEquals(expected.getTree(), actual.getTree());

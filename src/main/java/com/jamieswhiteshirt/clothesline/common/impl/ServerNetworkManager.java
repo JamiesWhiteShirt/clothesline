@@ -27,7 +27,7 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
         this.world = world;
     }
 
-    private void dropAttachment(NetworkState state, ItemStack stack, int attachmentKey) {
+    private void dropAttachment(INetworkState state, ItemStack stack, int attachmentKey) {
         if (!stack.isEmpty() && world.getGameRules().getBoolean("doTileDrops")) {
             Vec3d pos = state.getGraph().getPositionForOffset(state.attachmentKeyToOffset(attachmentKey));
             EntityItem entityitem = new EntityItem(world, pos.x, pos.y - 0.5D, pos.z, stack);
@@ -36,13 +36,13 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
         }
     }
 
-    private void dropNetworkItems(NetworkState state) {
+    private void dropNetworkItems(INetworkState state) {
         for (MutableSortedIntMap.Entry<ItemStack> entry : state.getAttachments().entries()) {
             dropAttachment(state, entry.getValue(), entry.getKey());
         }
     }
 
-    private Network createAndAddNetwork(NetworkState state) {
+    private Network createAndAddNetwork(INetworkState state) {
         Network network = new Network(nextNetworkId++, new PersistentNetwork(UUID.randomUUID(), state));
         addNetwork(network);
         return network;
@@ -136,7 +136,7 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
                 INetwork toNetwork = toNode.getNetwork();
                 extend(toNetwork, toPos, fromPos);
             } else {
-                NetworkState state = NetworkState.createInitial(BasicTree.createInitial(fromPos, toPos).toAbsolute());
+                INetworkState state = NetworkState.createInitial(BasicTree.createInitial(fromPos, toPos).toAbsolute());
                 createAndAddNetwork(state);
             }
         }

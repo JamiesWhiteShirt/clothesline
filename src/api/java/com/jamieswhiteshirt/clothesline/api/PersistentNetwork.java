@@ -4,9 +4,9 @@ import java.util.UUID;
 
 public final class PersistentNetwork {
     private final UUID uuid;
-    private final NetworkState state;
+    private final INetworkState state;
 
-    public PersistentNetwork(UUID uuid, NetworkState state) {
+    public PersistentNetwork(UUID uuid, INetworkState state) {
         this.uuid = uuid;
         this.state = state;
     }
@@ -15,7 +15,7 @@ public final class PersistentNetwork {
         return uuid;
     }
 
-    public NetworkState getState() {
+    public INetworkState getState() {
         return state;
     }
 }

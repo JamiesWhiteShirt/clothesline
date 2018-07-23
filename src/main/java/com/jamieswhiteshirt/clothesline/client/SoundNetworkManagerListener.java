@@ -20,7 +20,7 @@ public class SoundNetworkManagerListener<E extends INetworkEdge, N extends INetw
     private final SoundHandler soundHandler = Minecraft.getMinecraft().getSoundHandler();
     private final INetworkEventListener networkSoundListener = new INetworkEventListener() {
         @Override
-        public void onStateChanged(INetwork network, NetworkState previousState, NetworkState newState) {
+        public void onStateChanged(INetwork network, INetworkState previousState, INetworkState newState) {
             unlistenTo(previousState);
             listenTo(newState);
         }
@@ -30,7 +30,7 @@ public class SoundNetworkManagerListener<E extends INetworkEdge, N extends INetw
         }
     };
 
-    private void listenTo(NetworkState state) {
+    private void listenTo(INetworkState state) {
         for (Graph.Node node : state.getGraph().getNodes().values()) {
             ClotheslineRopeSound sound = new ClotheslineRopeSound(state, node);
             anchorSounds.put(node.getKey(), sound);
@@ -38,7 +38,7 @@ public class SoundNetworkManagerListener<E extends INetworkEdge, N extends INetw
         }
     }
 
-    private void unlistenTo(NetworkState state) {
+    private void unlistenTo(INetworkState state) {
         for (BlockPos pos : state.getGraph().getNodes().keySet()) {
             ClotheslineRopeSound sound = anchorSounds.remove(pos);
             if (sound != null) {
