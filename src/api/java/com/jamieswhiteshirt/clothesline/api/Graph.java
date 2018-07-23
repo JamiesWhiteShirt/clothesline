@@ -23,7 +23,7 @@ public final class Graph {
             return edges;
         }
 
-        private int floorEdgeIndex(EdgeKey key, int minIndex, int maxIndex) {
+        private int floorEdgeIndex(DeltaKey key, int minIndex, int maxIndex) {
             if (minIndex != maxIndex) {
                 int middleIndex = (minIndex + maxIndex) / 2;
                 int comparison = key.compareTo(edges.get(middleIndex).getKey());
@@ -39,11 +39,11 @@ public final class Graph {
             }
         }
 
-        private int floorEdgeIndex(EdgeKey key) {
+        private int floorEdgeIndex(DeltaKey key) {
             return floorEdgeIndex(key, 0, edges.size());
         }
 
-        public int getCornerOffset(EdgeKey key) {
+        public int getCornerOffset(DeltaKey key) {
             return edges.get(floorEdgeIndex(key) % edges.size()).fromOffset;
         }
 
@@ -63,19 +63,19 @@ public final class Graph {
     }
 
     public static final class Edge {
-        private final EdgeKey key;
+        private final DeltaKey key;
         private final Line line;
         private final int fromOffset;
         private final int toOffset;
 
-        public Edge(EdgeKey key, Line line, int fromOffset, int toOffset) {
+        public Edge(DeltaKey key, Line line, int fromOffset, int toOffset) {
             this.key = key;
             this.line = line;
             this.fromOffset = fromOffset;
             this.toOffset = toOffset;
         }
 
-        public EdgeKey getKey() {
+        public DeltaKey getKey() {
             return key;
         }
 

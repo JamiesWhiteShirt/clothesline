@@ -10,17 +10,17 @@ import java.util.stream.Collectors;
  */
 public final class Tree {
     public static final class Edge {
-        private final EdgeKey key;
+        private final DeltaKey key;
         private final int preMinOffset;
         private final Tree tree;
 
-        public Edge(EdgeKey key, int preMinOffset, Tree tree) {
+        public Edge(DeltaKey key, int preMinOffset, Tree tree) {
             this.key = key;
             this.preMinOffset = preMinOffset;
             this.tree = tree;
         }
 
-        public EdgeKey getKey() {
+        public DeltaKey getKey() {
             return key;
         }
 
@@ -119,7 +119,7 @@ public final class Tree {
         for (Edge edge : edges) {
             nodeBuilder.putEdge(edge.key, edge.tree.pos);
             GraphBuilder.NodeBuilder childNodeBuilder = edge.tree.buildGraph(graphBuilder);
-            childNodeBuilder.putEdge(edge.key.reverse(pos), pos);
+            childNodeBuilder.putEdge(edge.key.reverse(), pos);
         }
         return nodeBuilder;
     }

@@ -15,15 +15,15 @@ class TreeTest {
         BlockPos posB = new BlockPos(1, 0, 0);
         Tree tree = new Tree(
             posA, Collections.singletonList(new Tree.Edge(
-                new EdgeKey(posA, posB), 0,
+            DeltaKey.between(posA, posB), 0,
                 new Tree(posB, Collections.emptyList(), Measurements.UNIT_LENGTH, Measurements.UNIT_LENGTH)
             )), 0, Measurements.UNIT_LENGTH * 2
         );
 
         Graph graph = tree.buildGraph();
 
-        Graph.Edge a_b = new Graph.Edge(new EdgeKey(posA, posB), new Line(posA, posB), Measurements.UNIT_LENGTH * 0, Measurements.UNIT_LENGTH * 1);
-        Graph.Edge b_a = new Graph.Edge(new EdgeKey(posB, posA), new Line(posB, posA), Measurements.UNIT_LENGTH * 1, Measurements.UNIT_LENGTH * 2);
+        Graph.Edge a_b = new Graph.Edge(DeltaKey.between(posA, posB), new Line(posA, posB), Measurements.UNIT_LENGTH * 0, Measurements.UNIT_LENGTH * 1);
+        Graph.Edge b_a = new Graph.Edge(DeltaKey.between(posB, posA), new Line(posB, posA), Measurements.UNIT_LENGTH * 1, Measurements.UNIT_LENGTH * 2);
         Graph.Node a = new Graph.Node(posA, Collections.singletonList(a_b));
         Graph.Node b = new Graph.Node(posB, Collections.singletonList(b_a));
 

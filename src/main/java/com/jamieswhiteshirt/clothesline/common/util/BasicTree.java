@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.util;
 
-import com.jamieswhiteshirt.clothesline.api.EdgeKey;
+import com.jamieswhiteshirt.clothesline.api.DeltaKey;
 import com.jamieswhiteshirt.clothesline.api.Tree;
 import net.minecraft.util.math.BlockPos;
 
@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 /**
  * Minimal immutable data structure for a BlockPos tree for serialization purposes.
- * Children are expected to be ordered by {@link EdgeKey#compareTo(EdgeKey)} of their
+ * Children are expected to be ordered by {@link DeltaKey#compareTo(DeltaKey)} of their
  * their {@link #getPos()} with this {@link #getPos()} as the origin.
  */
 public final class BasicTree {
@@ -41,7 +41,7 @@ public final class BasicTree {
         int toOffset = fromOffset;
         ArrayList<Tree.Edge> edges = new ArrayList<>(children.size());
         for (BasicTree child : children) {
-            EdgeKey key = new EdgeKey(pos, child.pos);
+            DeltaKey key = DeltaKey.between(pos, child.pos);
             Tree staticChild = child.toAbsolute(toOffset + key.getLength());
             Tree.Edge staticEdge = new Tree.Edge(key, toOffset, staticChild);
             edges.add(staticEdge);

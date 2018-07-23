@@ -26,7 +26,7 @@ class NetworkStateTest {
         Tree tree = new Tree(
             from,
             Collections.singletonList(
-                new Tree.Edge(new EdgeKey(from, to), 0, Tree.empty(to, Measurements.UNIT_LENGTH))
+                new Tree.Edge(DeltaKey.between(from, to), 0, Tree.empty(to, Measurements.UNIT_LENGTH))
             ),
             0, Measurements.UNIT_LENGTH * 2
         );
