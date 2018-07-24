@@ -57,8 +57,9 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
         for (Graph.Node graphNode : graph.getNodes().values()) {
             networkNodes = networkNodes.put(graphNode.getKey(), createNetworkNode(graphNode, network));
         }
+        int i = 0;
         for (Graph.Edge graphEdge : graph.getEdges()) {
-            networkEdges = networkEdges.put(graphEdge.getLine(), createNetworkEdge(graphEdge, network));
+            networkEdges = networkEdges.put(graphEdge.getLine(), createNetworkEdge(graphEdge, network, i++));
         }
     }
 
@@ -74,7 +75,7 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
         network.removeEventListener(SPATIAL_INDEX_KEY);
     }
 
-    protected abstract E createNetworkEdge(Graph.Edge graphEdge, INetwork network);
+    protected abstract E createNetworkEdge(Graph.Edge graphEdge, INetwork network, int index);
 
     protected abstract N createNetworkNode(Graph.Node graphNode, INetwork network);
 

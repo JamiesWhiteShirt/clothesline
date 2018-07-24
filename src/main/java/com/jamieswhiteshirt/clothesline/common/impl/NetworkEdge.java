@@ -10,10 +10,12 @@ import java.util.Objects;
 public class NetworkEdge implements INetworkEdge {
     private final INetwork network;
     private final Graph.Edge graphEdge;
+    private final int index;
 
-    public NetworkEdge(INetwork network, Graph.Edge graphEdge) {
+    public NetworkEdge(INetwork network, Graph.Edge graphEdge, int index) {
         this.network = network;
         this.graphEdge = graphEdge;
+        this.index = index;
     }
 
     @Override
@@ -27,16 +29,21 @@ public class NetworkEdge implements INetworkEdge {
     }
 
     @Override
+    public int getIndex() {
+        return index;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NetworkEdge edge = (NetworkEdge) o;
-        return Objects.equals(network, edge.network) &&
+        return index == edge.index &&
             Objects.equals(graphEdge, edge.graphEdge);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(network, graphEdge);
+        return Objects.hash(network, index);
     }
 }

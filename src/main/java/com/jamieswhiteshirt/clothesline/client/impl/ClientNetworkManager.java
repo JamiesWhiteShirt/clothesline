@@ -26,8 +26,8 @@ public final class ClientNetworkManager extends NetworkManager<IClientNetworkEdg
     }
 
     @Override
-    protected ClientNetworkEdge createNetworkEdge(Graph.Edge graphEdge, INetwork network) {
-        return new ClientNetworkEdge(network, graphEdge);
+    protected ClientNetworkEdge createNetworkEdge(Graph.Edge graphEdge, INetwork network, int index) {
+        return new ClientNetworkEdge(network, graphEdge, index);
     }
 
     @Override

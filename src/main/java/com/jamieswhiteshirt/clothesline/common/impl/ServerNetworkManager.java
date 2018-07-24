@@ -60,8 +60,8 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
     }
 
     @Override
-    protected INetworkEdge createNetworkEdge(Graph.Edge graphEdge, INetwork network) {
-        return new NetworkEdge(network, graphEdge);
+    protected INetworkEdge createNetworkEdge(Graph.Edge graphEdge, INetwork network, int index) {
+        return new NetworkEdge(network, graphEdge, index);
     }
 
     @Override

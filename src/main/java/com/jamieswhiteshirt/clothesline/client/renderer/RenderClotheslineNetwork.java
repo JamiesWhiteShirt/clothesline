@@ -205,18 +205,6 @@ public final class RenderClotheslineNetwork {
         EntityRenderer.drawNameplate(fontRenderer, msg, (float)x, (float)y, (float)z, 0, yaw, pitch, false, false);
     }
 
-    private void debugRenderTree(Tree tree, double x, double y, double z, float yaw, float pitch, FontRenderer fontRenderer) {
-        List<Tree> children = tree.getChildren();
-        for (int i = 0; i < children.size(); i++) {
-            Tree child = children.get(i);
-            Vec3d pos = new Vec3d(tree.getPos()).scale(0.75D).add(new Vec3d(child.getPos()).scale(0.25D)).addVector(0.5D, 0.5D, 0.5D);
-
-            debugRenderText(Integer.toString(i), pos.x - x, pos.y - y, pos.z - z, yaw, pitch, fontRenderer);
-
-            debugRenderTree(child, x, y, z, yaw, pitch, fontRenderer);
-        }
-    }
-
     public void debugRender(
         RTreeMap<BlockPos, INetworkNode> nodesMap,
         RTreeMap<Line, IClientNetworkEdge> edgesMap,

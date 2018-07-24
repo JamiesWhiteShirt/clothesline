@@ -4,4 +4,6 @@ public interface INetworkEdge {
     INetwork getNetwork();
 
     Graph.Edge getGraphEdge();
+
+    int getIndex();
 }

@@ -5,50 +5,79 @@ import com.jamieswhiteshirt.clothesline.api.Graph;
 import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
+import com.jamieswhiteshirt.clothesline.api.util.MathUtil;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
+
+import java.util.List;
 
 public final class EdgeAttachmentProjector {
     private final int fromOffset;
     private final int toOffset;
     private final LineProjection projection;
     private final float angleY;
-    private final float angleDiff;
+    private final float fromAngleDiff;
+    private final float toAngleDiff;
 
-    private EdgeAttachmentProjector(int fromOffset, int toOffset, LineProjection projection, float angleY, float angleDiff) {
+    private EdgeAttachmentProjector(int fromOffset, int toOffset, LineProjection projection, float angleY, float fromAngleDiff, float toAngleDiff) {
         this.fromOffset = fromOffset;
         this.toOffset = toOffset;
         this.projection = projection;
         this.angleY = angleY;
-        this.angleDiff = angleDiff;
+        this.fromAngleDiff = fromAngleDiff;
+        this.toAngleDiff = toAngleDiff;
+    }
+
+    private static float angleBetween(Graph.Edge a, Graph.Edge b) {
+        return MathUtil.floorMod(b.getKey().getAngle() - a.getKey().getAngle(), 360.0F);
     }
 
     public static EdgeAttachmentProjector build(IClientNetworkEdge edge) {
         INetworkState state = edge.getNetwork().getState();
-        Graph.Edge previousGraphEdge = state.getGraph().getEdgeForOffset(Math.floorMod(edge.getGraphEdge().getFromOffset() - 1, state.getLoopLength()));
-        float angleY = edge.getGraphEdge().getKey().getAngle();
-        float angleDiff = (angleY - previousGraphEdge.getKey().getAngle() + 360.0F) % 360.0F;
+
+        List<Graph.Edge> edges = state.getGraph().getEdges();
+        Graph.Edge graphEdge = edge.getGraphEdge();
+        Graph.Edge fromGraphEdge = edges.get(Math.floorMod(edge.getIndex() - 1, edges.size()));
+        Graph.Edge toGraphEdge = edges.get(Math.floorMod(edge.getIndex() + 1, edges.size()));
+
         return new EdgeAttachmentProjector(
             edge.getGraphEdge().getFromOffset(),
             edge.getGraphEdge().getToOffset(),
             edge.getProjection(),
-            angleY,
-            angleDiff
+            graphEdge.getKey().getAngle(),
+            angleBetween(fromGraphEdge, graphEdge),
+            angleBetween(graphEdge, toGraphEdge)
         );
     }
 
+    private float calculateSwingAngle(double momentum, double offset) {
+        if (momentum == 0.0D) {
+            return 0.0F;
+        }
+        double t;
+        double angleDiff;
+        if (momentum > 0.0D) {
+            t = offset - fromOffset;
+            angleDiff = fromAngleDiff;
+        } else {
+            t = toOffset - offset;
+            angleDiff = toAngleDiff;
+        }
+        float speedRatio = (float) momentum / Measurements.UNIT_LENGTH;
+        float swingMax = 3.0F * (float) angleDiff * speedRatio * speedRatio;
+
+        return swingMax *
+            (float)(Math.exp(-t / (Measurements.UNIT_LENGTH * 2.0D))) *
+            MathHelper.sin((float)(Math.PI * t / Measurements.UNIT_LENGTH));
+    }
+
     public Matrix4f getL2WForAttachment(double momentum, double offset, float partialTicks) {
-        float speedRatio = (float) momentum / INetworkState.MAX_MOMENTUM;
-        float swingMax = angleDiff / 4.0F * speedRatio * speedRatio;
         double relativeOffset = offset - fromOffset;
         double edgePosScalar = relativeOffset / (toOffset - fromOffset);
         Vec3d pos = projection.projectRUF(-2.0D / 16.0D, 0.0D, edgePosScalar);
-
-        float swingAngle = swingMax *
-            (float)(Math.exp(-relativeOffset / (Measurements.UNIT_LENGTH * 2.0D))) *
-            MathHelper.sin((float)(relativeOffset / (INetworkState.MAX_MOMENTUM * 2.0D)));
+        float swingAngle = calculateSwingAngle(momentum, offset);
 
         return new Matrix4f()
             .translate(new Vector3f((float) pos.x, (float) pos.y, (float) pos.z))

@@ -13,8 +13,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class ClientNetworkEdge extends NetworkEdge implements IClientNetworkEdge {
     private final LineProjection projection;
 
-    public ClientNetworkEdge(INetwork network, Graph.Edge graphEdge) {
-        super(network, graphEdge);
+    public ClientNetworkEdge(INetwork network, Graph.Edge graphEdge, int index) {
+        super(network, graphEdge, index);
         projection = LineProjection.create(graphEdge.getLine());
     }
 
