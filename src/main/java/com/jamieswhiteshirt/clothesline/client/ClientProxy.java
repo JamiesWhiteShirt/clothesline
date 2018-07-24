@@ -78,6 +78,7 @@ public class ClientProxy extends CommonProxy {
         networkChannel.registerMessage(new SetNetworkStateMessageHandler(), SetNetworkStateMessage.class, 5, Side.CLIENT);
         networkChannel.registerMessage(new SetConnectorPosMessageHandler(), SetConnectorPosMessage.class, 10, Side.CLIENT);
         networkChannel.registerMessage(new UpdateNetworkMessageHandler(), UpdateNetworkMessage.class, 11, Side.CLIENT);
+        networkChannel.registerMessage(new SetAnchorHasCrankMessageHandler(), SetAnchorHasCrankMessage.class, 12, Side.CLIENT);
         return networkChannel;
     }
 
@@ -146,16 +147,19 @@ public class ClientProxy extends CommonProxy {
     @SubscribeEvent
     public void registerModels(ModelRegistryEvent event) {
         ModelLoader.setCustomModelResourceLocation(
-                ClotheslineItems.CLOTHESLINE, 0, new ModelResourceLocation(new ResourceLocation("clothesline", "clothesline"), "inventory")
+            ClotheslineItems.CLOTHESLINE, 0, new ModelResourceLocation(new ResourceLocation("clothesline", "clothesline"), "inventory")
         );
         ModelLoader.setCustomModelResourceLocation(
-                ClotheslineItems.CLOTHESLINE_ANCHOR, 0, new ModelResourceLocation(new ResourceLocation("clothesline", "clothesline_anchor"), "inventory")
+            ClotheslineItems.CLOTHESLINE_ANCHOR, 0, new ModelResourceLocation(new ResourceLocation("clothesline", "clothesline_anchor"), "inventory")
         );
         ModelLoader.setCustomModelResourceLocation(
-                ClotheslineItems.CLOTHESLINE_CRANK, 0, new ModelResourceLocation(new ResourceLocation("clothesline", "clothesline_crank"), "inventory")
+            ClotheslineItems.CLOTHESLINE_ANCHOR, 1, new ModelResourceLocation(new ResourceLocation("clothesline", "pulley_wheel"), "inventory")
         );
         ModelLoader.setCustomModelResourceLocation(
-                ClotheslineItems.PULLEY_WHEEL, 0, new ModelResourceLocation(new ResourceLocation("clothesline", "pulley_wheel"), "inventory")
+            ClotheslineItems.CLOTHESLINE_ANCHOR, 2, new ModelResourceLocation(new ResourceLocation("clothesline", "pulley_wheel_rope"), "inventory")
+        );
+        ModelLoader.setCustomModelResourceLocation(
+            ClotheslineItems.CRANK, 0, new ModelResourceLocation(new ResourceLocation("clothesline", "crank"), "inventory")
         );
     }
 

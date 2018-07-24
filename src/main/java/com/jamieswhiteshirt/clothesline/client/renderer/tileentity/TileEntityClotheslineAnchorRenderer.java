@@ -41,14 +41,19 @@ public class TileEntityClotheslineAnchorRenderer extends TileEntitySpecialRender
         GlStateManager.rotate(crankRotation, 0.0F, 1.0F, 0.0F);
 
         GlStateManager.pushMatrix();
-        GlStateManager.translate(0.0D, 4.0D / 16.0D, 0.0D);
-        renderItem.renderItem(new ItemStack(ClotheslineItems.CLOTHESLINE_CRANK), ItemCameraTransforms.TransformType.FIXED);
+        GlStateManager.scale(2.0D, 2.0D, 2.0D);
+        renderItem.renderItem(new ItemStack(ClotheslineItems.CLOTHESLINE_ANCHOR, 1, 1), ItemCameraTransforms.TransformType.FIXED);
+        if (node != null) {
+            renderItem.renderItem(new ItemStack(ClotheslineItems.CLOTHESLINE_ANCHOR, 1, 2), ItemCameraTransforms.TransformType.FIXED);
+        }
         GlStateManager.popMatrix();
 
-        GlStateManager.pushMatrix();
-        GlStateManager.scale(2.0D, 2.0D, 2.0D);
-        renderItem.renderItem(new ItemStack(ClotheslineItems.PULLEY_WHEEL), ItemCameraTransforms.TransformType.FIXED);
-        GlStateManager.popMatrix();
+        if (te.getHasCrank()) {
+            GlStateManager.pushMatrix();
+            GlStateManager.translate(0.0D, 4.0D / 16.0D, 0.0D);
+            renderItem.renderItem(new ItemStack(ClotheslineItems.CRANK), ItemCameraTransforms.TransformType.FIXED);
+            GlStateManager.popMatrix();
+        }
 
         GlStateManager.popMatrix();
     }

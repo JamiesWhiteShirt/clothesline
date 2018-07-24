@@ -12,7 +12,7 @@ public class ClotheslineBlocks {
 
     public static void registerBlocks(RegistryEvent.Register<Block> event) {
         event.getRegistry().register(
-                new BlockClotheslineAnchor().setUnlocalizedName("clothesline.clotheslineAnchor").setRegistryName(Clothesline.MODID, "clothesline_anchor")
+            new BlockClotheslineAnchor().setUnlocalizedName("clothesline.clotheslineAnchor").setRegistryName(Clothesline.MODID, "clothesline_anchor").setHardness(0.2F)
         );
     }
 }

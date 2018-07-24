@@ -201,7 +201,7 @@ public final class TreeBuilder {
     public SplitResult splitEdge(BlockPos edgePos) {
         for (int i = 0; i < this.edges.size(); i++) {
             Edge edge = this.edges.get(i);
-            if (edge.key.getDelta().equals(edgePos)) {
+            if (edge.tree.pos.equals(edgePos)) {
                 TreeBuilder edgeTree = new TreeBuilder(
                     this.pos,
                     new ArrayList<>(Collections.singletonList(new Edge(

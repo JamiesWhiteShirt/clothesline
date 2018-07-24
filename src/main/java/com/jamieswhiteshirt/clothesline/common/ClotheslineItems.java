@@ -11,15 +11,13 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 public class ClotheslineItems {
     public static final ItemClothesline CLOTHESLINE = Util.nonNullInjected();
     public static final ItemBlock CLOTHESLINE_ANCHOR = Util.nonNullInjected();
-    public static final Item CLOTHESLINE_CRANK = Util.nonNullInjected();
-    public static final Item PULLEY_WHEEL = Util.nonNullInjected();
+    public static final Item CRANK = Util.nonNullInjected();
 
     public static void registerItems(RegistryEvent.Register<Item> event) {
         event.getRegistry().registerAll(
-                new ItemClothesline().setUnlocalizedName("clothesline.clothesline").setRegistryName(Clothesline.MODID, "clothesline"),
-                new ItemBlock(ClotheslineBlocks.CLOTHESLINE_ANCHOR).setRegistryName(Clothesline.MODID, "clothesline_anchor"),
-                new Item().setUnlocalizedName("clothesline.clotheslineCrank").setRegistryName(Clothesline.MODID, "clothesline_crank"),
-                new Item().setUnlocalizedName("clothesline.pulleyWheel").setRegistryName(Clothesline.MODID, "pulley_wheel")
+            new ItemClothesline().setUnlocalizedName("clothesline.clothesline").setRegistryName(Clothesline.MODID, "clothesline"),
+            new ItemBlock(ClotheslineBlocks.CLOTHESLINE_ANCHOR).setRegistryName(Clothesline.MODID, "clothesline_anchor"),
+            new Item().setUnlocalizedName("clothesline.crank").setRegistryName(Clothesline.MODID, "crank")
         );
     }
 }

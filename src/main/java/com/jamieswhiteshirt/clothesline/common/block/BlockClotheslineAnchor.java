@@ -16,6 +16,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
@@ -155,15 +156,39 @@ public class BlockClotheslineAnchor extends BlockDirectional {
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
         ItemStack stack = player.getHeldItem(hand);
-        if (stack.getItem() != ClotheslineItems.CLOTHESLINE) {
-            TileEntityClotheslineAnchor tileEntity = (TileEntityClotheslineAnchor)world.getTileEntity(pos);
-            if (tileEntity != null) {
-                tileEntity.crank(6);
-                //world.playSound(player, pos, ClotheslineSoundEvents.PULLEY, SoundCategory.BLOCKS, 0.5F, 0.9F + world.rand.nextFloat() * 0.2F);
-            }
-            return true;
-        } else {
+        Item item = stack.getItem();
+
+        if (item == ClotheslineItems.CLOTHESLINE) {
             return false;
+        }
+
+        TileEntityClotheslineAnchor tileEntity = getTileEntity(world, pos);
+        if (tileEntity != null) {
+            if (item == ClotheslineItems.CRANK && !tileEntity.getHasCrank()) {
+                tileEntity.setHasCrank(true);
+                if (!player.capabilities.isCreativeMode) {
+                    stack.shrink(1);
+                }
+                return true;
+            } else if (tileEntity.getHasCrank()) {
+                tileEntity.crank(6);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public void onBlockClicked(World world, BlockPos pos, EntityPlayer player) {
+        TileEntityClotheslineAnchor tileEntity = getTileEntity(world, pos);
+        if (tileEntity != null) {
+            if (tileEntity.getHasCrank()) {
+                tileEntity.setHasCrank(false);
+                if (!world.isRemote && !player.capabilities.isCreativeMode) {
+                    spawnAsEntity(world, pos, new ItemStack(ClotheslineItems.CRANK));
+                }
+            }
         }
     }
 
@@ -173,14 +198,19 @@ public class BlockClotheslineAnchor extends BlockDirectional {
         if (manager != null) {
             manager.destroy(pos);
         }
+
+        TileEntityClotheslineAnchor tileEntity = getTileEntity(world, pos);
+        if (tileEntity != null && tileEntity.getHasCrank() && !world.isRemote) {
+            spawnAsEntity(world, pos, new ItemStack(ClotheslineItems.CRANK));
+        }
     }
 
     @Override
     @SideOnly(Side.CLIENT)
     public void randomDisplayTick(IBlockState state, World world, BlockPos pos, Random rand) {
-        TileEntity tileEntity = world.getTileEntity(pos);
-        if (tileEntity instanceof TileEntityClotheslineAnchor) {
-            INetworkNode networkNode = ((TileEntityClotheslineAnchor) tileEntity).getNetworkNode();
+        TileEntityClotheslineAnchor tileEntity = getTileEntity(world, pos);
+        if (tileEntity != null) {
+            INetworkNode networkNode = tileEntity.getNetworkNode();
             if (networkNode != null) {
                 INetworkState networkState = networkNode.getNetwork().getState();
                 int momentum = networkState.getMomentum();
@@ -190,5 +220,14 @@ public class BlockClotheslineAnchor extends BlockDirectional {
                 }
             }
         }
+    }
+
+    @Nullable
+    private TileEntityClotheslineAnchor getTileEntity(IBlockAccess world, BlockPos pos) {
+        TileEntity tileEntity = world.getTileEntity(pos);
+        if (tileEntity instanceof TileEntityClotheslineAnchor) {
+            return (TileEntityClotheslineAnchor) tileEntity;
+        }
+        return null;
     }
 }

@@ -4,6 +4,7 @@ import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.common.Util;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkItemHandler;
+import com.jamieswhiteshirt.clothesline.common.network.message.SetAnchorHasCrankMessage;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
@@ -13,6 +14,7 @@ import net.minecraft.util.ITickable;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.IItemHandler;
@@ -23,6 +25,22 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     @CapabilityInject(IItemHandler.class)
     private static final Capability<IItemHandler> ITEM_HANDLER_CAPABILITY = Util.nonNullInjected();
     private INetworkManager<?, ?> manager;
+    private boolean hasCrank;
+
+    public boolean getHasCrank() {
+        return hasCrank;
+    }
+
+    public void setHasCrank(boolean hasCrank) {
+        this.hasCrank = hasCrank;
+        if (!world.isRemote) {
+            Clothesline.instance.networkChannel.sendToAllTracking(
+                new SetAnchorHasCrankMessage(pos, hasCrank),
+                new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 0)
+            );
+        }
+    }
+
 
     @Nullable
     public INetworkNode getNetworkNode() {
@@ -79,21 +97,14 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         super.writeToNBT(compound);
-        /*if (networkUuid != null) {
-            NBTTagCompound networkTag = new NBTTagCompound();
-            networkTag.setUniqueId("Id", networkUuid);
-            compound.setTag("Network", networkTag);
-        }*/
+        compound.setBoolean("HasCrank", hasCrank);
         return compound;
     }
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
-        /*if (compound.hasKey("Network", Constants.NBT.TAG_COMPOUND)) {
-            NBTTagCompound networkTag = compound.getCompoundTag("Network");
-            networkUuid = networkTag.getUniqueId("Id");
-        }*/
+        hasCrank = compound.getBoolean("HasCrank");
     }
 
     @Override
