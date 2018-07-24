@@ -35,8 +35,8 @@ public class NBTSerialization {
 
     public static BasicPersistentNetwork readPersistentNetwork(NBTTagCompound compound) {
         return new BasicPersistentNetwork(
-                compound.getUniqueId("Uuid"),
-                readNetworkState(compound.getCompoundTag("State"))
+            compound.getUniqueId("Uuid"),
+            readNetworkState(compound.getCompoundTag("State"))
         );
     }
 
@@ -51,10 +51,10 @@ public class NBTSerialization {
 
     public static BasicNetworkState readNetworkState(NBTTagCompound nbt) {
         return new BasicNetworkState(
-                nbt.getInteger("Shift"),
-                nbt.getInteger("Momentum"),
-                readTree(nbt.getCompoundTag("Tree")),
-                readAttachments(nbt.getTagList("Attachments", Constants.NBT.TAG_COMPOUND))
+            nbt.getInteger("Shift"),
+            nbt.getInteger("Momentum"),
+            readTree(nbt.getCompoundTag("Tree")),
+            readAttachments(nbt.getTagList("Attachments", Constants.NBT.TAG_COMPOUND))
         );
     }
 
@@ -64,17 +64,19 @@ public class NBTSerialization {
         nbt.setInteger("y", tree.getPos().getY());
         nbt.setInteger("z", tree.getPos().getZ());
         nbt.setTag("Children", writeTrees(tree.getChildren()));
+        nbt.setInteger("BaseRotation", tree.getBaseRotation());
         return nbt;
     }
 
     public static BasicTree readTree(NBTTagCompound nbt) {
         return new BasicTree(
-                new BlockPos(
-                        nbt.getInteger("x"),
-                        nbt.getInteger("y"),
-                        nbt.getInteger("z")
-                ),
-                readTrees(nbt.getTagList("Children", Constants.NBT.TAG_COMPOUND))
+            new BlockPos(
+                nbt.getInteger("x"),
+                nbt.getInteger("y"),
+                nbt.getInteger("z")
+            ),
+            readTrees(nbt.getTagList("Children", Constants.NBT.TAG_COMPOUND)),
+            nbt.getInteger("BaseRotation")
         );
     }
 

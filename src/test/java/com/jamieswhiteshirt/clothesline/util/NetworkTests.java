@@ -30,9 +30,9 @@ class NetworkTests {
             this.tree = new Tree(
                 from,
                 Collections.singletonList(
-                    new Tree.Edge(DeltaKey.between(from, to), 0, Tree.empty(to, Measurements.UNIT_LENGTH))
+                    new Tree.Edge(DeltaKey.between(from, to), 0, Tree.empty(to, Measurements.UNIT_LENGTH, 0))
                 ),
-                0, Measurements.UNIT_LENGTH * 2
+                0, Measurements.UNIT_LENGTH * 2, 0
             );
             this.attachments = MutableSortedIntMap.empty(Measurements.UNIT_LENGTH * 2);
             this.state = new NetworkState(0, 0, 0, 0, tree, attachments);

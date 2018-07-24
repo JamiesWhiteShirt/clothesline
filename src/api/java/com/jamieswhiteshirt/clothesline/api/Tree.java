@@ -70,32 +70,26 @@ public final class Tree {
         }
     }
 
-    public static Tree empty(BlockPos pos, int offset) {
-        return new Tree(pos, Collections.emptyList(), offset, offset);
+    public static Tree empty(BlockPos pos, int offset, int baseRotation) {
+        return new Tree(pos, Collections.emptyList(), offset, offset, baseRotation);
     }
 
-    private final int minOffset;
-    private final int maxOffset;
     private final BlockPos pos;
     private final List<Edge> edges;
+    private final int minOffset;
+    private final int maxOffset;
+    private final int baseRotation;
 
-    public Tree(BlockPos pos, List<Edge> edges, int minOffset, int maxOffset) {
+    public Tree(BlockPos pos, List<Edge> edges, int minOffset, int maxOffset, int baseRotation) {
         this.pos = pos;
         this.edges = edges;
         this.minOffset = minOffset;
         this.maxOffset = maxOffset;
+        this.baseRotation = baseRotation;
     }
 
-    public int getMinOffset() {
-        return minOffset;
-    }
-
-    public int getMaxOffset() {
-        return maxOffset;
-    }
-
-    public int getLoopLength() {
-        return maxOffset - minOffset;
+    public BlockPos getPos() {
+        return pos;
     }
 
     public List<Edge> getEdges() {
@@ -106,8 +100,20 @@ public final class Tree {
         return edges.stream().map(edge -> edge.tree).collect(Collectors.toList());
     }
 
-    public BlockPos getPos() {
-        return pos;
+    public int getLoopLength() {
+        return maxOffset - minOffset;
+    }
+
+    public int getMinOffset() {
+        return minOffset;
+    }
+
+    public int getMaxOffset() {
+        return maxOffset;
+    }
+
+    public int getBaseRotation() {
+        return baseRotation;
     }
 
     public boolean isEmpty() {
@@ -115,7 +121,7 @@ public final class Tree {
     }
 
     private GraphBuilder.NodeBuilder buildGraph(GraphBuilder graphBuilder) {
-        GraphBuilder.NodeBuilder nodeBuilder = graphBuilder.putNode(pos);
+        GraphBuilder.NodeBuilder nodeBuilder = graphBuilder.putNode(pos, baseRotation);
         for (Edge edge : edges) {
             nodeBuilder.putEdge(edge.key, edge.tree.pos);
             GraphBuilder.NodeBuilder childNodeBuilder = edge.tree.buildGraph(graphBuilder);
@@ -137,6 +143,7 @@ public final class Tree {
         Tree that = (Tree) o;
         return minOffset == that.minOffset &&
             maxOffset == that.maxOffset &&
+            baseRotation == that.baseRotation &&
             Objects.equals(pos, that.pos) &&
             Objects.equals(edges, that.edges);
     }
@@ -149,10 +156,11 @@ public final class Tree {
     @Override
     public String toString() {
         return "Tree{" +
-            "minOffset=" + minOffset +
-            ", maxOffset=" + maxOffset +
-            ", pos=" + pos +
+            "pos=" + pos +
             ", edges=" + edges +
+            ", minOffset=" + minOffset +
+            ", maxOffset=" + maxOffset +
+            ", baseRotation=" + baseRotation +
             '}';
     }
 }

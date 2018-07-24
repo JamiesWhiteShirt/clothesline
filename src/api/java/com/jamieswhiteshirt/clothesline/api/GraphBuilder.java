@@ -10,9 +10,11 @@ public final class GraphBuilder {
     public final class NodeBuilder {
         private final BlockPos key;
         private final List<Graph.Edge> edges = new ArrayList<>();
+        private final int baseRotation;
 
-        private NodeBuilder(BlockPos key) {
+        private NodeBuilder(BlockPos key, int baseRotation) {
             this.key = key;
+            this.baseRotation = baseRotation;
         }
 
         private void putEdge(Graph.Edge edge, int minIndex, int maxIndex) {
@@ -48,15 +50,15 @@ public final class GraphBuilder {
         }
     }
 
-    public NodeBuilder putNode(BlockPos key) {
-        NodeBuilder nodeBuilder = new NodeBuilder(key);
+    public NodeBuilder putNode(BlockPos key, int baseRotation) {
+        NodeBuilder nodeBuilder = new NodeBuilder(key, baseRotation);
         nodes.put(key, nodeBuilder);
         return nodeBuilder;
     }
 
     public Graph build() {
         Map<BlockPos, Graph.Node> nodes = this.nodes.values().stream()
-            .map(nodeBuilder -> new Graph.Node(nodeBuilder.key, nodeBuilder.edges))
+            .map(nodeBuilder -> new Graph.Node(nodeBuilder.key, nodeBuilder.edges, nodeBuilder.baseRotation))
             .collect(Collectors.toMap(Graph.Node::getKey, Function.identity()));
         return new Graph(nodes, new ArrayList<>(allEdges));
     }

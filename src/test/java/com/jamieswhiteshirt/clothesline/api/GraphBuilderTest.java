@@ -15,16 +15,16 @@ class GraphBuilderTest {
         BlockPos posB = new BlockPos(1, 0, 0);
 
         GraphBuilder builder = new GraphBuilder();
-        GraphBuilder.NodeBuilder nodeA = builder.putNode(posA);
+        GraphBuilder.NodeBuilder nodeA = builder.putNode(posA, 0);
         nodeA.putEdge(DeltaKey.between(posA, posB), posB);
-        GraphBuilder.NodeBuilder nodeB = builder.putNode(posB);
+        GraphBuilder.NodeBuilder nodeB = builder.putNode(posB, 0);
         nodeB.putEdge(DeltaKey.between(posB, posA), posA);
         Graph graph = builder.build();
 
         Graph.Edge a_b = new Graph.Edge(DeltaKey.between(posA, posB), new Line(posA, posB), Measurements.UNIT_LENGTH * 0, Measurements.UNIT_LENGTH * 1);
         Graph.Edge b_a = new Graph.Edge(DeltaKey.between(posB, posA), new Line(posB, posA), Measurements.UNIT_LENGTH * 1, Measurements.UNIT_LENGTH * 2);
-        Graph.Node a = new Graph.Node(posA, Collections.singletonList(a_b));
-        Graph.Node b = new Graph.Node(posB, Collections.singletonList(b_a));
+        Graph.Node a = new Graph.Node(posA, Collections.singletonList(a_b), 0);
+        Graph.Node b = new Graph.Node(posB, Collections.singletonList(b_a), 0);
 
         Assertions.assertEquals(graph.getNodes().keySet(), new HashSet<>(Arrays.asList(posA, posB)));
         Assertions.assertEquals(graph.getNodes().get(posA), a);

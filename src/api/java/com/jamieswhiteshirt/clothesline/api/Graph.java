@@ -9,10 +9,12 @@ public final class Graph {
     public static final class Node {
         private final BlockPos key;
         private final List<Edge> edges;
+        private final int baseRotation;
 
-        public Node(BlockPos key, List<Edge> edges) {
+        public Node(BlockPos key, List<Edge> edges, int baseRotation) {
             this.key = key;
             this.edges = edges;
+            this.baseRotation = baseRotation;
         }
 
         public BlockPos getKey() {
@@ -21,6 +23,10 @@ public final class Graph {
 
         public List<Edge> getEdges() {
             return edges;
+        }
+
+        public int getBaseRotation() {
+            return baseRotation;
         }
 
         private int floorEdgeIndex(DeltaKey key, int minIndex, int maxIndex) {
@@ -52,13 +58,14 @@ public final class Graph {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Node node = (Node) o;
-            return Objects.equals(key, node.key) &&
+            return baseRotation == node.baseRotation &&
+                Objects.equals(key, node.key) &&
                 Objects.equals(edges, node.edges);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(key, edges);
+            return Objects.hash(key, edges, baseRotation);
         }
     }
 

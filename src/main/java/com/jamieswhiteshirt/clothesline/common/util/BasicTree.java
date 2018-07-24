@@ -14,19 +14,17 @@ import java.util.stream.Collectors;
  */
 public final class BasicTree {
     public static BasicTree fromAbsolute(Tree tree) {
-        return new BasicTree(tree.getPos(), tree.getChildren().stream().map(BasicTree::fromAbsolute).collect(Collectors.toList()));
-    }
-
-    public static BasicTree createInitial(BlockPos fromPos, BlockPos toPos) {
-        return new BasicTree(fromPos, Collections.singletonList(new BasicTree(toPos, Collections.emptyList())));
+        return new BasicTree(tree.getPos(), tree.getChildren().stream().map(BasicTree::fromAbsolute).collect(Collectors.toList()), tree.getBaseRotation());
     }
 
     private final BlockPos pos;
     private final List<BasicTree> children;
+    private final int baseRotation;
 
-    public BasicTree(BlockPos pos, List<BasicTree> children) {
+    public BasicTree(BlockPos pos, List<BasicTree> children, int baseRotation) {
         this.pos = pos;
         this.children = children;
+        this.baseRotation = baseRotation;
     }
 
     public BlockPos getPos() {
@@ -35,6 +33,10 @@ public final class BasicTree {
 
     public List<BasicTree> getChildren() {
         return children;
+    }
+
+    public int getBaseRotation() {
+        return baseRotation;
     }
 
     private Tree toAbsolute(int fromOffset) {
@@ -47,7 +49,7 @@ public final class BasicTree {
             edges.add(staticEdge);
             toOffset = staticEdge.getPostMaxOffset();
         }
-        return new Tree(pos, edges, fromOffset, toOffset);
+        return new Tree(pos, edges, fromOffset, toOffset, baseRotation);
     }
 
     public Tree toAbsolute() {
@@ -59,7 +61,8 @@ public final class BasicTree {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BasicTree basicTree = (BasicTree) o;
-        return Objects.equals(pos, basicTree.pos) &&
+        return baseRotation == basicTree.baseRotation &&
+            Objects.equals(pos, basicTree.pos) &&
             Objects.equals(children, basicTree.children);
     }
 
@@ -73,6 +76,7 @@ public final class BasicTree {
         return "BasicTree{" +
             "pos=" + pos +
             ", children=" + children +
+            ", baseRotation" + baseRotation +
             '}';
     }
 }

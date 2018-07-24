@@ -65,10 +65,10 @@ public class ByteBufSerialization {
             attachments[i] = new BasicAttachment(buf.readInt(), readItemStack(buf));
         }
         return new BasicNetworkState(
-                offset,
-                momentum,
-                tree,
-                Arrays.asList(attachments)
+            offset,
+            momentum,
+            tree,
+            Arrays.asList(attachments)
         );
     }
 
@@ -78,6 +78,7 @@ public class ByteBufSerialization {
         for (BasicTree child : tree.getChildren()) {
             writeTree(buf, child);
         }
+        buf.writeInt(tree.getBaseRotation());
     }
 
     public static BasicTree readTree(ByteBuf buf) {
@@ -87,7 +88,7 @@ public class ByteBufSerialization {
         for (int i = 0; i < numChildren; i++) {
             children[i] = readTree(buf);
         }
-        return new BasicTree(pos, Arrays.asList(children));
+        return new BasicTree(pos, Arrays.asList(children), buf.readInt());
     }
 
     public static void writeAttachment(ByteBuf buf, BasicAttachment attachment) {
@@ -97,8 +98,8 @@ public class ByteBufSerialization {
 
     public static BasicAttachment readAttachment(ByteBuf buf) {
         return new BasicAttachment(
-                buf.readInt(),
-                readItemStack(buf)
+            buf.readInt(),
+            readItemStack(buf)
         );
     }
 

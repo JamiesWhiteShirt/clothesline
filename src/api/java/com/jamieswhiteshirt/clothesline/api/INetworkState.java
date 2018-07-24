@@ -47,4 +47,6 @@ public interface INetworkState {
     int attachmentKeyToOffset(int attachmentKey);
 
     double attachmentKeyToOffset(double attachmentKey, float partialTicks);
+
+    boolean isEmpty();
 }

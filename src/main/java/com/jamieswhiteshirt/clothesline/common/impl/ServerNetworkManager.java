@@ -136,8 +136,9 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
                 INetwork toNetwork = toNode.getNetwork();
                 extend(toNetwork, toPos, fromPos);
             } else {
-                INetworkState state = NetworkState.createInitial(BasicTree.createInitial(fromPos, toPos).toAbsolute());
-                createAndAddNetwork(state);
+                NetworkStateBuilder stateBuilder = NetworkStateBuilder.emptyRoot(0, fromPos);
+                stateBuilder.addEdge(fromPos, toPos);
+                createAndAddNetwork(stateBuilder.toAbsolute());
             }
         }
 

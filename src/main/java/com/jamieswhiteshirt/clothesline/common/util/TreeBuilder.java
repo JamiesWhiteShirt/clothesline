@@ -39,11 +39,11 @@ public final class TreeBuilder {
         private final TreeBuilder tree;
         private final MutableSortedIntMap<ItemStack> postAttachments;
 
-        private static Edge fromAbsolute(Tree.Edge edge, MutableSortedIntMap<ItemStack> attachments) {
+        private static Edge fromAbsolute(Tree.Edge edge, MutableSortedIntMap<ItemStack> attachments, int shift) {
             return new Edge(
                 edge.getKey(),
                 attachments.shiftedSubMap(edge.getPreMinOffset(), edge.getPreMaxOffset()),
-                TreeBuilder.fromAbsolute(edge.getTree(), attachments),
+                TreeBuilder.fromAbsolute(edge.getTree(), attachments, shift),
                 attachments.shiftedSubMap(edge.getPostMinOffset(), edge.getPostMaxOffset())
             );
         }
@@ -83,19 +83,20 @@ public final class TreeBuilder {
         }
     }
 
-    public static TreeBuilder fromAbsolute(Tree tree, MutableSortedIntMap<ItemStack> attachments) {
+    public static TreeBuilder fromAbsolute(Tree tree, MutableSortedIntMap<ItemStack> attachments, int shift) {
         ArrayList<TreeBuilder.Edge> edges = new ArrayList<>(tree.getEdges().size());
         edges.sort(Comparator.comparing(a -> a.key));
         return new TreeBuilder(
             tree.getPos(),
             tree.getEdges().stream()
-                .map(edge -> Edge.fromAbsolute(edge, attachments))
-                .collect(Collectors.toList())
+                .map(edge -> Edge.fromAbsolute(edge, attachments, shift))
+                .collect(Collectors.toList()),
+            tree.getBaseRotation() + shift
         );
     }
 
     public static TreeBuilder emptyRoot(BlockPos root) {
-        return new TreeBuilder(root, new ArrayList<>());
+        return new TreeBuilder(root, new ArrayList<>(), 0);
     }
 
     private int findEdgeKeyIndex(DeltaKey deltaKey, int minIndex, int maxIndex) {
@@ -120,10 +121,12 @@ public final class TreeBuilder {
 
     private final BlockPos pos;
     private final List<Edge> edges;
+    private final int rotation;
 
-    private TreeBuilder(BlockPos pos, List<Edge> edges) {
+    private TreeBuilder(BlockPos pos, List<Edge> edges, int rotation) {
         this.pos = pos;
         this.edges = edges;
+        this.rotation = rotation;
     }
 
     public BlockPos getPos() {
@@ -194,7 +197,7 @@ public final class TreeBuilder {
         List<Edge> edges = this.edges.stream()
             .map(edge -> new Edge(edge.key, edge.preAttachments, emptyRoot(edge.tree.pos), edge.postAttachments))
             .collect(Collectors.toList());
-        TreeBuilder tree = new TreeBuilder(pos, edges);
+        TreeBuilder tree = new TreeBuilder(pos, edges, rotation);
         return new SplitResult(tree, this.edges.stream().map(edge -> edge.tree).collect(Collectors.toList()));
     }
 
@@ -209,7 +212,8 @@ public final class TreeBuilder {
                         edge.preAttachments,
                         emptyRoot(edge.tree.pos),
                         edge.postAttachments
-                    )))
+                    ))),
+                    rotation
                 );
 
                 TreeBuilder pastEdgeTree = edge.tree;
@@ -217,7 +221,7 @@ public final class TreeBuilder {
                 List<Edge> restEdges = new ArrayList<>(this.edges.size() - 1);
                 restEdges.addAll(this.edges.subList(0, i));
                 restEdges.addAll(this.edges.subList(i + 1, this.edges.size()));
-                TreeBuilder restTree = new TreeBuilder(this.pos, restEdges);
+                TreeBuilder restTree = new TreeBuilder(this.pos, restEdges, rotation);
 
                 return new SplitResult(edgeTree, Arrays.asList(restTree, pastEdgeTree));
             }
@@ -233,7 +237,7 @@ public final class TreeBuilder {
             treeEdges.add(staticEdge);
             toOffset = staticEdge.getPostMaxOffset();
         }
-        return new Tree(pos, treeEdges, fromOffset, toOffset);
+        return new Tree(pos, treeEdges, fromOffset, toOffset, rotation);
     }
 
     private Tree toAbsolute(List<MutableSortedIntMap<ItemStack>> stacksList, int fromOffset, DeltaKey fromDeltaKey) {
@@ -250,7 +254,7 @@ public final class TreeBuilder {
             treeEdges.add(staticEdge);
             toOffset = staticEdge.getPostMaxOffset();
         }
-        return new Tree(pos, treeEdges, fromOffset, toOffset);
+        return new Tree(pos, treeEdges, fromOffset, toOffset, rotation);
     }
 
     @Override

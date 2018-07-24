@@ -34,12 +34,17 @@ public final class NetworkStateBuilder {
 
     public static NetworkStateBuilder fromAbsolute(INetworkState state) {
         MutableSortedIntMap<ItemStack> attachments = state.getAttachments();
-        int midAttachmentKey = state.offsetToAttachmentKey(0);
-        MutableSortedIntMap<ItemStack> shiftedItemStacks = MutableSortedIntMap.concatenate(Arrays.asList(
-            attachments.shiftedSubMap(midAttachmentKey, attachments.getMaxKey()),
-            attachments.shiftedSubMap(0, midAttachmentKey)
-        ));
-        TreeBuilder tree = TreeBuilder.fromAbsolute(state.getTree(), shiftedItemStacks);
+        MutableSortedIntMap<ItemStack> itemStacks;
+        if (!state.isEmpty()) {
+            int midAttachmentKey = state.offsetToAttachmentKey(0);
+            itemStacks = MutableSortedIntMap.concatenate(Arrays.asList(
+                attachments.shiftedSubMap(midAttachmentKey, attachments.getMaxKey()),
+                attachments.shiftedSubMap(0, midAttachmentKey)
+            ));
+        } else {
+            itemStacks = state.getAttachments();
+        }
+        TreeBuilder tree = TreeBuilder.fromAbsolute(state.getTree(), itemStacks, state.getShift());
         return new NetworkStateBuilder(state.getMomentum(), tree);
     }
 

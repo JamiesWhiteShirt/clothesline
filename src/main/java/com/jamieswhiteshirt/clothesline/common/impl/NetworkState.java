@@ -167,4 +167,9 @@ public final class NetworkState implements INetworkState {
     public double attachmentKeyToOffset(double attachmentKey, float partialTicks) {
         return MathUtil.floorMod(attachmentKey + getShift(partialTicks), getLoopLength());
     }
+
+    @Override
+    public boolean isEmpty() {
+        return tree.isEmpty();
+    }
 }
