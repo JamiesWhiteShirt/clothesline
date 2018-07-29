@@ -63,6 +63,10 @@ public final class ClientNetworkManager extends NetworkManager<IClientNetworkEdg
     }
 
     @Override
-    public void destroy(BlockPos pos) {
+    public void destroyNode(BlockPos pos) {
+    }
+
+    @Override
+    public void createNode(BlockPos pos) {
     }
 }

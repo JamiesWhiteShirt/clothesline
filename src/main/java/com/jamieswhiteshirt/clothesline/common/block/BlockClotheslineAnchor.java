@@ -196,12 +196,20 @@ public class BlockClotheslineAnchor extends BlockDirectional {
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
         INetworkManager manager = world.getCapability(Clothesline.NETWORK_MANAGER_CAPABILITY, null);
         if (manager != null) {
-            manager.destroy(pos);
+            manager.destroyNode(pos);
         }
 
         TileEntityClotheslineAnchor tileEntity = getTileEntity(world, pos);
         if (tileEntity != null && tileEntity.getHasCrank() && !world.isRemote) {
             spawnAsEntity(world, pos, new ItemStack(ClotheslineItems.CRANK));
+        }
+    }
+
+    @Override
+    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+        INetworkManager manager = world.getCapability(Clothesline.NETWORK_MANAGER_CAPABILITY, null);
+        if (manager != null) {
+            manager.createNode(pos);
         }
     }
 

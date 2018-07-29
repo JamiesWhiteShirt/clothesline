@@ -23,7 +23,9 @@ public interface INetworkManager<E extends INetworkEdge, N extends INetworkNode>
 
     boolean connect(BlockPos fromPos, BlockPos toPos);
 
-    void destroy(BlockPos pos);
+    void createNode(BlockPos pos);
+
+    void destroyNode(BlockPos pos);
 
     void addEventListener(ResourceLocation key, INetworkManagerEventListener<E, N> eventListener);
 

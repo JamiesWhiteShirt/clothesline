@@ -153,7 +153,7 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
     }
 
     @Override
-    public final void destroy(BlockPos pos) {
+    public final void destroyNode(BlockPos pos) {
         INetworkNode node = getNodes().get(pos);
         if (node != null) {
             INetwork network = node.getNetwork();
@@ -162,6 +162,12 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
             removeNetwork(network);
             applySplitResult(state.splitRoot());
         }
+    }
+
+    @Override
+    public void createNode(BlockPos pos) {
+        NetworkStateBuilder stateBuilder = NetworkStateBuilder.emptyRoot(0, pos);
+        createAndAddNetwork(stateBuilder.toAbsolute());
     }
 
     @Override
