@@ -22,6 +22,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -171,7 +172,7 @@ public class BlockClotheslineAnchor extends BlockDirectional {
                 }
                 return true;
             } else if (tileEntity.getHasCrank()) {
-                tileEntity.crank(6);
+                tileEntity.crank(getCrankMultiplier(pos, hitX + pos.getX(), hitZ + pos.getZ(), player) * 5);
                 return true;
             }
         }
@@ -231,11 +232,24 @@ public class BlockClotheslineAnchor extends BlockDirectional {
     }
 
     @Nullable
-    private TileEntityClotheslineAnchor getTileEntity(IBlockAccess world, BlockPos pos) {
+    public static TileEntityClotheslineAnchor getTileEntity(IBlockAccess world, BlockPos pos) {
         TileEntity tileEntity = world.getTileEntity(pos);
         if (tileEntity instanceof TileEntityClotheslineAnchor) {
             return (TileEntityClotheslineAnchor) tileEntity;
         }
         return null;
+    }
+
+    public static int getCrankMultiplier(BlockPos pos, double hitX, double hitZ, EntityPlayer player) {
+        // Distance vector from the player to the center of the block
+        double dxCenter = 0.5D + pos.getX() - player.posX;
+        double dzCenter = 0.5D + pos.getZ() - player.posZ;
+        // Distance vector from the player to the hit
+        double dxHit = hitX - player.posX;
+        double dzHit = hitZ - player.posZ;
+        // Y component the cross product of the two vectors
+        // The sign of the Y component indicates which "side" of the anchor is hit, which determines which way to crank
+        double y = dzCenter * dxHit - dxCenter * dzHit;
+        return (int) Math.signum(y);
     }
 }

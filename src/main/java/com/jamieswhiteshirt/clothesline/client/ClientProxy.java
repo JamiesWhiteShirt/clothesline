@@ -16,8 +16,10 @@ import com.jamieswhiteshirt.clothesline.client.raytrace.NetworkRaytraceHit;
 import com.jamieswhiteshirt.clothesline.client.renderer.EdgeAttachmentProjector;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork;
 import com.jamieswhiteshirt.clothesline.client.renderer.tileentity.TileEntityClotheslineAnchorRenderer;
+import com.jamieswhiteshirt.clothesline.common.ClotheslineBlocks;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
 import com.jamieswhiteshirt.clothesline.common.CommonProxy;
+import com.jamieswhiteshirt.clothesline.common.block.BlockClotheslineAnchor;
 import com.jamieswhiteshirt.clothesline.common.item.ItemConnector;
 import com.jamieswhiteshirt.clothesline.common.network.message.*;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
@@ -28,6 +30,8 @@ import com.jamieswhiteshirt.clothesline.hooks.api.UseItemMovementEvent;
 import com.jamieswhiteshirt.rtree3i.Box;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -41,6 +45,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
@@ -64,6 +69,8 @@ import java.util.stream.Collectors;
 public class ClientProxy extends CommonProxy {
     private static final AxisAlignedBB attachmentBox = new AxisAlignedBB(-0.5D, -0.5D, -0.5D, 0.5D, 0.5D, 0.5D);
     private static final ResourceLocation SOUND_KEY = new ResourceLocation(Clothesline.MODID, "sound");
+    private static final ResourceLocation ICONS = new ResourceLocation(Clothesline.MODID, "textures/gui/icons.png");
+    private static final int ICONS_WIDTH = 32, ICONS_HEIGHT = 16;
 
     private RenderClotheslineNetwork renderClotheslineNetwork;
 
@@ -435,5 +442,32 @@ public class ClientProxy extends CommonProxy {
         }
 
         return hit;
+    }
+
+    @SubscribeEvent
+    public void onPostRenderCrosshair(RenderGameOverlayEvent.Post event) {
+        if (event.getType() == RenderGameOverlayEvent.ElementType.CROSSHAIRS) {
+            Minecraft mc = Minecraft.getMinecraft();
+            RayTraceResult objectMouseOver = mc.objectMouseOver;
+            if (objectMouseOver != null && objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK) {
+                BlockPos pos = objectMouseOver.getBlockPos();
+                if (mc.world.getBlockState(pos).getBlock() == ClotheslineBlocks.CLOTHESLINE_ANCHOR) {
+                    TileEntityClotheslineAnchor tileEntity = BlockClotheslineAnchor.getTileEntity(mc.world, pos);
+                    if (tileEntity != null && tileEntity.getHasCrank()) {
+                        Vec3d hitVec = objectMouseOver.hitVec;
+                        ScaledResolution scaledResolution = event.getResolution();
+
+                        int scaledWidth = scaledResolution.getScaledWidth();
+                        int scaledHeight = scaledResolution.getScaledHeight();
+                        int offset = BlockClotheslineAnchor.getCrankMultiplier(pos, hitVec.x, hitVec.z, mc.player) > 0 ? 0 : 16;
+
+                        mc.getTextureManager().bindTexture(ICONS);
+                        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+                        GlStateManager.enableAlpha();
+                        Gui.drawModalRectWithCustomSizedTexture(scaledWidth / 2 - 15 + offset, scaledHeight / 2 - 7, offset, 0, 16, 16, ICONS_WIDTH, ICONS_HEIGHT);
+                    }
+                }
+            }
+        }
     }
 }
