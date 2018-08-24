@@ -17,12 +17,12 @@ archivesBaseName = 'clothesline'
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
 minecraft {
-    version = '1.12.2-14.23.3.2665'
+    version = '1.12.2-14.23.4.2758'
     runDir = 'run'
 
     clientJvmArgs = serverJvmArgs = ['-Dfml.coreMods.load=$fmlCorePlugin']
 
-    mappings = 'snapshot_20180414'
+    mappings = 'stable_39'
 }
 
 repositories {

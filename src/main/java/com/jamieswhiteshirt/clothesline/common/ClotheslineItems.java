@@ -15,9 +15,9 @@ public class ClotheslineItems {
 
     public static void registerItems(RegistryEvent.Register<Item> event) {
         event.getRegistry().registerAll(
-            new ItemClothesline().setUnlocalizedName("clothesline.clothesline").setRegistryName(Clothesline.MODID, "clothesline"),
+            new ItemClothesline().setTranslationKey("clothesline.clothesline").setRegistryName(Clothesline.MODID, "clothesline"),
             new ItemBlock(ClotheslineBlocks.CLOTHESLINE_ANCHOR).setRegistryName(Clothesline.MODID, "clothesline_anchor"),
-            new Item().setUnlocalizedName("clothesline.crank").setRegistryName(Clothesline.MODID, "crank")
+            new Item().setTranslationKey("clothesline.crank").setRegistryName(Clothesline.MODID, "crank")
         );
     }
 }

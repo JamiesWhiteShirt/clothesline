@@ -57,7 +57,7 @@ import java.util.stream.Collectors;
 public class Clothesline {
     public static final String MODID = "clothesline";
     public static final String VERSION = "1.12.2-1.0.0.0-SNAPSHOT";
-    public static final String DEPENDENCIES = "required-after:clothesline-hooks;required-after:forge@[14.23.3.2665,)";
+    public static final String DEPENDENCIES = "required-after:clothesline-hooks;required-after:forge@[14.23.4.2705,)";
     public static final String CERTIFICATE_FINGERPRINT = "3bae2d07b93a5971335cb2de15230c19c103db32";
 
     @CapabilityInject(INetworkManager.class)
