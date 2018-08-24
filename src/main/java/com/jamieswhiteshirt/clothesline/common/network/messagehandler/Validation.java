@@ -2,6 +2,7 @@ package com.jamieswhiteshirt.clothesline.common.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.math.Vec3d;
 
@@ -13,7 +14,7 @@ public class Validation {
 
     public static boolean canReachPos(EntityPlayerMP player, Vec3d pos) {
         Vec3d delta = pos.subtract(player.posX, player.posY + 1.5D, player.posZ);
-        double maxDistance = player.interactionManager.getBlockReachDistance() + 1;
+        double maxDistance = player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).getAttributeValue() + 1;
         return delta.lengthSquared() < maxDistance * maxDistance;
     }
 }

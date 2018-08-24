@@ -109,7 +109,7 @@ public class Clothesline {
     public void registerBlocks(RegistryEvent.Register<Block> event) {
         ClotheslineBlocks.registerBlocks(event);
 
-        GameRegistry.registerTileEntity(TileEntityClotheslineAnchor.class, "clothesline:clothesline_anchor");
+        GameRegistry.registerTileEntity(TileEntityClotheslineAnchor.class, new ResourceLocation(MODID, "clothesline_anchor"));
     }
 
     @SubscribeEvent
