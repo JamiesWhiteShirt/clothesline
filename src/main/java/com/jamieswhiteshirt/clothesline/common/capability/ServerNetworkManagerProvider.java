@@ -41,17 +41,16 @@ public class ServerNetworkManagerProvider implements ICapabilitySerializable<NBT
     @Override
     @Nullable
     public NBTTagList serializeNBT() {
-        return NBTSerialization.writePersistentNetworks(instance.getNetworks().stream().map(
-            network -> new PersistentNetwork(network.getUuid(), network.getState())
-        ).map(
-            BasicPersistentNetwork::fromAbsolute
-        ).collect(Collectors.toList()));
+        return NBTSerialization.writePersistentNetworks(instance.getNetworks().stream()
+            .map(network -> new PersistentNetwork(network.getUuid(), network.getState()))
+            .map(BasicPersistentNetwork::fromAbsolute)
+            .collect(Collectors.toList()));
     }
 
     @Override
     public void deserializeNBT(NBTTagList nbt) {
-        instance.reset(NBTSerialization.readPersistentNetworks(nbt).stream().map(
-            BasicPersistentNetwork::toAbsolute
-        ).collect(Collectors.toList()));
+        instance.reset(NBTSerialization.readPersistentNetworks(nbt).stream()
+            .map(BasicPersistentNetwork::toAbsolute)
+            .collect(Collectors.toList()));
     }
 }

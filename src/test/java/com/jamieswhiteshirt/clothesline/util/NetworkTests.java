@@ -27,10 +27,11 @@ class NetworkTests {
         NetworkDataSet(BlockPos from, BlockPos to) {
             this.from = from;
             this.to = to;
+            DeltaKey key = DeltaKey.between(from, to);
             this.tree = new Tree(
                 from,
                 Collections.singletonList(
-                    new Tree.Edge(DeltaKey.between(from, to), 0, Tree.empty(to, Measurements.UNIT_LENGTH, 0))
+                    new Tree.Edge(DeltaKey.between(from, to), Measurements.calculateDistance(from, to), 0, Tree.empty(to, Measurements.UNIT_LENGTH, 0))
                 ),
                 0, Measurements.UNIT_LENGTH * 2, 0
             );

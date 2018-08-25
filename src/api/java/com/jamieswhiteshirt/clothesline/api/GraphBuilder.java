@@ -33,7 +33,8 @@ public final class GraphBuilder {
 
         public void putEdge(DeltaKey key, BlockPos toKey) {
             int minOffset = getMaxOffset();
-            Graph.Edge edge = new Graph.Edge(key, new Line(this.key, toKey), minOffset, minOffset + key.getLength());
+            int length = Measurements.calculateDistance(this.key, toKey);
+            Graph.Edge edge = new Graph.Edge(key, new Line(this.key, toKey), minOffset, minOffset + length);
             allEdges.add(edge);
             putEdge(edge, 0, edges.size());
         }

@@ -44,7 +44,7 @@ public class NBTSerialization {
         NBTTagCompound nbt = new NBTTagCompound();
         nbt.setInteger("Shift", state.getShift());
         nbt.setInteger("Momentum", state.getMomentum());
-        nbt.setTag("Tree", writeTree(state.getTree()));
+        nbt.setTag("Tree", writeBasicTree(state.getTree()));
         nbt.setTag("Attachments", writeAttachments(state.getAttachments()));
         return nbt;
     }
@@ -53,47 +53,61 @@ public class NBTSerialization {
         return new BasicNetworkState(
             nbt.getInteger("Shift"),
             nbt.getInteger("Momentum"),
-            readTree(nbt.getCompoundTag("Tree")),
+            readBasicTree(nbt.getCompoundTag("Tree")),
             readAttachments(nbt.getTagList("Attachments", Constants.NBT.TAG_COMPOUND))
         );
     }
 
-    public static NBTTagCompound writeTree(BasicTree tree) {
+    public static NBTTagCompound writeBasicTree(BasicTree tree) {
         NBTTagCompound nbt = new NBTTagCompound();
         nbt.setInteger("x", tree.getPos().getX());
         nbt.setInteger("y", tree.getPos().getY());
         nbt.setInteger("z", tree.getPos().getZ());
-        nbt.setTag("Children", writeTrees(tree.getChildren()));
+        nbt.setTag("Children", writeBasicTreeEdges(tree.getEdges()));
         nbt.setInteger("BaseRotation", tree.getBaseRotation());
         return nbt;
     }
 
-    public static BasicTree readTree(NBTTagCompound nbt) {
+    public static BasicTree readBasicTree(NBTTagCompound nbt) {
         return new BasicTree(
             new BlockPos(
                 nbt.getInteger("x"),
                 nbt.getInteger("y"),
                 nbt.getInteger("z")
             ),
-            readTrees(nbt.getTagList("Children", Constants.NBT.TAG_COMPOUND)),
+            readBasicTreeEdges(nbt.getTagList("Children", Constants.NBT.TAG_COMPOUND)),
             nbt.getInteger("BaseRotation")
         );
     }
 
-    public static NBTTagList writeTrees(List<BasicTree> trees) {
+    public static NBTTagList writeBasicTreeEdges(List<BasicTree.Edge> edges) {
         NBTTagList nbt = new NBTTagList();
-        for (BasicTree tree : trees) {
-            nbt.appendTag(writeTree(tree));
+        for (BasicTree.Edge edge : edges) {
+            nbt.appendTag(writeBasicTreeEdge(edge));
         }
         return nbt;
     }
 
-    public static List<BasicTree> readTrees(NBTTagList nbt) {
-        BasicTree[] trees = new BasicTree[nbt.tagCount()];
+    public static List<BasicTree.Edge> readBasicTreeEdges(NBTTagList nbt) {
+        BasicTree.Edge[] edges = new BasicTree.Edge[nbt.tagCount()];
         for (int i = 0; i < nbt.tagCount(); i++) {
-            trees[i] = readTree(nbt.getCompoundTagAt(i));
+            edges[i] = readBasicTreeEdge(nbt.getCompoundTagAt(i));
         }
-        return Arrays.asList(trees);
+        return Arrays.asList(edges);
+    }
+
+    public static NBTTagCompound writeBasicTreeEdge(BasicTree.Edge edge) {
+        NBTTagCompound nbt = new NBTTagCompound();
+        nbt.setInteger("Length", edge.getLength());
+        nbt.setTag("Tree", writeBasicTree(edge.getTree()));
+        return nbt;
+    }
+
+    public static BasicTree.Edge readBasicTreeEdge(NBTTagCompound nbt) {
+        return new BasicTree.Edge(
+            nbt.getInteger("Length"),
+            readBasicTree(nbt.getCompoundTag("Tree"))
+        );
     }
 
     public static NBTTagList writeAttachments(List<BasicAttachment> attachments) {

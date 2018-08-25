@@ -15,7 +15,9 @@ class TreeTest {
         BlockPos posB = new BlockPos(1, 0, 0);
         Tree tree = new Tree(
             posA, Collections.singletonList(new Tree.Edge(
-            DeltaKey.between(posA, posB), 0,
+                DeltaKey.between(posA, posB),
+                Measurements.calculateDistance(posA, posB),
+                0,
                 Tree.empty(posB, Measurements.UNIT_LENGTH, 0)
             )), 0, Measurements.UNIT_LENGTH * 2, 0
         );

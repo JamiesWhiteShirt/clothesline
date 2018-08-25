@@ -45,7 +45,7 @@ public class ByteBufSerialization {
     }
 
     public static void writeNetworkState(ByteBuf buf, BasicNetworkState state) {
-        writeTree(buf, state.getTree());
+        writeBasicTree(buf, state.getTree());
         buf.writeInt(state.getShift());
         buf.writeInt(state.getMomentum());
         buf.writeShort(state.getAttachments().size());
@@ -56,7 +56,7 @@ public class ByteBufSerialization {
     }
 
     public static BasicNetworkState readNetworkState(ByteBuf buf) {
-        BasicTree tree = readTree(buf);
+        BasicTree tree = readBasicTree(buf);
         int offset = buf.readInt();
         int momentum = buf.readInt();
         int numAttachments = buf.readUnsignedShort();
@@ -72,23 +72,27 @@ public class ByteBufSerialization {
         );
     }
 
-    public static void writeTree(ByteBuf buf, BasicTree tree) {
+    public static void writeBasicTree(ByteBuf buf, BasicTree tree) {
         buf.writeLong(tree.getPos().toLong());
-        buf.writeByte(tree.getChildren().size());
-        for (BasicTree child : tree.getChildren()) {
-            writeTree(buf, child);
+        buf.writeByte(tree.getEdges().size());
+        for (BasicTree.Edge edge : tree.getEdges()) {
+            buf.writeShort(edge.getLength());
+            writeBasicTree(buf, edge.getTree());
         }
         buf.writeInt(tree.getBaseRotation());
     }
 
-    public static BasicTree readTree(ByteBuf buf) {
+    public static BasicTree readBasicTree(ByteBuf buf) {
         BlockPos pos = BlockPos.fromLong(buf.readLong());
         int numChildren = buf.readUnsignedByte();
-        BasicTree[] children = new BasicTree[numChildren];
+        BasicTree.Edge[] edges = new BasicTree.Edge[numChildren];
         for (int i = 0; i < numChildren; i++) {
-            children[i] = readTree(buf);
+            edges[i] = new BasicTree.Edge(
+                buf.readUnsignedShort(),
+                readBasicTree(buf)
+            );
         }
-        return new BasicTree(pos, Arrays.asList(children), buf.readInt());
+        return new BasicTree(pos, Arrays.asList(edges), buf.readInt());
     }
 
     public static void writeAttachment(ByteBuf buf, BasicAttachment attachment) {

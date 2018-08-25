@@ -35,6 +35,7 @@ public final class TreeBuilder {
 
     private static final class Edge {
         private final DeltaKey key;
+        private final int length;
         private final MutableSortedIntMap<ItemStack> preAttachments;
         private final TreeBuilder tree;
         private final MutableSortedIntMap<ItemStack> postAttachments;
@@ -42,28 +43,30 @@ public final class TreeBuilder {
         private static Edge fromAbsolute(Tree.Edge edge, MutableSortedIntMap<ItemStack> attachments, int shift) {
             return new Edge(
                 edge.getKey(),
+                edge.getLength(),
                 attachments.shiftedSubMap(edge.getPreMinOffset(), edge.getPreMaxOffset()),
                 TreeBuilder.fromAbsolute(edge.getTree(), attachments, shift),
                 attachments.shiftedSubMap(edge.getPostMinOffset(), edge.getPostMaxOffset())
             );
         }
 
-        private Edge(DeltaKey key, MutableSortedIntMap<ItemStack> preAttachments, TreeBuilder tree, MutableSortedIntMap<ItemStack> postAttachments) {
+        private Edge(DeltaKey key, int length, MutableSortedIntMap<ItemStack> preAttachments, TreeBuilder tree, MutableSortedIntMap<ItemStack> postAttachments) {
             this.key = key;
+            this.length = length;
             this.preAttachments = preAttachments;
             this.tree = tree;
             this.postAttachments = postAttachments;
         }
 
         private Edge reverse(TreeBuilder parent) {
-            return new Edge(key.reverse(), postAttachments, parent, preAttachments);
+            return new Edge(key.reverse(), length, postAttachments, parent, preAttachments);
         }
 
         private Tree.Edge toAbsolute(List<MutableSortedIntMap<ItemStack>> attachmentsList, int fromOffset) {
             attachmentsList.add(preAttachments);
-            Tree tree = this.tree.toAbsolute(attachmentsList, fromOffset + key.getLength(), key.reverse());
+            Tree tree = this.tree.toAbsolute(attachmentsList, fromOffset + length, key.reverse());
             attachmentsList.add(postAttachments);
-            return new Tree.Edge(key, fromOffset, tree);
+            return new Tree.Edge(key, length, fromOffset, tree);
         }
 
         @Override
@@ -152,8 +155,8 @@ public final class TreeBuilder {
     }
 
     private void addChild(TreeBuilder child) {
-        DeltaKey key = DeltaKey.between(pos, child.pos);
-        addEdge(new Edge(key, MutableSortedIntMap.empty(key.getLength()), child, MutableSortedIntMap.empty(key.getLength())));
+        int length = Measurements.calculateDistance(pos, child.pos);
+        addEdge(new Edge(DeltaKey.between(pos, child.pos), length, MutableSortedIntMap.empty(length), child, MutableSortedIntMap.empty(length)));
     }
 
     private void addEdge(Edge edge) {
@@ -195,7 +198,7 @@ public final class TreeBuilder {
 
     public SplitResult splitNode() {
         List<Edge> edges = this.edges.stream()
-            .map(edge -> new Edge(edge.key, edge.preAttachments, emptyRoot(edge.tree.pos), edge.postAttachments))
+            .map(edge -> new Edge(edge.key, edge.length, edge.preAttachments, emptyRoot(edge.tree.pos), edge.postAttachments))
             .collect(Collectors.toList());
         TreeBuilder tree = new TreeBuilder(pos, edges, rotation);
         return new SplitResult(tree, this.edges.stream().map(edge -> edge.tree).collect(Collectors.toList()));
@@ -209,6 +212,7 @@ public final class TreeBuilder {
                     this.pos,
                     new ArrayList<>(Collections.singletonList(new Edge(
                         edge.key,
+                        edge.length,
                         edge.preAttachments,
                         emptyRoot(edge.tree.pos),
                         edge.postAttachments

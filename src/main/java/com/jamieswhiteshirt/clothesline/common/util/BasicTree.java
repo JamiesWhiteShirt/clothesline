@@ -13,17 +13,68 @@ import java.util.stream.Collectors;
  * their {@link #getPos()} with this {@link #getPos()} as the origin.
  */
 public final class BasicTree {
+    public static final class Edge {
+        private final int length;
+        private final BasicTree tree;
+
+        public Edge(int length, BasicTree tree) {
+            this.length = length;
+            this.tree = tree;
+        }
+
+        public int getLength() {
+            return length;
+        }
+
+        public BasicTree getTree() {
+            return tree;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Edge edge = (Edge) o;
+            return length == edge.length &&
+                Objects.equals(tree, edge.tree);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(length, tree);
+        }
+
+        @Override
+        public String toString() {
+            return "Edge{" +
+                "length=" + length +
+                ", tree=" + tree +
+                '}';
+        }
+
+        public static Edge fromAbsolute(Tree.Edge edge) {
+            return new Edge(
+                edge.getLength(),
+                BasicTree.fromAbsolute(edge.getTree())
+            );
+        }
+    }
+
     public static BasicTree fromAbsolute(Tree tree) {
-        return new BasicTree(tree.getPos(), tree.getChildren().stream().map(BasicTree::fromAbsolute).collect(Collectors.toList()), tree.getBaseRotation());
+        return new BasicTree(
+            tree.getPos(),
+            tree.getEdges().stream().map(Edge::fromAbsolute).collect(Collectors.toList()),
+            tree.getBaseRotation()
+        );
     }
 
     private final BlockPos pos;
-    private final List<BasicTree> children;
+    private final List<Edge> edges;
     private final int baseRotation;
 
-    public BasicTree(BlockPos pos, List<BasicTree> children, int baseRotation) {
+    public BasicTree(BlockPos pos, List<Edge> edges, int baseRotation) {
         this.pos = pos;
-        this.children = children;
+        this.edges = edges;
         this.baseRotation = baseRotation;
     }
 
@@ -31,8 +82,8 @@ public final class BasicTree {
         return pos;
     }
 
-    public List<BasicTree> getChildren() {
-        return children;
+    public List<Edge> getEdges() {
+        return edges;
     }
 
     public int getBaseRotation() {
@@ -41,15 +92,15 @@ public final class BasicTree {
 
     private Tree toAbsolute(int fromOffset) {
         int toOffset = fromOffset;
-        ArrayList<Tree.Edge> edges = new ArrayList<>(children.size());
-        for (BasicTree child : children) {
-            DeltaKey key = DeltaKey.between(pos, child.pos);
-            Tree staticChild = child.toAbsolute(toOffset + key.getLength());
-            Tree.Edge staticEdge = new Tree.Edge(key, toOffset, staticChild);
-            edges.add(staticEdge);
-            toOffset = staticEdge.getPostMaxOffset();
+        ArrayList<Tree.Edge> edgesOut = new ArrayList<>(edges.size());
+        for (Edge edge : edges) {
+            DeltaKey key = DeltaKey.between(pos, edge.tree.pos);
+            Tree treeOut = edge.tree.toAbsolute(toOffset + edge.length);
+            Tree.Edge edgeOut = new Tree.Edge(key, edge.length, toOffset, treeOut);
+            edgesOut.add(edgeOut);
+            toOffset = edgeOut.getPostMaxOffset();
         }
-        return new Tree(pos, edges, fromOffset, toOffset, baseRotation);
+        return new Tree(pos, edgesOut, fromOffset, toOffset, baseRotation);
     }
 
     public Tree toAbsolute() {
@@ -63,19 +114,19 @@ public final class BasicTree {
         BasicTree basicTree = (BasicTree) o;
         return baseRotation == basicTree.baseRotation &&
             Objects.equals(pos, basicTree.pos) &&
-            Objects.equals(children, basicTree.children);
+            Objects.equals(edges, basicTree.edges);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(pos, children);
+        return Objects.hash(pos, edges);
     }
 
     @Override
     public String toString() {
         return "BasicTree{" +
             "pos=" + pos +
-            ", children=" + children +
+            ", edges=" + edges +
             ", baseRotation" + baseRotation +
             '}';
     }

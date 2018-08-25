@@ -30,8 +30,11 @@ class NetworkStateTest {
         BlockPos to = new BlockPos(1, 0, 0);
         Tree tree = new Tree(
             from,
-            Collections.singletonList(
-                new Tree.Edge(DeltaKey.between(from, to), 0, Tree.empty(to, Measurements.UNIT_LENGTH, 0))
+            Collections.singletonList(new Tree.Edge(
+                DeltaKey.between(from, to),
+                Measurements.calculateDistance(from, to),
+                0,
+                Tree.empty(to, Measurements.UNIT_LENGTH, 0))
             ),
             0, Measurements.UNIT_LENGTH * 2, 0
         );

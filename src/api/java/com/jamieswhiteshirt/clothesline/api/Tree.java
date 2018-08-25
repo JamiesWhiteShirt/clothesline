@@ -11,17 +11,23 @@ import java.util.stream.Collectors;
 public final class Tree {
     public static final class Edge {
         private final DeltaKey key;
+        private final int length;
         private final int preMinOffset;
         private final Tree tree;
 
-        public Edge(DeltaKey key, int preMinOffset, Tree tree) {
+        public Edge(DeltaKey key, int length, int preMinOffset, Tree tree) {
             this.key = key;
+            this.length = length;
             this.preMinOffset = preMinOffset;
             this.tree = tree;
         }
 
         public DeltaKey getKey() {
             return key;
+        }
+
+        public int getLength() {
+            return length;
         }
 
         public Tree getTree() {
@@ -33,7 +39,7 @@ public final class Tree {
         }
 
         public int getPreMaxOffset() {
-            return preMinOffset + key.getLength();
+            return preMinOffset + length;
         }
 
         public int getPostMinOffset() {
@@ -41,7 +47,7 @@ public final class Tree {
         }
 
         public int getPostMaxOffset() {
-            return tree.maxOffset + key.getLength();
+            return tree.maxOffset + length;
         }
 
         @Override
@@ -49,21 +55,22 @@ public final class Tree {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Edge edge = (Edge) o;
-            return preMinOffset == edge.preMinOffset &&
+            return length == edge.length &&
+                preMinOffset == edge.preMinOffset &&
                 Objects.equals(key, edge.key) &&
                 Objects.equals(tree, edge.tree);
         }
 
         @Override
         public int hashCode() {
-
-            return Objects.hash(key, preMinOffset, tree);
+            return Objects.hash(key, length, preMinOffset, tree);
         }
 
         @Override
         public String toString() {
             return "Edge{" +
                 "key=" + key +
+                ", length=" + length +
                 ", preMinOffset=" + preMinOffset +
                 ", tree=" + tree +
                 '}';
@@ -94,10 +101,6 @@ public final class Tree {
 
     public List<Edge> getEdges() {
         return edges;
-    }
-
-    public List<Tree> getChildren() {
-        return edges.stream().map(edge -> edge.tree).collect(Collectors.toList());
     }
 
     public int getLoopLength() {
