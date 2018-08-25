@@ -1,5 +1,6 @@
 package com.jamieswhiteshirt.clothesline.util;
 
+import com.jamieswhiteshirt.clothesline.api.EdgeComparator;
 import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.Tree;
 import com.jamieswhiteshirt.clothesline.common.util.NetworkStateBuilder;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 class NetworkStateBuilderTest {
@@ -59,6 +61,23 @@ class NetworkStateBuilderTest {
         Assertions.assertEquals(Collections.singletonList(ab), splitResult.getSubStates());
     }
 
+    void assertStrictlyOrdered(List<BlockPos> vecs) {
+        for (int i = 1; i < vecs.size(); i++) {
+            for (int j = 0; j < vecs.size(); j++) {
+                BlockPos a = vecs.get(i);
+                BlockPos b = vecs.get(j);
+                int c = EdgeComparator.getInstance().compare(a, b);
+                if (i < j) {
+                    Assertions.assertTrue(c < 0, "Expected " + a + " to be less than " + b);
+                } else if (i > j) {
+                    Assertions.assertTrue(c > 0, "Expected " + a + " to be greater than " + b);
+                } else {
+                    Assertions.assertEquals(0, c, "Expected " + a + " to equal " + b);
+                }
+            }
+        }
+    }
+
     @Test
     void treePreservesRootAndHasStrictlyOrderedEdges() {
         BlockPos origin = new BlockPos(0, 0, 0);
@@ -68,8 +87,6 @@ class NetworkStateBuilderTest {
         Tree tree = builder.toAbsolute().getTree();
         Assertions.assertEquals(origin, tree.getPos());
         List<Tree.Edge> edges = tree.getEdges();
-        for (int i = 1; i < edges.size(); i++) {
-            Assertions.assertTrue(edges.get(i - 1).getKey().compareTo(edges.get(i).getKey()) < 0);
-        }
+        assertStrictlyOrdered(edges.stream().map(Tree.Edge::getDelta).collect(Collectors.toList()));
     }
 }

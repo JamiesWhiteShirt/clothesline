@@ -2,23 +2,24 @@ package com.jamieswhiteshirt.clothesline.api;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 
 import java.util.*;
 
 public final class Graph {
     public static final class Node {
-        private final BlockPos key;
+        private final BlockPos pos;
         private final List<Edge> edges;
         private final int baseRotation;
 
-        public Node(BlockPos key, List<Edge> edges, int baseRotation) {
-            this.key = key;
+        public Node(BlockPos pos, List<Edge> edges, int baseRotation) {
+            this.pos = pos;
             this.edges = edges;
             this.baseRotation = baseRotation;
         }
 
-        public BlockPos getKey() {
-            return key;
+        public BlockPos getPos() {
+            return pos;
         }
 
         public List<Edge> getEdges() {
@@ -29,14 +30,14 @@ public final class Graph {
             return baseRotation;
         }
 
-        private int floorEdgeIndex(DeltaKey key, int minIndex, int maxIndex) {
+        private int floorDeltaIndex(Vec3i delta, int minIndex, int maxIndex) {
             if (minIndex != maxIndex) {
                 int middleIndex = (minIndex + maxIndex) / 2;
-                int comparison = key.compareTo(edges.get(middleIndex).getKey());
+                int comparison = EdgeComparator.getInstance().compare(delta, edges.get(middleIndex).getDelta());
                 if (comparison < 0) {
-                    return floorEdgeIndex(key, minIndex, middleIndex);
+                    return floorDeltaIndex(delta, minIndex, middleIndex);
                 } else if (comparison > 0) {
-                    return floorEdgeIndex(key, middleIndex + 1, maxIndex);
+                    return floorDeltaIndex(delta, middleIndex + 1, maxIndex);
                 } else {
                     return middleIndex;
                 }
@@ -45,12 +46,12 @@ public final class Graph {
             }
         }
 
-        private int floorEdgeIndex(DeltaKey key) {
-            return floorEdgeIndex(key, 0, edges.size());
+        private int floorDeltaIndex(Vec3i delta) {
+            return floorDeltaIndex(delta, 0, edges.size());
         }
 
-        public int getCornerOffset(DeltaKey key) {
-            return edges.get(floorEdgeIndex(key) % edges.size()).fromOffset;
+        public int getOffsetForDelta(Vec3i delta) {
+            return edges.get(floorDeltaIndex(delta) % edges.size()).fromOffset;
         }
 
         @Override
@@ -59,31 +60,31 @@ public final class Graph {
             if (o == null || getClass() != o.getClass()) return false;
             Node node = (Node) o;
             return baseRotation == node.baseRotation &&
-                Objects.equals(key, node.key) &&
+                Objects.equals(pos, node.pos) &&
                 Objects.equals(edges, node.edges);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(key, edges, baseRotation);
+            return Objects.hash(pos, edges, baseRotation);
         }
     }
 
     public static final class Edge {
-        private final DeltaKey key;
+        private final BlockPos delta;
         private final Line line;
         private final int fromOffset;
         private final int toOffset;
 
-        public Edge(DeltaKey key, Line line, int fromOffset, int toOffset) {
-            this.key = key;
+        public Edge(BlockPos delta, Line line, int fromOffset, int toOffset) {
+            this.delta = delta;
             this.line = line;
             this.fromOffset = fromOffset;
             this.toOffset = toOffset;
         }
 
-        public DeltaKey getKey() {
-            return key;
+        public BlockPos getDelta() {
+            return delta;
         }
 
         public Line getLine() {

@@ -34,7 +34,7 @@ public final class TreeBuilder {
     }
 
     private static final class Edge {
-        private final DeltaKey key;
+        private final BlockPos delta;
         private final int length;
         private final MutableSortedIntMap<ItemStack> preAttachments;
         private final TreeBuilder tree;
@@ -42,7 +42,7 @@ public final class TreeBuilder {
 
         private static Edge fromAbsolute(Tree.Edge edge, MutableSortedIntMap<ItemStack> attachments, int shift) {
             return new Edge(
-                edge.getKey(),
+                edge.getDelta(),
                 edge.getLength(),
                 attachments.shiftedSubMap(edge.getPreMinOffset(), edge.getPreMaxOffset()),
                 TreeBuilder.fromAbsolute(edge.getTree(), attachments, shift),
@@ -50,8 +50,8 @@ public final class TreeBuilder {
             );
         }
 
-        private Edge(DeltaKey key, int length, MutableSortedIntMap<ItemStack> preAttachments, TreeBuilder tree, MutableSortedIntMap<ItemStack> postAttachments) {
-            this.key = key;
+        private Edge(BlockPos delta, int length, MutableSortedIntMap<ItemStack> preAttachments, TreeBuilder tree, MutableSortedIntMap<ItemStack> postAttachments) {
+            this.delta = delta;
             this.length = length;
             this.preAttachments = preAttachments;
             this.tree = tree;
@@ -59,14 +59,14 @@ public final class TreeBuilder {
         }
 
         private Edge reverse(TreeBuilder parent) {
-            return new Edge(key.reverse(), length, postAttachments, parent, preAttachments);
+            return new Edge(BlockPos.ORIGIN.subtract(delta), length, postAttachments, parent, preAttachments);
         }
 
         private Tree.Edge toAbsolute(List<MutableSortedIntMap<ItemStack>> attachmentsList, int fromOffset) {
             attachmentsList.add(preAttachments);
-            Tree tree = this.tree.toAbsolute(attachmentsList, fromOffset + length, key.reverse());
+            Tree tree = this.tree.toAbsolute(attachmentsList, fromOffset + length, BlockPos.ORIGIN.subtract(delta));
             attachmentsList.add(postAttachments);
-            return new Tree.Edge(key, length, fromOffset, tree);
+            return new Tree.Edge(delta, length, fromOffset, tree);
         }
 
         @Override
@@ -74,7 +74,7 @@ public final class TreeBuilder {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Edge edge = (Edge) o;
-            return Objects.equals(key, edge.key) &&
+            return Objects.equals(delta, edge.delta) &&
                 Objects.equals(preAttachments, edge.preAttachments) &&
                 Objects.equals(tree, edge.tree) &&
                 Objects.equals(postAttachments, edge.postAttachments);
@@ -82,13 +82,13 @@ public final class TreeBuilder {
 
         @Override
         public int hashCode() {
-            return Objects.hash(key, preAttachments, tree, postAttachments);
+            return Objects.hash(delta, preAttachments, tree, postAttachments);
         }
     }
 
     public static TreeBuilder fromAbsolute(Tree tree, MutableSortedIntMap<ItemStack> attachments, int shift) {
         ArrayList<TreeBuilder.Edge> edges = new ArrayList<>(tree.getEdges().size());
-        edges.sort(Comparator.comparing(a -> a.key));
+        edges.sort((a, b) -> EdgeComparator.getInstance().compare(a.delta, b.delta));
         return new TreeBuilder(
             tree.getPos(),
             tree.getEdges().stream()
@@ -102,14 +102,14 @@ public final class TreeBuilder {
         return new TreeBuilder(root, new ArrayList<>(), 0);
     }
 
-    private int findEdgeKeyIndex(DeltaKey deltaKey, int minIndex, int maxIndex) {
+    private int floorDeltaIndex(BlockPos delta, int minIndex, int maxIndex) {
         if (minIndex != maxIndex) {
             int middleIndex = (minIndex + maxIndex) / 2;
-            int comparison = deltaKey.compareTo(edges.get(middleIndex).key);
+            int comparison = EdgeComparator.getInstance().compare(delta, edges.get(middleIndex).delta);
             if (comparison < 0) {
-                return findEdgeKeyIndex(deltaKey, minIndex, middleIndex);
+                return floorDeltaIndex(delta, minIndex, middleIndex);
             } else if (comparison > 0) {
-                return findEdgeKeyIndex(deltaKey, middleIndex + 1, maxIndex);
+                return floorDeltaIndex(delta, middleIndex + 1, maxIndex);
             } else {
                 return middleIndex;
             }
@@ -118,8 +118,8 @@ public final class TreeBuilder {
         }
     }
 
-    public int findEdgeKeyIndex(DeltaKey deltaKey) {
-        return findEdgeKeyIndex(deltaKey, 0, edges.size());
+    public int floorDeltaIndex(BlockPos delta) {
+        return floorDeltaIndex(delta, 0, edges.size());
     }
 
     private final BlockPos pos;
@@ -156,11 +156,11 @@ public final class TreeBuilder {
 
     private void addChild(TreeBuilder child) {
         int length = Measurements.calculateDistance(pos, child.pos);
-        addEdge(new Edge(DeltaKey.between(pos, child.pos), length, MutableSortedIntMap.empty(length), child, MutableSortedIntMap.empty(length)));
+        addEdge(new Edge(child.pos.subtract(pos), length, MutableSortedIntMap.empty(length), child, MutableSortedIntMap.empty(length)));
     }
 
     private void addEdge(Edge edge) {
-        int insertionIndex = findEdgeKeyIndex(edge.key);
+        int insertionIndex = floorDeltaIndex(edge.delta);
         edges.add(insertionIndex, edge);
     }
 
@@ -198,7 +198,7 @@ public final class TreeBuilder {
 
     public SplitResult splitNode() {
         List<Edge> edges = this.edges.stream()
-            .map(edge -> new Edge(edge.key, edge.length, edge.preAttachments, emptyRoot(edge.tree.pos), edge.postAttachments))
+            .map(edge -> new Edge(edge.delta, edge.length, edge.preAttachments, emptyRoot(edge.tree.pos), edge.postAttachments))
             .collect(Collectors.toList());
         TreeBuilder tree = new TreeBuilder(pos, edges, rotation);
         return new SplitResult(tree, this.edges.stream().map(edge -> edge.tree).collect(Collectors.toList()));
@@ -211,7 +211,7 @@ public final class TreeBuilder {
                 TreeBuilder edgeTree = new TreeBuilder(
                     this.pos,
                     new ArrayList<>(Collections.singletonList(new Edge(
-                        edge.key,
+                        edge.delta,
                         edge.length,
                         edge.preAttachments,
                         emptyRoot(edge.tree.pos),
@@ -244,9 +244,9 @@ public final class TreeBuilder {
         return new Tree(pos, treeEdges, fromOffset, toOffset, rotation);
     }
 
-    private Tree toAbsolute(List<MutableSortedIntMap<ItemStack>> stacksList, int fromOffset, DeltaKey fromDeltaKey) {
+    private Tree toAbsolute(List<MutableSortedIntMap<ItemStack>> stacksList, int fromOffset, BlockPos fromKey) {
         int toOffset = fromOffset;
-        int splitIndex = findEdgeKeyIndex(fromDeltaKey);
+        int splitIndex = floorDeltaIndex(fromKey);
         ArrayList<Tree.Edge> treeEdges = new ArrayList<>(edges.size());
         for (Edge edge : edges.subList(splitIndex, edges.size())) {
             Tree.Edge staticEdge = edge.toAbsolute(stacksList, toOffset);

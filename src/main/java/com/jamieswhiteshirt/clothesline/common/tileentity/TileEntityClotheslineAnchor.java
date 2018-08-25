@@ -77,8 +77,7 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
             INetworkNode node = getNetworkNode();
             if (node != null) {
                 INetwork network = node.getNetwork();
-                DeltaKey deltaKey = DeltaKey.between(pos, pos.offset(facing));
-                int attachmentKey = network.getState().offsetToAttachmentKey(node.getGraphNode().getCornerOffset(deltaKey));
+                int attachmentKey = network.getState().offsetToAttachmentKey(node.getGraphNode().getOffsetForDelta(facing.getDirectionVec()));
                 return ITEM_HANDLER_CAPABILITY.cast(new NetworkItemHandler(network, attachmentKey));
             }
         }

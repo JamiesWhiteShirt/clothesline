@@ -55,7 +55,7 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
 
     private void assignNetworkGraph(INetwork network, Graph graph) {
         for (Graph.Node graphNode : graph.getNodes().values()) {
-            networkNodes = networkNodes.put(graphNode.getKey(), createNetworkNode(graphNode, network));
+            networkNodes = networkNodes.put(graphNode.getPos(), createNetworkNode(graphNode, network));
         }
         int i = 0;
         for (Graph.Edge graphEdge : graph.getEdges()) {

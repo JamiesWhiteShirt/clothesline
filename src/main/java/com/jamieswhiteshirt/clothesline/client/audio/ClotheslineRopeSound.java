@@ -19,9 +19,9 @@ public class ClotheslineRopeSound extends MovingSound {
         this.node = node;
 
         this.repeat = true;
-        this.xPosF = node.getKey().getX() + 0.5F;
-        this.yPosF = node.getKey().getY() + 0.5F;
-        this.zPosF = node.getKey().getZ() + 0.5F;
+        this.xPosF = node.getPos().getX() + 0.5F;
+        this.yPosF = node.getPos().getY() + 0.5F;
+        this.zPosF = node.getPos().getZ() + 0.5F;
 
         // update();
     }

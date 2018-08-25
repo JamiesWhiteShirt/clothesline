@@ -3,27 +3,26 @@ package com.jamieswhiteshirt.clothesline.api;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Immutable data structure of a network as a tree. Values are absolute.
  */
 public final class Tree {
     public static final class Edge {
-        private final DeltaKey key;
+        private final BlockPos delta;
         private final int length;
         private final int preMinOffset;
         private final Tree tree;
 
-        public Edge(DeltaKey key, int length, int preMinOffset, Tree tree) {
-            this.key = key;
+        public Edge(BlockPos delta, int length, int preMinOffset, Tree tree) {
+            this.delta = delta;
             this.length = length;
             this.preMinOffset = preMinOffset;
             this.tree = tree;
         }
 
-        public DeltaKey getKey() {
-            return key;
+        public BlockPos getDelta() {
+            return delta;
         }
 
         public int getLength() {
@@ -57,19 +56,19 @@ public final class Tree {
             Edge edge = (Edge) o;
             return length == edge.length &&
                 preMinOffset == edge.preMinOffset &&
-                Objects.equals(key, edge.key) &&
+                Objects.equals(delta, edge.delta) &&
                 Objects.equals(tree, edge.tree);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(key, length, preMinOffset, tree);
+            return Objects.hash(delta, length, preMinOffset, tree);
         }
 
         @Override
         public String toString() {
             return "Edge{" +
-                "key=" + key +
+                "delta=" + delta +
                 ", length=" + length +
                 ", preMinOffset=" + preMinOffset +
                 ", tree=" + tree +
@@ -126,9 +125,9 @@ public final class Tree {
     private GraphBuilder.NodeBuilder buildGraph(GraphBuilder graphBuilder) {
         GraphBuilder.NodeBuilder nodeBuilder = graphBuilder.putNode(pos, baseRotation);
         for (Edge edge : edges) {
-            nodeBuilder.putEdge(edge.key, edge.tree.pos);
+            nodeBuilder.putEdgeTo(edge.tree.pos);
             GraphBuilder.NodeBuilder childNodeBuilder = edge.tree.buildGraph(graphBuilder);
-            childNodeBuilder.putEdge(edge.key.reverse(), pos);
+            childNodeBuilder.putEdgeTo(pos);
         }
         return nodeBuilder;
     }

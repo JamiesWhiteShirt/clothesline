@@ -15,7 +15,7 @@ class TreeTest {
         BlockPos posB = new BlockPos(1, 0, 0);
         Tree tree = new Tree(
             posA, Collections.singletonList(new Tree.Edge(
-                DeltaKey.between(posA, posB),
+                posB.subtract(posA),
                 Measurements.calculateDistance(posA, posB),
                 0,
                 Tree.empty(posB, Measurements.UNIT_LENGTH, 0)
@@ -24,8 +24,8 @@ class TreeTest {
 
         Graph graph = tree.buildGraph();
 
-        Graph.Edge a_b = new Graph.Edge(DeltaKey.between(posA, posB), new Line(posA, posB), Measurements.UNIT_LENGTH * 0, Measurements.UNIT_LENGTH * 1);
-        Graph.Edge b_a = new Graph.Edge(DeltaKey.between(posB, posA), new Line(posB, posA), Measurements.UNIT_LENGTH * 1, Measurements.UNIT_LENGTH * 2);
+        Graph.Edge a_b = new Graph.Edge(posB.subtract(posA), new Line(posA, posB), Measurements.UNIT_LENGTH * 0, Measurements.UNIT_LENGTH * 1);
+        Graph.Edge b_a = new Graph.Edge(posA.subtract(posB), new Line(posB, posA), Measurements.UNIT_LENGTH * 1, Measurements.UNIT_LENGTH * 2);
         Graph.Node a = new Graph.Node(posA, Collections.singletonList(a_b), 0);
         Graph.Node b = new Graph.Node(posB, Collections.singletonList(b_a), 0);
 

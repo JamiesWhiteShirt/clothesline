@@ -1,6 +1,5 @@
 package com.jamieswhiteshirt.clothesline.impl;
 
-import com.jamieswhiteshirt.clothesline.api.DeltaKey;
 import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.api.Tree;
@@ -31,7 +30,7 @@ class NetworkStateTest {
         Tree tree = new Tree(
             from,
             Collections.singletonList(new Tree.Edge(
-                DeltaKey.between(from, to),
+                to.subtract(from),
                 Measurements.calculateDistance(from, to),
                 0,
                 Tree.empty(to, Measurements.UNIT_LENGTH, 0))

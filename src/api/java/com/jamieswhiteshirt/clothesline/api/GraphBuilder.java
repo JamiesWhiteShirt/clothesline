@@ -8,19 +8,19 @@ import java.util.stream.Collectors;
 
 public final class GraphBuilder {
     public final class NodeBuilder {
-        private final BlockPos key;
+        private final BlockPos pos;
         private final List<Graph.Edge> edges = new ArrayList<>();
         private final int baseRotation;
 
-        private NodeBuilder(BlockPos key, int baseRotation) {
-            this.key = key;
+        private NodeBuilder(BlockPos pos, int baseRotation) {
+            this.pos = pos;
             this.baseRotation = baseRotation;
         }
 
         private void putEdge(Graph.Edge edge, int minIndex, int maxIndex) {
             if (minIndex != maxIndex) {
                 int middleIndex = (minIndex + maxIndex) / 2;
-                int comparison = edge.getKey().compareTo(edges.get(middleIndex).getKey());
+                int comparison = EdgeComparator.getInstance().compare(edge.getDelta(), edges.get(middleIndex).getDelta());
                 if (comparison < 0) {
                     putEdge(edge, minIndex, middleIndex);
                 } else if (comparison > 0) {
@@ -31,10 +31,10 @@ public final class GraphBuilder {
             }
         }
 
-        public void putEdge(DeltaKey key, BlockPos toKey) {
+        public void putEdgeTo(BlockPos toPos) {
             int minOffset = getMaxOffset();
-            int length = Measurements.calculateDistance(this.key, toKey);
-            Graph.Edge edge = new Graph.Edge(key, new Line(this.key, toKey), minOffset, minOffset + length);
+            int length = Measurements.calculateDistance(this.pos, toPos);
+            Graph.Edge edge = new Graph.Edge(toPos.subtract(this.pos), new Line(this.pos, toPos), minOffset, minOffset + length);
             allEdges.add(edge);
             putEdge(edge, 0, edges.size());
         }
@@ -51,16 +51,16 @@ public final class GraphBuilder {
         }
     }
 
-    public NodeBuilder putNode(BlockPos key, int baseRotation) {
-        NodeBuilder nodeBuilder = new NodeBuilder(key, baseRotation);
-        nodes.put(key, nodeBuilder);
+    public NodeBuilder putNode(BlockPos pos, int baseRotation) {
+        NodeBuilder nodeBuilder = new NodeBuilder(pos, baseRotation);
+        nodes.put(pos, nodeBuilder);
         return nodeBuilder;
     }
 
     public Graph build() {
         Map<BlockPos, Graph.Node> nodes = this.nodes.values().stream()
-            .map(nodeBuilder -> new Graph.Node(nodeBuilder.key, nodeBuilder.edges, nodeBuilder.baseRotation))
-            .collect(Collectors.toMap(Graph.Node::getKey, Function.identity()));
+            .map(nodeBuilder -> new Graph.Node(nodeBuilder.pos, nodeBuilder.edges, nodeBuilder.baseRotation))
+            .collect(Collectors.toMap(Graph.Node::getPos, Function.identity()));
         return new Graph(nodes, new ArrayList<>(allEdges));
     }
 }
