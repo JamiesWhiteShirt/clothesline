@@ -44,17 +44,7 @@ public final class DeltaKey implements Comparable<DeltaKey> {
 
     @Override
     public int compareTo(DeltaKey o) {
-        int angleComparison = Float.compare(angle, o.angle);
-        if (angleComparison != 0) {
-            return angleComparison;
-        } else {
-            int lengthComparison = Integer.compare(length, o.length);
-            if (lengthComparison != 0) {
-                return lengthComparison;
-            } else {
-                return delta.compareTo(o.delta);
-            }
-        }
+        return EdgeComparator.getInstance().compare(delta, o.delta);
     }
 
     @Override
