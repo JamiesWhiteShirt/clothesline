@@ -6,6 +6,7 @@ import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
 import com.jamieswhiteshirt.clothesline.api.util.MathUtil;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.util.vector.Matrix4f;
@@ -31,7 +32,9 @@ public final class EdgeAttachmentProjector {
     }
 
     private static float angleBetween(Graph.Edge a, Graph.Edge b) {
-        return MathUtil.floorMod(b.getKey().getAngle() - a.getKey().getAngle(), 360.0F);
+        float angleA = Measurements.calculateGlobalAngleY(BlockPos.ORIGIN, a.getKey().getDelta());
+        float angleB = Measurements.calculateGlobalAngleY(BlockPos.ORIGIN, b.getKey().getDelta());
+        return Measurements.floorModAngle(angleA - angleB);
     }
 
     public static EdgeAttachmentProjector build(IClientNetworkEdge edge) {
@@ -46,7 +49,7 @@ public final class EdgeAttachmentProjector {
             edge.getGraphEdge().getFromOffset(),
             edge.getGraphEdge().getToOffset(),
             edge.getProjection(),
-            graphEdge.getKey().getAngle(),
+            Measurements.calculateGlobalAngleY(BlockPos.ORIGIN, graphEdge.getKey().getDelta()),
             angleBetween(fromGraphEdge, graphEdge),
             angleBetween(graphEdge, toGraphEdge)
         );
