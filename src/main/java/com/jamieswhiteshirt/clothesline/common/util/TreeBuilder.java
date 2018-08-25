@@ -88,7 +88,7 @@ public final class TreeBuilder {
 
     public static TreeBuilder fromAbsolute(Tree tree, MutableSortedIntMap<ItemStack> attachments, int shift) {
         ArrayList<TreeBuilder.Edge> edges = new ArrayList<>(tree.getEdges().size());
-        edges.sort((a, b) -> EdgeComparator.getInstance().compare(a.delta, b.delta));
+        edges.sort((a, b) -> DeltaComparator.getInstance().compare(a.delta, b.delta));
         return new TreeBuilder(
             tree.getPos(),
             tree.getEdges().stream()
@@ -105,7 +105,7 @@ public final class TreeBuilder {
     private int floorDeltaIndex(BlockPos delta, int minIndex, int maxIndex) {
         if (minIndex != maxIndex) {
             int middleIndex = (minIndex + maxIndex) / 2;
-            int comparison = EdgeComparator.getInstance().compare(delta, edges.get(middleIndex).delta);
+            int comparison = DeltaComparator.getInstance().compare(delta, edges.get(middleIndex).delta);
             if (comparison < 0) {
                 return floorDeltaIndex(delta, minIndex, middleIndex);
             } else if (comparison > 0) {

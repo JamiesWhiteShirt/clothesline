@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.util;
 
-import com.jamieswhiteshirt.clothesline.api.EdgeComparator;
+import com.jamieswhiteshirt.clothesline.api.DeltaComparator;
 import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.Tree;
 import com.jamieswhiteshirt.clothesline.common.util.NetworkStateBuilder;
@@ -66,7 +66,7 @@ class NetworkStateBuilderTest {
             for (int j = 0; j < vecs.size(); j++) {
                 BlockPos a = vecs.get(i);
                 BlockPos b = vecs.get(j);
-                int c = EdgeComparator.getInstance().compare(a, b);
+                int c = DeltaComparator.getInstance().compare(a, b);
                 if (i < j) {
                     Assertions.assertTrue(c < 0, "Expected " + a + " to be less than " + b);
                 } else if (i > j) {

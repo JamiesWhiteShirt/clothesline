@@ -20,7 +20,7 @@ public final class GraphBuilder {
         private void putEdge(Graph.Edge edge, int minIndex, int maxIndex) {
             if (minIndex != maxIndex) {
                 int middleIndex = (minIndex + maxIndex) / 2;
-                int comparison = EdgeComparator.getInstance().compare(edge.getDelta(), edges.get(middleIndex).getDelta());
+                int comparison = DeltaComparator.getInstance().compare(edge.getDelta(), edges.get(middleIndex).getDelta());
                 if (comparison < 0) {
                     putEdge(edge, minIndex, middleIndex);
                 } else if (comparison > 0) {

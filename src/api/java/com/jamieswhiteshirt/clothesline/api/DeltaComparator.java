@@ -4,14 +4,14 @@ import net.minecraft.util.math.Vec3i;
 
 import java.util.Comparator;
 
-public class EdgeComparator implements Comparator<Vec3i> {
-    private static EdgeComparator ourInstance = new EdgeComparator();
+public class DeltaComparator implements Comparator<Vec3i> {
+    private static DeltaComparator ourInstance = new DeltaComparator();
 
-    public static EdgeComparator getInstance() {
+    public static DeltaComparator getInstance() {
         return ourInstance;
     }
 
-    private EdgeComparator() {
+    private DeltaComparator() {
     }
 
     @Override

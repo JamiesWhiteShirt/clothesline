@@ -33,7 +33,7 @@ public final class Graph {
         private int floorDeltaIndex(Vec3i delta, int minIndex, int maxIndex) {
             if (minIndex != maxIndex) {
                 int middleIndex = (minIndex + maxIndex) / 2;
-                int comparison = EdgeComparator.getInstance().compare(delta, edges.get(middleIndex).getDelta());
+                int comparison = DeltaComparator.getInstance().compare(delta, edges.get(middleIndex).getDelta());
                 if (comparison < 0) {
                     return floorDeltaIndex(delta, minIndex, middleIndex);
                 } else if (comparison > 0) {

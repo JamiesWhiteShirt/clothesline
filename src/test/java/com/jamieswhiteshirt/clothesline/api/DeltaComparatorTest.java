@@ -4,13 +4,13 @@ import net.minecraft.util.math.BlockPos;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class EdgeComparatorTest {
+public class DeltaComparatorTest {
     void assertStrictlyOrdered(BlockPos[] vecs) {
         for (int i = 1; i < vecs.length; i++) {
             for (int j = 0; j < vecs.length; j++) {
                 BlockPos a = vecs[i];
                 BlockPos b = vecs[j];
-                int c = EdgeComparator.getInstance().compare(a, b);
+                int c = DeltaComparator.getInstance().compare(a, b);
                 if (i < j) {
                     Assertions.assertTrue(c < 0, "Expected " + a + " to be less than " + b);
                 } else if (i > j) {
