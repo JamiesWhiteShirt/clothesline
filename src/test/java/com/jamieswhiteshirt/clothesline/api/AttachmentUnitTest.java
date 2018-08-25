@@ -4,15 +4,15 @@ import net.minecraft.util.math.BlockPos;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class MeasurementsTest {
+class AttachmentUnitTest {
     @Test
     void floorModAngleFloorsPositive() {
-        Assertions.assertEquals(Measurements.floorModAngle(540), 180);
+        Assertions.assertEquals(AttachmentUnit.floorModAngle(540), 180);
     }
 
     @Test
     void floorModAngleFloorsNegative() {
-        Assertions.assertEquals(Measurements.floorModAngle(-540), 180);
+        Assertions.assertEquals(AttachmentUnit.floorModAngle(-540), 180);
     }
 
     @Test
@@ -27,7 +27,7 @@ class MeasurementsTest {
             BlockPos posA = positions[i];
             for (int j = i + 1; j < positions.length; j++) {
                 BlockPos posB = positions[j];
-                Assertions.assertEquals(Measurements.calculateDistance(posA, posB), Measurements.calculateDistance(posB, posA));
+                Assertions.assertEquals(AttachmentUnit.lengthBetween(posA, posB), AttachmentUnit.lengthBetween(posB, posA));
             }
         }
     }

@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.network.messagehandler;
 
-import com.jamieswhiteshirt.clothesline.api.Measurements;
+import com.jamieswhiteshirt.clothesline.api.Utility;
 import com.jamieswhiteshirt.clothesline.common.item.ItemConnector;
 import com.jamieswhiteshirt.clothesline.common.network.message.StopUsingItemOnMessage;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -20,7 +20,7 @@ public class StopUsingItemOnMessageHandler implements IMessageHandler<StopUsingI
         world.addScheduledTask(() -> {
             if (player.getActiveItemStack().getItem() instanceof ItemConnector) {
                 ItemConnector itemConnector = (ItemConnector) player.getActiveItemStack().getItem();
-                if (Validation.canReachPos(player, Measurements.midVec(message.pos))) {
+                if (Validation.canReachPos(player, Utility.midVec(message.pos))) {
                     itemConnector.stopActiveHandWithToPos(player, message.pos);
                 } else {
                     player.stopActiveHand();

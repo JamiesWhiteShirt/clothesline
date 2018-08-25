@@ -4,6 +4,9 @@ import net.minecraft.util.math.Vec3i;
 
 import java.util.Comparator;
 
+/**
+ * Compares Vec3i by XZ angle, then XZ length, then Y.
+ */
 public class DeltaComparator implements Comparator<Vec3i> {
     private static DeltaComparator ourInstance = new DeltaComparator();
 

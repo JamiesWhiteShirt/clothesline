@@ -3,7 +3,6 @@ package com.jamieswhiteshirt.clothesline.client.impl;
 import com.jamieswhiteshirt.clothesline.api.Graph;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
-import com.jamieswhiteshirt.clothesline.api.Measurements;
 import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkEdge;
 import net.minecraftforge.fml.relauncher.Side;

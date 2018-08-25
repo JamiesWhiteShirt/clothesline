@@ -2,7 +2,7 @@ package com.jamieswhiteshirt.clothesline.client.renderer;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.Graph;
-import com.jamieswhiteshirt.clothesline.api.Measurements;
+import com.jamieswhiteshirt.clothesline.api.AttachmentUnit;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
 import net.minecraft.util.math.BlockPos;
@@ -30,10 +30,23 @@ public final class EdgeAttachmentProjector {
         this.toAngleDiff = toAngleDiff;
     }
 
+    public static float floorModAngle(float angle) {
+        if (angle >= 0.0F) {
+            return angle % 360.0F;
+        } else {
+            return 360.0F + (angle % 360.0F);
+        }
+    }
+
+    public static float calculateGlobalAngleY(BlockPos from, BlockPos to) {
+        return floorModAngle((float)StrictMath.toDegrees(Math.atan2(to.getZ() - from.getZ(), to.getX() - from.getX())));
+    }
+
+
     private static float angleBetween(Graph.Edge a, Graph.Edge b) {
-        float angleA = Measurements.calculateGlobalAngleY(BlockPos.ORIGIN, a.getDelta());
-        float angleB = Measurements.calculateGlobalAngleY(BlockPos.ORIGIN, b.getDelta());
-        return Measurements.floorModAngle(angleA - angleB);
+        float angleA = calculateGlobalAngleY(BlockPos.ORIGIN, a.getDelta());
+        float angleB = calculateGlobalAngleY(BlockPos.ORIGIN, b.getDelta());
+        return floorModAngle(angleA - angleB);
     }
 
     public static EdgeAttachmentProjector build(IClientNetworkEdge edge) {
@@ -48,7 +61,7 @@ public final class EdgeAttachmentProjector {
             edge.getGraphEdge().getFromOffset(),
             edge.getGraphEdge().getToOffset(),
             edge.getProjection(),
-            Measurements.calculateGlobalAngleY(BlockPos.ORIGIN, graphEdge.getDelta()),
+            calculateGlobalAngleY(BlockPos.ORIGIN, graphEdge.getDelta()),
             angleBetween(fromGraphEdge, graphEdge),
             angleBetween(graphEdge, toGraphEdge)
         );
@@ -67,12 +80,12 @@ public final class EdgeAttachmentProjector {
             t = toOffset - offset;
             angleDiff = toAngleDiff;
         }
-        float speedRatio = (float) momentum / Measurements.UNIT_LENGTH;
+        float speedRatio = (float) momentum / AttachmentUnit.UNITS_PER_BLOCK;
         float swingMax = 3.0F * (float) angleDiff * speedRatio * speedRatio;
 
         return swingMax *
-            (float)(Math.exp(-t / (Measurements.UNIT_LENGTH * 2.0D))) *
-            MathHelper.sin((float)(Math.PI * t / Measurements.UNIT_LENGTH));
+            (float)(Math.exp(-t / (AttachmentUnit.UNITS_PER_BLOCK * 2.0D))) *
+            MathHelper.sin((float)(Math.PI * t / AttachmentUnit.UNITS_PER_BLOCK));
     }
 
     public Matrix4f getL2WForAttachment(double momentum, double offset, float partialTicks) {

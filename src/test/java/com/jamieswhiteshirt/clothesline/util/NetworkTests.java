@@ -30,11 +30,11 @@ class NetworkTests {
             this.tree = new Tree(
                 from,
                 Collections.singletonList(
-                    new Tree.Edge(to.subtract(from), Measurements.calculateDistance(from, to), 0, Tree.empty(to, Measurements.UNIT_LENGTH, 0))
+                    new Tree.Edge(to.subtract(from), AttachmentUnit.lengthBetween(from, to), 0, Tree.empty(to, AttachmentUnit.UNITS_PER_BLOCK, 0))
                 ),
-                0, Measurements.UNIT_LENGTH * 2, 0
+                0, AttachmentUnit.UNITS_PER_BLOCK * 2, 0
             );
-            this.attachments = MutableSortedIntMap.empty(Measurements.UNIT_LENGTH * 2);
+            this.attachments = MutableSortedIntMap.empty(AttachmentUnit.UNITS_PER_BLOCK * 2);
             this.state = new NetworkState(0, 0, 0, 0, tree, attachments);
             this.persistentNetwork = new PersistentNetwork(new UUID(0, 0), state);
             this.network = new Network(0, persistentNetwork);

@@ -6,6 +6,10 @@ import net.minecraft.util.math.Vec3i;
 
 import java.util.*;
 
+/**
+ * A graph of nodes and edges representing the structure and traversal of a clothesline network.
+ * Edges are in order of attachment traversal, from offset 0 to loop length.
+ */
 public final class Graph {
     public static final class Node {
         private final BlockPos pos;

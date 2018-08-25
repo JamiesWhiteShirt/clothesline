@@ -21,8 +21,8 @@ class GraphBuilderTest {
         nodeB.putEdgeTo(posA);
         Graph graph = builder.build();
 
-        Graph.Edge a_b = new Graph.Edge(posB.subtract(posA), new Line(posA, posB), Measurements.UNIT_LENGTH * 0, Measurements.UNIT_LENGTH * 1);
-        Graph.Edge b_a = new Graph.Edge(posA.subtract(posB), new Line(posB, posA), Measurements.UNIT_LENGTH * 1, Measurements.UNIT_LENGTH * 2);
+        Graph.Edge a_b = new Graph.Edge(posB.subtract(posA), new Line(posA, posB), AttachmentUnit.UNITS_PER_BLOCK * 0, AttachmentUnit.UNITS_PER_BLOCK * 1);
+        Graph.Edge b_a = new Graph.Edge(posA.subtract(posB), new Line(posB, posA), AttachmentUnit.UNITS_PER_BLOCK * 1, AttachmentUnit.UNITS_PER_BLOCK * 2);
         Graph.Node a = new Graph.Node(posA, Collections.singletonList(a_b), 0);
         Graph.Node b = new Graph.Node(posB, Collections.singletonList(b_a), 0);
 

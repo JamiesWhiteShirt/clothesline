@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.impl;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkState;
-import com.jamieswhiteshirt.clothesline.api.Measurements;
+import com.jamieswhiteshirt.clothesline.api.AttachmentUnit;
 import com.jamieswhiteshirt.clothesline.api.Tree;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkState;
@@ -31,13 +31,13 @@ class NetworkStateTest {
             from,
             Collections.singletonList(new Tree.Edge(
                 to.subtract(from),
-                Measurements.calculateDistance(from, to),
+                AttachmentUnit.lengthBetween(from, to),
                 0,
-                Tree.empty(to, Measurements.UNIT_LENGTH, 0))
+                Tree.empty(to, AttachmentUnit.UNITS_PER_BLOCK, 0))
             ),
-            0, Measurements.UNIT_LENGTH * 2, 0
+            0, AttachmentUnit.UNITS_PER_BLOCK * 2, 0
         );
-        MutableSortedIntMap<ItemStack> attachments = MutableSortedIntMap.empty(Measurements.UNIT_LENGTH * 2);
+        MutableSortedIntMap<ItemStack> attachments = MutableSortedIntMap.empty(AttachmentUnit.UNITS_PER_BLOCK * 2);
         state = new NetworkState(0, 0, 0, 0, tree, attachments);
     }
 

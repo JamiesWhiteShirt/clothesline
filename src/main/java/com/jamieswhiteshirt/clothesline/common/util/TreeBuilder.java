@@ -155,7 +155,7 @@ public final class TreeBuilder {
     }
 
     private void addChild(TreeBuilder child) {
-        int length = Measurements.calculateDistance(pos, child.pos);
+        int length = AttachmentUnit.lengthBetween(pos, child.pos);
         addEdge(new Edge(child.pos.subtract(pos), length, MutableSortedIntMap.empty(length), child, MutableSortedIntMap.empty(length)));
     }
 

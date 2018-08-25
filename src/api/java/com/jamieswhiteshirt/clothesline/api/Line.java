@@ -26,11 +26,11 @@ public final class Line {
     }
 
     public Vec3d getFromVec() {
-        return Measurements.midVec(from);
+        return Utility.midVec(from);
     }
 
     public Vec3d getToVec() {
-        return Measurements.midVec(to);
+        return Utility.midVec(to);
     }
 
     public Vec3d getPosition(double scalar) {

@@ -171,11 +171,11 @@ public class ClientProxy extends CommonProxy {
     }
 
     private void renderHeldClothesline(BlockPos posA, Vec3d vecB, World world, double x, double y, double z) {
-        Vec3d vecA = Measurements.midVec(posA);
+        Vec3d vecA = Utility.midVec(posA);
         BlockPos posB = new BlockPos(vecB);
         int combinedLightA = world.getCombinedLight(posA, 0);
         int combinedLightB = world.getCombinedLight(posB, 0);
-        double length = Measurements.UNIT_LENGTH * vecB.distanceTo(vecA);
+        double length = AttachmentUnit.UNITS_PER_BLOCK * vecB.distanceTo(vecA);
 
         renderClotheslineNetwork.buildAndDrawEdgeQuads(bufferBuilder -> {
             renderClotheslineNetwork.renderEdge(0.0D, length, combinedLightA, combinedLightB, LineProjection.create(vecA, vecB), bufferBuilder, x, y, z);

@@ -33,7 +33,7 @@ public final class GraphBuilder {
 
         public void putEdgeTo(BlockPos toPos) {
             int minOffset = getMaxOffset();
-            int length = Measurements.calculateDistance(this.pos, toPos);
+            int length = AttachmentUnit.lengthBetween(this.pos, toPos);
             Graph.Edge edge = new Graph.Edge(toPos.subtract(this.pos), new Line(this.pos, toPos), minOffset, minOffset + length);
             allEdges.add(edge);
             putEdge(edge, 0, edges.size());

@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.INetwork;
-import com.jamieswhiteshirt.clothesline.api.Measurements;
+import com.jamieswhiteshirt.clothesline.api.AttachmentUnit;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
@@ -25,8 +25,8 @@ public final class NetworkItemHandler implements IItemHandler {
 
     private int getCandidateAttachmentKey() {
         List<MutableSortedIntMap.Entry<ItemStack>> entries = network.getState().getAttachmentsInRange(
-                attachmentKey - Measurements.UNIT_LENGTH / 2,
-                attachmentKey + Measurements.UNIT_LENGTH / 2
+                attachmentKey - AttachmentUnit.UNITS_PER_BLOCK / 2,
+                attachmentKey + AttachmentUnit.UNITS_PER_BLOCK / 2
         );
 
         if (entries.isEmpty()) {

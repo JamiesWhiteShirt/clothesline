@@ -67,8 +67,8 @@ public final class RenderClotheslineNetwork {
         int lightFrom2 = combinedLightFrom & 0xFFFF;
         int lightTo1 = combinedLightTo >> 16 & 0xFFFF;
         int lightTo2 = combinedLightTo & 0xFFFF;
-        double vFrom = fromOffset / Measurements.UNIT_LENGTH;
-        double vTo = toOffset / Measurements.UNIT_LENGTH;
+        double vFrom = fromOffset / AttachmentUnit.UNITS_PER_BLOCK;
+        double vTo = toOffset / AttachmentUnit.UNITS_PER_BLOCK;
 
         for (int j = 0; j < 4; j++) {
             double r1 = RIGHT_MULTIPLIERS[j];
