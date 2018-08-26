@@ -33,14 +33,14 @@ public final class EdgeAttachmentProjector {
         }
     }
 
-    private static float calculateGlobalAngleY(BlockPos from, BlockPos to) {
-        return floorModAngle((float)Math.toDegrees(Math.atan2(to.getZ() - from.getZ(), to.getX() - from.getX())));
+    private static float calculateGlobalAngleY(BlockPos delta) {
+        return floorModAngle((float)Math.toDegrees(Math.atan2(delta.getZ(), delta.getX())));
     }
 
 
     private static float angleBetween(Path.Edge a, Path.Edge b) {
-        float angleA = calculateGlobalAngleY(BlockPos.ORIGIN, a.getDelta());
-        float angleB = calculateGlobalAngleY(BlockPos.ORIGIN, b.getDelta());
+        float angleA = calculateGlobalAngleY(a.getDelta());
+        float angleB = calculateGlobalAngleY(b.getDelta());
         return floorModAngle(angleA - angleB);
     }
 
@@ -49,7 +49,7 @@ public final class EdgeAttachmentProjector {
             pathEdge.getFromOffset(),
             pathEdge.getToOffset(),
             projection,
-            calculateGlobalAngleY(BlockPos.ORIGIN, pathEdge.getDelta()),
+            calculateGlobalAngleY(pathEdge.getDelta()),
             angleBetween(fromPathEdge, pathEdge),
             angleBetween(pathEdge, toPathEdge)
         );
