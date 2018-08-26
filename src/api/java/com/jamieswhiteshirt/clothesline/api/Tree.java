@@ -102,18 +102,6 @@ public final class Tree {
         return edges;
     }
 
-    public int getTraversalLength() {
-        return maxOffset - minOffset;
-    }
-
-    public int getMinOffset() {
-        return minOffset;
-    }
-
-    public int getMaxOffset() {
-        return maxOffset;
-    }
-
     public int getBaseRotation() {
         return baseRotation;
     }

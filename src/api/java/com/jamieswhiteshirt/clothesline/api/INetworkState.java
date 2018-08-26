@@ -31,13 +31,13 @@ public interface INetworkState {
     Path getPath();
 
     /**
-     * Returns the range of attachment slots, on [0, {@link #getLoopLength()})
+     * Returns the range of attachment slots, on [0, {@link #getPathLength()})
      * @return the range of attachment slots
      */
     MutableSortedIntMap<ItemStack> getAttachments();
 
     /**
-     * Returns a list of nonempty attachments in the specified range. It will "wrap around" {@link #getLoopLength()}.
+     * Returns a list of nonempty attachments in the specified range. It will "wrap around" {@link #getPathLength()}.
      * @param minAttachmentKey the min attachment key, inclusive
      * @param maxAttachmentKey the max attachment key, inclusive
      * @return a list of nonempty attachments in the specified range
@@ -114,10 +114,10 @@ public interface INetworkState {
     double getMomentum(float partialTicks);
 
     /**
-     * Returns the length of the traversal cycle of the structure in attachment units.
-     * @return the length of the traversal cycle of the structure in attachment units
+     * Returns the length of the path in attachment units.
+     * @return the length of the path in attachment units
      */
-    int getLoopLength();
+    int getPathLength();
 
     /**
      * Returns the attachment slot of the traversal position based on the current shift of the clothesline network.
@@ -150,10 +150,4 @@ public interface INetworkState {
      * @return the interpolated traversal position
      */
     double attachmentKeyToOffset(double attachmentKey, float partialTicks);
-
-    /**
-     * Returns true if the clothesline network consists of only one node, otherwise false
-     * @return true if the clothesline network consists of only one node, otherwise false
-     */
-    boolean isEmpty();
 }

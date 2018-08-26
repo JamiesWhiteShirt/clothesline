@@ -2,9 +2,11 @@ package com.jamieswhiteshirt.clothesline.impl;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.AttachmentUnit;
+import com.jamieswhiteshirt.clothesline.api.Path;
 import com.jamieswhiteshirt.clothesline.api.Tree;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkState;
+import com.jamieswhiteshirt.clothesline.common.util.PathBuilder;
 import net.minecraft.init.Bootstrap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -37,8 +39,9 @@ class NetworkStateTest {
             ),
             0, AttachmentUnit.UNITS_PER_BLOCK * 2, 0
         );
+        Path path = PathBuilder.buildPath(tree);
         MutableSortedIntMap<ItemStack> attachments = MutableSortedIntMap.empty(AttachmentUnit.UNITS_PER_BLOCK * 2);
-        state = new NetworkState(0, 0, 0, 0, tree, attachments);
+        state = new NetworkState(0, 0, 0, 0, tree, path, attachments);
     }
 
     void assertItemStacksEqual(ItemStack expected, ItemStack actual) {

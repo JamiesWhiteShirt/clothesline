@@ -35,9 +35,8 @@ public final class PathBuilder {
             }
         }
 
-        public void putEdgeTo(BlockPos toPos) {
+        public void putEdgeTo(BlockPos toPos, int length) {
             int minOffset = getMaxOffset();
-            int length = AttachmentUnit.lengthBetween(this.pos, toPos);
             Path.Edge edge = new Path.Edge(toPos.subtract(this.pos), new Line(this.pos, toPos), minOffset, minOffset + length);
             allEdges.add(edge);
             putEdge(edge, 0, edges.size());
@@ -71,9 +70,9 @@ public final class PathBuilder {
     private static PathBuilder.NodeBuilder buildPath(PathBuilder pathBuilder, Tree tree) {
         PathBuilder.NodeBuilder nodeBuilder = pathBuilder.putNode(tree.getPos(), tree.getBaseRotation());
         for (Tree.Edge edge : tree.getEdges()) {
-            nodeBuilder.putEdgeTo(edge.getTree().getPos());
+            nodeBuilder.putEdgeTo(edge.getTree().getPos(), edge.getLength());
             PathBuilder.NodeBuilder childNodeBuilder = buildPath(pathBuilder, edge.getTree());
-            childNodeBuilder.putEdgeTo(tree.getPos());
+            childNodeBuilder.putEdgeTo(tree.getPos(), edge.getLength());
         }
         return nodeBuilder;
     }

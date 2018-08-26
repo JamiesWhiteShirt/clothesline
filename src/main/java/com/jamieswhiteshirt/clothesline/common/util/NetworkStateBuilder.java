@@ -1,6 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common.util;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkState;
+import com.jamieswhiteshirt.clothesline.api.Path;
 import com.jamieswhiteshirt.clothesline.api.Tree;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkState;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
@@ -35,7 +36,7 @@ public final class NetworkStateBuilder {
     public static NetworkStateBuilder fromAbsolute(INetworkState state) {
         MutableSortedIntMap<ItemStack> attachments = state.getAttachments();
         MutableSortedIntMap<ItemStack> itemStacks;
-        if (!state.isEmpty()) {
+        if (state.getPathLength() != 0) {
             int midAttachmentKey = state.offsetToAttachmentKey(0);
             itemStacks = MutableSortedIntMap.concatenate(Arrays.asList(
                 attachments.shiftedSubMap(midAttachmentKey, attachments.getMaxKey()),
@@ -99,7 +100,8 @@ public final class NetworkStateBuilder {
     public INetworkState toAbsolute() {
         LinkedList<MutableSortedIntMap<ItemStack>> attachmentsList = new LinkedList<>();
         Tree tree = treeRoot.toAbsolute(attachmentsList, 0);
-        return new NetworkState(0, 0, momentum, momentum, tree, MutableSortedIntMap.concatenate(attachmentsList));
+        Path path = PathBuilder.buildPath(tree);
+        return new NetworkState(0, 0, momentum, momentum, tree, path, MutableSortedIntMap.concatenate(attachmentsList));
     }
 
     @Override

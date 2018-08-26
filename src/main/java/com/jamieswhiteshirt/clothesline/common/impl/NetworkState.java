@@ -5,7 +5,6 @@ import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.Tree;
 import com.jamieswhiteshirt.clothesline.api.util.MathUtil;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
-import com.jamieswhiteshirt.clothesline.common.util.PathBuilder;
 import net.minecraft.item.ItemStack;
 
 import java.util.List;
@@ -26,20 +25,9 @@ public final class NetworkState implements INetworkState {
     private final Path path;
     private final MutableSortedIntMap<ItemStack> attachments;
 
-    public static INetworkState createInitial(Tree tree) {
-        return new NetworkState(
-                0,
-                0,
-                0,
-                0,
-                tree,
-                MutableSortedIntMap.empty(tree.getMaxOffset())
-        );
-    }
-
-    public NetworkState(int previousShift, int shift, int previousMomentum, int momentum, Tree tree, MutableSortedIntMap<ItemStack> attachments) {
+    public NetworkState(int previousShift, int shift, int previousMomentum, int momentum, Tree tree, Path path, MutableSortedIntMap<ItemStack> attachments) {
         this.tree = tree;
-        this.path = PathBuilder.buildPath(tree);
+        this.path = path;
         this.attachments = attachments;
         this.previousShift = previousShift;
         this.previousMomentum = previousMomentum;
@@ -48,7 +36,7 @@ public final class NetworkState implements INetworkState {
     }
 
     private int lengthMod(int i) {
-        return Math.floorMod(i, getLoopLength());
+        return Math.floorMod(i, getPathLength());
     }
 
     @Override
@@ -145,32 +133,27 @@ public final class NetworkState implements INetworkState {
     }
 
     @Override
-    public int getLoopLength() {
-        return tree.getTraversalLength();
+    public int getPathLength() {
+        return path.getLength();
     }
 
     @Override
     public int offsetToAttachmentKey(int offset) {
-        return Math.floorMod(offset - shift, getLoopLength());
+        return Math.floorMod(offset - shift, getPathLength());
     }
 
     @Override
     public double offsetToAttachmentKey(double offset, float partialTicks) {
-        return MathUtil.floorMod(offset - getShift(partialTicks), getLoopLength());
+        return MathUtil.floorMod(offset - getShift(partialTicks), getPathLength());
     }
 
     @Override
     public int attachmentKeyToOffset(int attachmentKey) {
-        return Math.floorMod(attachmentKey + shift, getLoopLength());
+        return Math.floorMod(attachmentKey + shift, getPathLength());
     }
 
     @Override
     public double attachmentKeyToOffset(double attachmentKey, float partialTicks) {
-        return MathUtil.floorMod(attachmentKey + getShift(partialTicks), getLoopLength());
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return tree.isEmpty();
+        return MathUtil.floorMod(attachmentKey + getShift(partialTicks), getPathLength());
     }
 }

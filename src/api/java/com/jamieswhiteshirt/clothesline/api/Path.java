@@ -135,6 +135,12 @@ public final class Path {
         this.edges = edges;
     }
 
+    public int getLength() {
+        if (edges.isEmpty()) return 0;
+
+        return edges.get(edges.size() - 1).toOffset;
+    }
+
     public Map<BlockPos, Node> getNodes() {
         return nodes;
     }
