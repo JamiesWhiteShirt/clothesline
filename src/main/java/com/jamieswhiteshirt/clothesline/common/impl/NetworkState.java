@@ -5,6 +5,7 @@ import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.Tree;
 import com.jamieswhiteshirt.clothesline.api.util.MathUtil;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
+import com.jamieswhiteshirt.clothesline.common.util.PathBuilder;
 import net.minecraft.item.ItemStack;
 
 import java.util.List;
@@ -38,7 +39,7 @@ public final class NetworkState implements INetworkState {
 
     public NetworkState(int previousShift, int shift, int previousMomentum, int momentum, Tree tree, MutableSortedIntMap<ItemStack> attachments) {
         this.tree = tree;
-        this.path = tree.buildPath();
+        this.path = PathBuilder.buildPath(tree);
         this.attachments = attachments;
         this.previousShift = previousShift;
         this.previousMomentum = previousMomentum;

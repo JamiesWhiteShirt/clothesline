@@ -1,8 +1,12 @@
-package com.jamieswhiteshirt.clothesline.api;
+package com.jamieswhiteshirt.clothesline.common.util;
 
+import com.jamieswhiteshirt.clothesline.api.*;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -62,5 +66,21 @@ public final class PathBuilder {
             .map(nodeBuilder -> new Path.Node(nodeBuilder.pos, nodeBuilder.edges, nodeBuilder.baseRotation))
             .collect(Collectors.toMap(Path.Node::getPos, Function.identity()));
         return new Path(nodes, new ArrayList<>(allEdges));
+    }
+
+    private static PathBuilder.NodeBuilder buildPath(PathBuilder pathBuilder, Tree tree) {
+        PathBuilder.NodeBuilder nodeBuilder = pathBuilder.putNode(tree.getPos(), tree.getBaseRotation());
+        for (Tree.Edge edge : tree.getEdges()) {
+            nodeBuilder.putEdgeTo(edge.getTree().getPos());
+            PathBuilder.NodeBuilder childNodeBuilder = buildPath(pathBuilder, edge.getTree());
+            childNodeBuilder.putEdgeTo(tree.getPos());
+        }
+        return nodeBuilder;
+    }
+
+    public static Path buildPath(Tree tree) {
+        PathBuilder builder = new PathBuilder();
+        buildPath(builder, tree);
+        return builder.build();
     }
 }

@@ -122,22 +122,6 @@ public final class Tree {
         return edges.isEmpty();
     }
 
-    private PathBuilder.NodeBuilder buildPath(PathBuilder pathBuilder) {
-        PathBuilder.NodeBuilder nodeBuilder = pathBuilder.putNode(pos, baseRotation);
-        for (Edge edge : edges) {
-            nodeBuilder.putEdgeTo(edge.tree.pos);
-            PathBuilder.NodeBuilder childNodeBuilder = edge.tree.buildPath(pathBuilder);
-            childNodeBuilder.putEdgeTo(pos);
-        }
-        return nodeBuilder;
-    }
-
-    public Path buildPath() {
-        PathBuilder builder = new PathBuilder();
-        buildPath(builder);
-        return builder.build();
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
