@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.client.renderer;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkState;
-import com.jamieswhiteshirt.clothesline.api.Graph;
+import com.jamieswhiteshirt.clothesline.api.Path;
 import com.jamieswhiteshirt.clothesline.api.AttachmentUnit;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
@@ -43,7 +43,7 @@ public final class EdgeAttachmentProjector {
     }
 
 
-    private static float angleBetween(Graph.Edge a, Graph.Edge b) {
+    private static float angleBetween(Path.Edge a, Path.Edge b) {
         float angleA = calculateGlobalAngleY(BlockPos.ORIGIN, a.getDelta());
         float angleB = calculateGlobalAngleY(BlockPos.ORIGIN, b.getDelta());
         return floorModAngle(angleA - angleB);
@@ -52,18 +52,18 @@ public final class EdgeAttachmentProjector {
     public static EdgeAttachmentProjector build(IClientNetworkEdge edge) {
         INetworkState state = edge.getNetwork().getState();
 
-        List<Graph.Edge> edges = state.getGraph().getEdges();
-        Graph.Edge graphEdge = edge.getGraphEdge();
-        Graph.Edge fromGraphEdge = edges.get(Math.floorMod(edge.getIndex() - 1, edges.size()));
-        Graph.Edge toGraphEdge = edges.get(Math.floorMod(edge.getIndex() + 1, edges.size()));
+        List<Path.Edge> edges = state.getPath().getEdges();
+        Path.Edge pathEdge = edge.getPathEdge();
+        Path.Edge fromPathEdge = edges.get(Math.floorMod(edge.getIndex() - 1, edges.size()));
+        Path.Edge toPathEdge = edges.get(Math.floorMod(edge.getIndex() + 1, edges.size()));
 
         return new EdgeAttachmentProjector(
-            edge.getGraphEdge().getFromOffset(),
-            edge.getGraphEdge().getToOffset(),
+            edge.getPathEdge().getFromOffset(),
+            edge.getPathEdge().getToOffset(),
             edge.getProjection(),
-            calculateGlobalAngleY(BlockPos.ORIGIN, graphEdge.getDelta()),
-            angleBetween(fromGraphEdge, graphEdge),
-            angleBetween(graphEdge, toGraphEdge)
+            calculateGlobalAngleY(BlockPos.ORIGIN, pathEdge.getDelta()),
+            angleBetween(fromPathEdge, pathEdge),
+            angleBetween(pathEdge, toPathEdge)
         );
     }
 

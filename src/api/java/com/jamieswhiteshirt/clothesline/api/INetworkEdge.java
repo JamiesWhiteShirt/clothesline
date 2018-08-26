@@ -3,7 +3,7 @@ package com.jamieswhiteshirt.clothesline.api;
 public interface INetworkEdge {
     INetwork getNetwork();
 
-    Graph.Edge getGraphEdge();
+    Path.Edge getPathEdge();
 
     int getIndex();
 }

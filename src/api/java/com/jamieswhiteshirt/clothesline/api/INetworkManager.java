@@ -29,14 +29,14 @@ public interface INetworkManager<E extends INetworkEdge, N extends INetworkNode>
     INetwork getNetworkById(int id);
 
     /**
-     * Returns a spatial index of all the graph edges of all currently loaded networks.
-     * @return a spatial index of all the graph edges of all currently loaded networks
+     * Returns a spatial index of all the path edges of all currently loaded networks.
+     * @return a spatial index of all the path edges of all currently loaded networks
      */
     RTreeMap<Line, E> getEdges();
 
     /**
-     * Returns a spatial index of all the graph nodes of all currently loaded networks.
-     * @return a spatial index of all the graph nodes of all currently loaded networks
+     * Returns a spatial index of all the path nodes of all currently loaded networks.
+     * @return a spatial index of all the path nodes of all currently loaded networks
      */
     RTreeMap<BlockPos, N> getNodes();
 

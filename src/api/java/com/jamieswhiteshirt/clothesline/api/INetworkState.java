@@ -24,11 +24,11 @@ public interface INetworkState {
     Tree getTree();
 
     /**
-     * Returns the graph, a more operationally convenient representation of the structure of the clothesline network.
-     * This structure is not canonical, it derived from the tree.
-     * @return the graph
+     * Returns the path through the structure of the clothesline network. This structure is not canonical, it derived
+     * from the tree.
+     * @return the path through the structure of the clothesline network
      */
-    Graph getGraph();
+    Path getPath();
 
     /**
      * Returns the range of attachment slots, on [0, {@link #getLoopLength()})

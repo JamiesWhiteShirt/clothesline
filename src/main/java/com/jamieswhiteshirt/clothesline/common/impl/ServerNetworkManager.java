@@ -2,7 +2,6 @@ package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
-import com.jamieswhiteshirt.clothesline.common.util.BasicTree;
 import com.jamieswhiteshirt.clothesline.common.util.NetworkStateBuilder;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
@@ -29,7 +28,7 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
 
     private void dropAttachment(INetworkState state, ItemStack stack, int attachmentKey) {
         if (!stack.isEmpty() && world.getGameRules().getBoolean("doTileDrops")) {
-            Vec3d pos = state.getGraph().getPositionForOffset(state.attachmentKeyToOffset(attachmentKey));
+            Vec3d pos = state.getPath().getPositionForOffset(state.attachmentKeyToOffset(attachmentKey));
             EntityItem entityitem = new EntityItem(world, pos.x, pos.y - 0.5D, pos.z, stack);
             entityitem.setDefaultPickupDelay();
             world.spawnEntity(entityitem);
@@ -60,13 +59,13 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
     }
 
     @Override
-    protected INetworkEdge createNetworkEdge(Graph.Edge graphEdge, INetwork network, int index) {
-        return new NetworkEdge(network, graphEdge, index);
+    protected INetworkEdge createNetworkEdge(Path.Edge pathEdge, INetwork network, int index) {
+        return new NetworkEdge(network, pathEdge, index);
     }
 
     @Override
-    protected INetworkNode createNetworkNode(Graph.Node graphNode, INetwork network) {
-        return new NetworkNode(network, graphNode);
+    protected INetworkNode createNetworkNode(Path.Node pathNode, INetwork network) {
+        return new NetworkNode(network, pathNode);
     }
 
     @Override

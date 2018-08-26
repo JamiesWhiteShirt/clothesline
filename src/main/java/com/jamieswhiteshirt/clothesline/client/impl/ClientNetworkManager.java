@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.client.impl;
 
-import com.jamieswhiteshirt.clothesline.api.Graph;
+import com.jamieswhiteshirt.clothesline.api.Path;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
@@ -26,13 +26,13 @@ public final class ClientNetworkManager extends NetworkManager<IClientNetworkEdg
     }
 
     @Override
-    protected ClientNetworkEdge createNetworkEdge(Graph.Edge graphEdge, INetwork network, int index) {
-        return new ClientNetworkEdge(network, graphEdge, index);
+    protected ClientNetworkEdge createNetworkEdge(Path.Edge pathEdge, INetwork network, int index) {
+        return new ClientNetworkEdge(network, pathEdge, index);
     }
 
     @Override
-    protected INetworkNode createNetworkNode(Graph.Node graphNode, INetwork network) {
-        return new NetworkNode(network, graphNode);
+    protected INetworkNode createNetworkNode(Path.Node pathNode, INetwork network) {
+        return new NetworkNode(network, pathNode);
     }
 
     @Override

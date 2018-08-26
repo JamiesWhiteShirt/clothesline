@@ -9,7 +9,7 @@ import net.minecraft.util.math.Vec3d;
 public class Validation {
     public static boolean canReachAttachment(EntityPlayerMP player, INetwork network, int attachmentKey) {
         INetworkState state = network.getState();
-        return canReachPos(player, state.getGraph().getPositionForOffset(state.attachmentKeyToOffset(attachmentKey)));
+        return canReachPos(player, state.getPath().getPositionForOffset(state.attachmentKeyToOffset(attachmentKey)));
     }
 
     public static boolean canReachPos(EntityPlayerMP player, Vec3d pos) {

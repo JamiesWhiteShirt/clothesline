@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.client.impl;
 
-import com.jamieswhiteshirt.clothesline.api.Graph;
+import com.jamieswhiteshirt.clothesline.api.Path;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
@@ -12,9 +12,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class ClientNetworkEdge extends NetworkEdge implements IClientNetworkEdge {
     private final LineProjection projection;
 
-    public ClientNetworkEdge(INetwork network, Graph.Edge graphEdge, int index) {
-        super(network, graphEdge, index);
-        projection = LineProjection.create(graphEdge.getLine());
+    public ClientNetworkEdge(INetwork network, Path.Edge pathEdge, int index) {
+        super(network, pathEdge, index);
+        projection = LineProjection.create(pathEdge.getLine());
     }
 
     @Override

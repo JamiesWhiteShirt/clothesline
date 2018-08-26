@@ -3,7 +3,7 @@ package com.jamieswhiteshirt.clothesline.common.network.messagehandler;
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.IServerNetworkManager;
-import com.jamieswhiteshirt.clothesline.api.Graph;
+import com.jamieswhiteshirt.clothesline.api.Path;
 import com.jamieswhiteshirt.clothesline.api.Line;
 import com.jamieswhiteshirt.clothesline.common.network.message.HitNetworkMessage;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -25,7 +25,7 @@ public class HitNetworkMessageHandler implements IMessageHandler<HitNetworkMessa
             if (manager != null) {
                 INetwork network = manager.getNetworkById(message.networkId);
                 if (network != null) {
-                    Graph.Edge edge = network.getState().getGraph().getEdgeForOffset(message.offset);
+                    Path.Edge edge = network.getState().getPath().getEdgeForPosition(message.offset);
                     if (Validation.canReachPos(player, edge.getPositionForOffset(message.offset))) {
                         Line line = edge.getLine();
                         manager.disconnect(line.getFromPos(), line.getToPos());

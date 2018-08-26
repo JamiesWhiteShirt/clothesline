@@ -7,10 +7,9 @@ import net.minecraft.util.math.Vec3i;
 import java.util.*;
 
 /**
- * A graph of nodes and edges representing the structure and traversal of a clothesline network.
- * Edges are in order of attachment traversal, from offset 0 to loop length.
+ * A path through a graph of nodes and edges representing the traversal of a clothesline network.
  */
-public final class Graph {
+public final class Path {
     public static final class Node {
         private final BlockPos pos;
         private final List<Edge> edges;
@@ -131,17 +130,9 @@ public final class Graph {
     private final Map<BlockPos, Node> nodes;
     private final List<Edge> edges;
 
-    public Graph(Map<BlockPos, Node> nodes, List<Edge> edges) {
+    public Path(Map<BlockPos, Node> nodes, List<Edge> edges) {
         this.nodes = nodes;
         this.edges = edges;
-    }
-
-    public int getMaxOffset() {
-        if (!edges.isEmpty()) {
-            return edges.get(edges.size() - 1).toOffset;
-        } else {
-            return 0;
-        }
     }
 
     public Map<BlockPos, Node> getNodes() {
@@ -152,14 +143,14 @@ public final class Graph {
         return edges;
     }
 
-    private Edge getEdgeForOffset(int offset, int fromIndex, int toIndex) {
+    private Edge getEdgeForPosition(int offset, int fromIndex, int toIndex) {
         if (fromIndex != toIndex) {
             int middleIndex = (fromIndex + toIndex) / 2;
             Edge edge = edges.get(middleIndex);
             if (offset < edge.fromOffset) {
-                return getEdgeForOffset(offset, fromIndex, middleIndex);
+                return getEdgeForPosition(offset, fromIndex, middleIndex);
             } else if (offset >= edge.toOffset) {
-                return getEdgeForOffset(offset, middleIndex + 1, toIndex);
+                return getEdgeForPosition(offset, middleIndex + 1, toIndex);
             } else {
                 return edge;
             }
@@ -168,11 +159,11 @@ public final class Graph {
         }
     }
 
-    public Edge getEdgeForOffset(int offset) {
-        return getEdgeForOffset(offset, 0, edges.size());
+    public Edge getEdgeForPosition(int offset) {
+        return getEdgeForPosition(offset, 0, edges.size());
     }
 
     public Vec3d getPositionForOffset(int offset) {
-        return getEdgeForOffset(offset).getPositionForOffset(offset);
+        return getEdgeForPosition(offset).getPositionForOffset(offset);
     }
 }

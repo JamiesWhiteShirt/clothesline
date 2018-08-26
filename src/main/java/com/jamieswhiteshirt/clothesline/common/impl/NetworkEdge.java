@@ -1,20 +1,19 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
-import com.jamieswhiteshirt.clothesline.api.Graph;
+import com.jamieswhiteshirt.clothesline.api.Path;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.INetworkEdge;
-import com.jamieswhiteshirt.rtree3i.Box;
 
 import java.util.Objects;
 
 public class NetworkEdge implements INetworkEdge {
     private final INetwork network;
-    private final Graph.Edge graphEdge;
+    private final Path.Edge pathEdge;
     private final int index;
 
-    public NetworkEdge(INetwork network, Graph.Edge graphEdge, int index) {
+    public NetworkEdge(INetwork network, Path.Edge pathEdge, int index) {
         this.network = network;
-        this.graphEdge = graphEdge;
+        this.pathEdge = pathEdge;
         this.index = index;
     }
 
@@ -24,8 +23,8 @@ public class NetworkEdge implements INetworkEdge {
     }
 
     @Override
-    public Graph.Edge getGraphEdge() {
-        return graphEdge;
+    public Path.Edge getPathEdge() {
+        return pathEdge;
     }
 
     @Override
@@ -39,7 +38,7 @@ public class NetworkEdge implements INetworkEdge {
         if (o == null || getClass() != o.getClass()) return false;
         NetworkEdge edge = (NetworkEdge) o;
         return index == edge.index &&
-            Objects.equals(graphEdge, edge.graphEdge);
+            Objects.equals(pathEdge, edge.pathEdge);
     }
 
     @Override

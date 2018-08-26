@@ -193,7 +193,7 @@ public class Clothesline {
                 boolean intersects = manager.getEdges()
                     .values(box::intersects)
                     .anyMatch(networkEdge -> {
-                        Line line = networkEdge.getGraphEdge().getLine();
+                        Line line = networkEdge.getPathEdge().getLine();
                         return aabb.calculateIntercept(line.getFromVec(), line.getToVec()) != null;
                     });
                 if (intersects) {

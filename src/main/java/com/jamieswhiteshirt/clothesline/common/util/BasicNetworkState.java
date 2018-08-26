@@ -57,7 +57,7 @@ public final class BasicNetworkState {
                 new ArrayList<>(this.attachments.stream().map(
                         attachment -> new MutableSortedIntMap.Entry<>(attachment.getKey(), attachment.getStack())
                 ).collect(Collectors.toList())),
-                tree.getLoopLength()
+                tree.getTraversalLength()
         );
         return new NetworkState(
                 shift,

@@ -103,7 +103,7 @@ public final class RenderClotheslineNetwork {
     }
 
     private void renderEdge(IBlockAccess world, IClientNetworkEdge edge, double x, double y, double z, BufferBuilder bufferBuilder, float partialTicks) {
-        Graph.Edge ge = edge.getGraphEdge();
+        Path.Edge ge = edge.getPathEdge();
         Line line = ge.getLine();
         int combinedLightFrom = world.getCombinedLight(line.getFromPos(), 0);
         int combinedLightTo = world.getCombinedLight(line.getToPos(), 0);
@@ -148,10 +148,10 @@ public final class RenderClotheslineNetwork {
         FloatBuffer l2wBuffer = GLAllocation.createDirectFloatBuffer(16);
 
         edges.forEach(edge -> {
-            Graph.Edge graphEdge = edge.getGraphEdge();
+            Path.Edge pathEdge = edge.getPathEdge();
             INetworkState state = edge.getNetwork().getState();
-            double fromAttachmentKey = state.offsetToAttachmentKey(graphEdge.getFromOffset(), partialTicks);
-            double toAttachmentKey = state.offsetToAttachmentKey(graphEdge.getToOffset(), partialTicks);
+            double fromAttachmentKey = state.offsetToAttachmentKey(pathEdge.getFromOffset(), partialTicks);
+            double toAttachmentKey = state.offsetToAttachmentKey(pathEdge.getToOffset(), partialTicks);
 
             List<MutableSortedIntMap.Entry<ItemStack>> attachments = state.getAttachmentsInRange((int) fromAttachmentKey, (int) toAttachmentKey);
             if (!attachments.isEmpty()) {
@@ -220,12 +220,12 @@ public final class RenderClotheslineNetwork {
             .values(box -> camera.isBoundingBoxInFrustum(new AxisAlignedBB(box.x1(), box.y1(), box.z1(), box.x2(), box.y2(), box.z2())));
 
         edges.forEach(edge -> {
-            Graph.Edge graphEdge = edge.getGraphEdge();
-            BlockPos nodePos = graphEdge.getLine().getFromPos();
+            Path.Edge pathEdge = edge.getPathEdge();
+            BlockPos nodePos = pathEdge.getLine().getFromPos();
             INetworkNode node = nodesMap.get(nodePos);
-            Graph.Node graphNode = node.getGraphNode();
-            int nodeIndex = graphNode.getEdges().indexOf(graphEdge);
-            int networkIndex = edge.getNetwork().getState().getGraph().getEdges().indexOf(graphEdge);
+            Path.Node pathNode = node.getPathNode();
+            int nodeIndex = pathNode.getEdges().indexOf(pathEdge);
+            int networkIndex = edge.getNetwork().getState().getPath().getEdges().indexOf(pathEdge);
             Vec3d pos = edge.getProjection().projectRUF(-0.125D, 0.125D, 0.5D);
             debugRenderText(nodeIndex + " " + networkIndex, pos.x - x, pos.y - y, pos.z - z, yaw, pitch, fontRenderer);
         });

@@ -72,7 +72,7 @@ public final class Network implements INetwork {
             setAttachment(attachmentKey, ItemStack.EMPTY);
             World world = player.world;
             if (!world.isRemote && world.getGameRules().getBoolean("doTileDrops")) {
-                Vec3d pos = state.getGraph().getPositionForOffset(state.attachmentKeyToOffset(attachmentKey));
+                Vec3d pos = state.getPath().getPositionForOffset(state.attachmentKeyToOffset(attachmentKey));
                 EntityItem entityitem = new EntityItem(world, pos.x, pos.y - 0.5D, pos.z, stack);
                 entityitem.setDefaultPickupDelay();
                 world.spawnEntity(entityitem);

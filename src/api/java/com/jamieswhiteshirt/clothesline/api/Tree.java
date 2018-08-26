@@ -102,7 +102,7 @@ public final class Tree {
         return edges;
     }
 
-    public int getLoopLength() {
+    public int getTraversalLength() {
         return maxOffset - minOffset;
     }
 
@@ -122,19 +122,19 @@ public final class Tree {
         return edges.isEmpty();
     }
 
-    private GraphBuilder.NodeBuilder buildGraph(GraphBuilder graphBuilder) {
-        GraphBuilder.NodeBuilder nodeBuilder = graphBuilder.putNode(pos, baseRotation);
+    private PathBuilder.NodeBuilder buildPath(PathBuilder pathBuilder) {
+        PathBuilder.NodeBuilder nodeBuilder = pathBuilder.putNode(pos, baseRotation);
         for (Edge edge : edges) {
             nodeBuilder.putEdgeTo(edge.tree.pos);
-            GraphBuilder.NodeBuilder childNodeBuilder = edge.tree.buildGraph(graphBuilder);
+            PathBuilder.NodeBuilder childNodeBuilder = edge.tree.buildPath(pathBuilder);
             childNodeBuilder.putEdgeTo(pos);
         }
         return nodeBuilder;
     }
 
-    public Graph buildGraph() {
-        GraphBuilder builder = new GraphBuilder();
-        buildGraph(builder);
+    public Path buildPath() {
+        PathBuilder builder = new PathBuilder();
+        buildPath(builder);
         return builder.build();
     }
 

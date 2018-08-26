@@ -35,30 +35,30 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
     private final INetworkEventListener spatialIndexListener = new INetworkEventListener() {
         @Override
         public void onStateChanged(INetwork network, INetworkState previousState, INetworkState newState) {
-            unassignNetworkGraph(network, previousState.getGraph());
-            assignNetworkGraph(network, newState.getGraph());
+            unassignNetworkPath(network, previousState.getPath());
+            assignNetworkPath(network, newState.getPath());
         }
 
         @Override
         public void onAttachmentChanged(INetwork network, int attachmentKey, ItemStack previousStack, ItemStack newStack) { }
     };
 
-    private void unassignNetworkGraph(INetwork network, Graph graph) {
-        for (BlockPos pos : graph.getNodes().keySet()) {
+    private void unassignNetworkPath(INetwork network, Path path) {
+        for (BlockPos pos : path.getNodes().keySet()) {
             networkNodes = networkNodes.remove(pos);
         }
-        for (Graph.Edge graphEdge : graph.getEdges()) {
-            networkEdges = networkEdges.remove(graphEdge.getLine());
+        for (Path.Edge pathEdge : path.getEdges()) {
+            networkEdges = networkEdges.remove(pathEdge.getLine());
         }
     }
 
 
-    private void assignNetworkGraph(INetwork network, Graph graph) {
-        for (Graph.Node graphNode : graph.getNodes().values()) {
+    private void assignNetworkPath(INetwork network, Path path) {
+        for (Path.Node graphNode : path.getNodes().values()) {
             networkNodes = networkNodes.put(graphNode.getPos(), createNetworkNode(graphNode, network));
         }
         int i = 0;
-        for (Graph.Edge graphEdge : graph.getEdges()) {
+        for (Path.Edge graphEdge : path.getEdges()) {
             networkEdges = networkEdges.put(graphEdge.getLine(), createNetworkEdge(graphEdge, network, i++));
         }
     }
@@ -66,18 +66,18 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
     private static final ResourceLocation SPATIAL_INDEX_KEY = new ResourceLocation("clothesline", "spatial_index");
 
     private void startIndexing(INetwork network) {
-        assignNetworkGraph(network, network.getState().getGraph());
+        assignNetworkPath(network, network.getState().getPath());
         network.addEventListener(SPATIAL_INDEX_KEY, spatialIndexListener);
     }
 
     private void stopIndexing(INetwork network) {
-        unassignNetworkGraph(network, network.getState().getGraph());
+        unassignNetworkPath(network, network.getState().getPath());
         network.removeEventListener(SPATIAL_INDEX_KEY);
     }
 
-    protected abstract E createNetworkEdge(Graph.Edge graphEdge, INetwork network, int index);
+    protected abstract E createNetworkEdge(Path.Edge pathEdge, INetwork network, int index);
 
-    protected abstract N createNetworkNode(Graph.Node graphNode, INetwork network);
+    protected abstract N createNetworkNode(Path.Node pathNode, INetwork network);
 
     protected NetworkManager(World world) {
         this.world = world;

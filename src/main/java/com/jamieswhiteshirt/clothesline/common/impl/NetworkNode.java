@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
-import com.jamieswhiteshirt.clothesline.api.Graph;
+import com.jamieswhiteshirt.clothesline.api.Path;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.INetworkNode;
 
@@ -8,11 +8,11 @@ import java.util.Objects;
 
 public final class NetworkNode implements INetworkNode {
     private final INetwork network;
-    private final Graph.Node graphNode;
+    private final Path.Node pathNode;
 
-    public NetworkNode(INetwork network, Graph.Node graphNode) {
+    public NetworkNode(INetwork network, Path.Node pathNode) {
         this.network = network;
-        this.graphNode = graphNode;
+        this.pathNode = pathNode;
     }
 
     @Override
@@ -21,8 +21,8 @@ public final class NetworkNode implements INetworkNode {
     }
 
     @Override
-    public Graph.Node getGraphNode() {
-        return graphNode;
+    public Path.Node getPathNode() {
+        return pathNode;
     }
 
     @Override
@@ -31,11 +31,11 @@ public final class NetworkNode implements INetworkNode {
         if (o == null || getClass() != o.getClass()) return false;
         NetworkNode node = (NetworkNode) o;
         return Objects.equals(network, node.network) &&
-            Objects.equals(graphNode, node.graphNode);
+            Objects.equals(pathNode, node.pathNode);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(network, graphNode);
+        return Objects.hash(network, pathNode);
     }
 }

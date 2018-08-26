@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
-import com.jamieswhiteshirt.clothesline.api.Graph;
+import com.jamieswhiteshirt.clothesline.api.Path;
 import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.Tree;
 import com.jamieswhiteshirt.clothesline.api.util.MathUtil;
@@ -22,7 +22,7 @@ public final class NetworkState implements INetworkState {
     private int momentum;
 
     private final Tree tree;
-    private final Graph graph;
+    private final Path path;
     private final MutableSortedIntMap<ItemStack> attachments;
 
     public static INetworkState createInitial(Tree tree) {
@@ -38,7 +38,7 @@ public final class NetworkState implements INetworkState {
 
     public NetworkState(int previousShift, int shift, int previousMomentum, int momentum, Tree tree, MutableSortedIntMap<ItemStack> attachments) {
         this.tree = tree;
-        this.graph = tree.buildGraph();
+        this.path = tree.buildPath();
         this.attachments = attachments;
         this.previousShift = previousShift;
         this.previousMomentum = previousMomentum;
@@ -56,8 +56,8 @@ public final class NetworkState implements INetworkState {
     }
 
     @Override
-    public Graph getGraph() {
-        return graph;
+    public Path getPath() {
+        return path;
     }
 
     @Override
@@ -145,7 +145,7 @@ public final class NetworkState implements INetworkState {
 
     @Override
     public int getLoopLength() {
-        return tree.getLoopLength();
+        return tree.getTraversalLength();
     }
 
     @Override

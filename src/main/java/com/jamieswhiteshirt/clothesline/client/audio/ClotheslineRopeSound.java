@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.client.audio;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkState;
-import com.jamieswhiteshirt.clothesline.api.Graph;
+import com.jamieswhiteshirt.clothesline.api.Path;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineSoundEvents;
 import net.minecraft.client.audio.MovingSound;
 import net.minecraft.util.SoundCategory;
@@ -11,9 +11,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class ClotheslineRopeSound extends MovingSound {
     private final INetworkState state;
-    private final Graph.Node node;
+    private final Path.Node node;
 
-    public ClotheslineRopeSound(INetworkState state, Graph.Node node) {
+    public ClotheslineRopeSound(INetworkState state, Path.Node node) {
         super(ClotheslineSoundEvents.BLOCK_CLOTHESLINE_ANCHOR_ROPE, SoundCategory.BLOCKS);
         this.state = state;
         this.node = node;

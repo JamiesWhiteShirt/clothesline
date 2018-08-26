@@ -6,10 +6,10 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public final class GraphBuilder {
+public final class PathBuilder {
     public final class NodeBuilder {
         private final BlockPos pos;
-        private final List<Graph.Edge> edges = new ArrayList<>();
+        private final List<Path.Edge> edges = new ArrayList<>();
         private final int baseRotation;
 
         private NodeBuilder(BlockPos pos, int baseRotation) {
@@ -17,7 +17,7 @@ public final class GraphBuilder {
             this.baseRotation = baseRotation;
         }
 
-        private void putEdge(Graph.Edge edge, int minIndex, int maxIndex) {
+        private void putEdge(Path.Edge edge, int minIndex, int maxIndex) {
             if (minIndex != maxIndex) {
                 int middleIndex = (minIndex + maxIndex) / 2;
                 int comparison = DeltaComparator.getInstance().compare(edge.getDelta(), edges.get(middleIndex).getDelta());
@@ -34,14 +34,14 @@ public final class GraphBuilder {
         public void putEdgeTo(BlockPos toPos) {
             int minOffset = getMaxOffset();
             int length = AttachmentUnit.lengthBetween(this.pos, toPos);
-            Graph.Edge edge = new Graph.Edge(toPos.subtract(this.pos), new Line(this.pos, toPos), minOffset, minOffset + length);
+            Path.Edge edge = new Path.Edge(toPos.subtract(this.pos), new Line(this.pos, toPos), minOffset, minOffset + length);
             allEdges.add(edge);
             putEdge(edge, 0, edges.size());
         }
     }
 
     private final Map<BlockPos, NodeBuilder> nodes = new HashMap<>();
-    private final List<Graph.Edge> allEdges = new ArrayList<>();
+    private final List<Path.Edge> allEdges = new ArrayList<>();
 
     public int getMaxOffset() {
         if (!allEdges.isEmpty()) {
@@ -57,10 +57,10 @@ public final class GraphBuilder {
         return nodeBuilder;
     }
 
-    public Graph build() {
-        Map<BlockPos, Graph.Node> nodes = this.nodes.values().stream()
-            .map(nodeBuilder -> new Graph.Node(nodeBuilder.pos, nodeBuilder.edges, nodeBuilder.baseRotation))
-            .collect(Collectors.toMap(Graph.Node::getPos, Function.identity()));
-        return new Graph(nodes, new ArrayList<>(allEdges));
+    public Path build() {
+        Map<BlockPos, Path.Node> nodes = this.nodes.values().stream()
+            .map(nodeBuilder -> new Path.Node(nodeBuilder.pos, nodeBuilder.edges, nodeBuilder.baseRotation))
+            .collect(Collectors.toMap(Path.Node::getPos, Function.identity()));
+        return new Path(nodes, new ArrayList<>(allEdges));
     }
 }

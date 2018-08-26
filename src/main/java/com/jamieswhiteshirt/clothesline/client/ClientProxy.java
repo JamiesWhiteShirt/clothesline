@@ -379,7 +379,7 @@ public class ClientProxy extends CommonProxy {
 
     @Nullable
     private NetworkRaytraceHit raytraceEdge(Ray viewRay, IClientNetworkEdge edge, double maxDistanceSq, float partialTicks) {
-        Graph.Edge graphEdge = edge.getGraphEdge();
+        Path.Edge pathEdge = edge.getPathEdge();
         LineProjection projection = edge.getProjection();
         NetworkRaytraceHit hit = null;
 
@@ -401,15 +401,15 @@ public class ClientProxy extends CommonProxy {
             if (nearDelta.lengthSquared() < (1.0D / 16.0D) * (1.0D / 16.0D)) {
                 double rayLengthSquared = (viewNear.subtract(viewRay.from)).lengthSquared();
                 if (rayLengthSquared < maxDistanceSq) {
-                    double offset = graphEdge.getFromOffset() * (1.0D - edgeDeltaScalar) + graphEdge.getToOffset() * edgeDeltaScalar;
+                    double offset = pathEdge.getFromOffset() * (1.0D - edgeDeltaScalar) + pathEdge.getToOffset() * edgeDeltaScalar;
                     hit = new EdgeRaytraceHit(rayLengthSquared, edge, offset);
                 }
             }
         }
 
         INetworkState state = edge.getNetwork().getState();
-        double fromAttachmentKey = state.offsetToAttachmentKey(graphEdge.getFromOffset(), partialTicks);
-        double toAttachmentKey = state.offsetToAttachmentKey(graphEdge.getToOffset(), partialTicks);
+        double fromAttachmentKey = state.offsetToAttachmentKey(pathEdge.getFromOffset(), partialTicks);
+        double toAttachmentKey = state.offsetToAttachmentKey(pathEdge.getToOffset(), partialTicks);
         List<MutableSortedIntMap.Entry<ItemStack>> attachments = state.getAttachmentsInRange((int) fromAttachmentKey, (int) toAttachmentKey);
         if (!attachments.isEmpty()) {
             Vector4f lFrom = new Vector4f();
