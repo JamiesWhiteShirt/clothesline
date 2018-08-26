@@ -1,17 +1,12 @@
-package com.jamieswhiteshirt.clothesline.client.renderer;
+package com.jamieswhiteshirt.clothesline.api.client;
 
-import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.Path;
 import com.jamieswhiteshirt.clothesline.api.AttachmentUnit;
-import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
-import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
-
-import java.util.List;
 
 public final class EdgeAttachmentProjector {
     private final int fromOffset;
@@ -30,7 +25,7 @@ public final class EdgeAttachmentProjector {
         this.toAngleDiff = toAngleDiff;
     }
 
-    public static float floorModAngle(float angle) {
+    private static float floorModAngle(float angle) {
         if (angle >= 0.0F) {
             return angle % 360.0F;
         } else {
@@ -38,8 +33,8 @@ public final class EdgeAttachmentProjector {
         }
     }
 
-    public static float calculateGlobalAngleY(BlockPos from, BlockPos to) {
-        return floorModAngle((float)StrictMath.toDegrees(Math.atan2(to.getZ() - from.getZ(), to.getX() - from.getX())));
+    private static float calculateGlobalAngleY(BlockPos from, BlockPos to) {
+        return floorModAngle((float)Math.toDegrees(Math.atan2(to.getZ() - from.getZ(), to.getX() - from.getX())));
     }
 
 
@@ -49,18 +44,11 @@ public final class EdgeAttachmentProjector {
         return floorModAngle(angleA - angleB);
     }
 
-    public static EdgeAttachmentProjector build(IClientNetworkEdge edge) {
-        INetworkState state = edge.getNetwork().getState();
-
-        List<Path.Edge> edges = state.getPath().getEdges();
-        Path.Edge pathEdge = edge.getPathEdge();
-        Path.Edge fromPathEdge = edges.get(Math.floorMod(edge.getIndex() - 1, edges.size()));
-        Path.Edge toPathEdge = edges.get(Math.floorMod(edge.getIndex() + 1, edges.size()));
-
+    public static EdgeAttachmentProjector build(Path.Edge fromPathEdge, Path.Edge pathEdge, Path.Edge toPathEdge, LineProjection projection) {
         return new EdgeAttachmentProjector(
-            edge.getPathEdge().getFromOffset(),
-            edge.getPathEdge().getToOffset(),
-            edge.getProjection(),
+            pathEdge.getFromOffset(),
+            pathEdge.getToOffset(),
+            projection,
             calculateGlobalAngleY(BlockPos.ORIGIN, pathEdge.getDelta()),
             angleBetween(fromPathEdge, pathEdge),
             angleBetween(pathEdge, toPathEdge)

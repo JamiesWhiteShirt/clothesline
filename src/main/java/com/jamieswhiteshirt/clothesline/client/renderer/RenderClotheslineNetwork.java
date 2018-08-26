@@ -2,6 +2,7 @@ package com.jamieswhiteshirt.clothesline.client.renderer;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.*;
+import com.jamieswhiteshirt.clothesline.api.client.EdgeAttachmentProjector;
 import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
@@ -155,7 +156,7 @@ public final class RenderClotheslineNetwork {
 
             List<MutableSortedIntMap.Entry<ItemStack>> attachments = state.getAttachmentsInRange((int) fromAttachmentKey, (int) toAttachmentKey);
             if (!attachments.isEmpty()) {
-                EdgeAttachmentProjector projector = EdgeAttachmentProjector.build(edge);
+                EdgeAttachmentProjector projector = edge.getProjector();
 
                 for (MutableSortedIntMap.Entry<ItemStack> attachmentEntry : attachments) {
                     double attachmentOffset = state.attachmentKeyToOffset(attachmentEntry.getKey(), partialTicks);

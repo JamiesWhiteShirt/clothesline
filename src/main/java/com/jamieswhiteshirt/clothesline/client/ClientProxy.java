@@ -13,7 +13,7 @@ import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
 import com.jamieswhiteshirt.clothesline.client.raytrace.AttachmentRaytraceHit;
 import com.jamieswhiteshirt.clothesline.client.raytrace.EdgeRaytraceHit;
 import com.jamieswhiteshirt.clothesline.client.raytrace.NetworkRaytraceHit;
-import com.jamieswhiteshirt.clothesline.client.renderer.EdgeAttachmentProjector;
+import com.jamieswhiteshirt.clothesline.api.client.EdgeAttachmentProjector;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork;
 import com.jamieswhiteshirt.clothesline.client.renderer.tileentity.TileEntityClotheslineAnchorRenderer;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineBlocks;
@@ -418,7 +418,7 @@ public class ClientProxy extends CommonProxy {
             Vector4f lTo = new Vector4f();
             Vector4f wHitVec = new Vector4f();
 
-            EdgeAttachmentProjector projector = EdgeAttachmentProjector.build(edge);
+            EdgeAttachmentProjector projector = edge.getProjector();
             for (MutableSortedIntMap.Entry<ItemStack> attachment : attachments) {
                 double attachmentOffset = state.attachmentKeyToOffset(attachment.getKey(), partialTicks);
                 // Local space to world space matrix

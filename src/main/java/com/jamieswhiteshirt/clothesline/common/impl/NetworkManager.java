@@ -158,7 +158,9 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
 
     @Override
     public final void update() {
+        world.profiler.startSection("tickClotheslines");
         getNetworks().forEach(INetwork::update);
+        world.profiler.endSection();
     }
 
     @Override
