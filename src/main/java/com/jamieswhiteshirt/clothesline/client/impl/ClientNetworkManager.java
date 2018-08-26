@@ -63,6 +63,22 @@ public final class ClientNetworkManager extends NetworkManager<IClientNetworkEdg
     }
 
     @Override
+    public boolean disconnect(BlockPos posA, BlockPos posB) {
+        if (posA.equals(posB)) {
+            return false;
+        }
+
+        INetworkNode nodeA = getNodes().get(posA);
+        INetworkNode nodeB = getNodes().get(posB);
+        if (nodeA != null && nodeB != null) {
+            INetwork network = nodeA.getNetwork();
+            return network == nodeB.getNetwork();
+        }
+
+        return false;
+    }
+
+    @Override
     public void destroyNode(BlockPos pos) {
     }
 

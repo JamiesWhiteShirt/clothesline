@@ -144,6 +144,29 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
         return true;
     }
 
+    @Override
+    public boolean disconnect(BlockPos posA, BlockPos posB) {
+        if (posA.equals(posB)) {
+            return false;
+        }
+
+        INetworkNode nodeA = getNodes().get(posA);
+        INetworkNode nodeB = getNodes().get(posB);
+        if (nodeA != null && nodeB != null) {
+            INetwork network = nodeA.getNetwork();
+            if (network == nodeB.getNetwork()) {
+                NetworkStateBuilder state = NetworkStateBuilder.fromAbsolute(network.getState());
+                state.reroot(posA);
+                removeNetwork(network);
+                applySplitResult(state.splitEdge(posB));
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private void applySplitResult(NetworkStateBuilder.SplitResult splitResult) {
         for (NetworkStateBuilder subState : splitResult.getSubStates()) {
             createAndAddNetwork(subState.toAbsolute());
@@ -167,20 +190,5 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
     public void createNode(BlockPos pos) {
         NetworkStateBuilder stateBuilder = NetworkStateBuilder.emptyRoot(0, pos);
         createAndAddNetwork(stateBuilder.toAbsolute());
-    }
-
-    @Override
-    public void disconnect(BlockPos posA, BlockPos posB) {
-        INetworkNode nodeA = getNodes().get(posA);
-        INetworkNode nodeB = getNodes().get(posB);
-        if (nodeA != null && nodeB != null) {
-            INetwork network = nodeA.getNetwork();
-            if (network == nodeB.getNetwork()) {
-                NetworkStateBuilder state = NetworkStateBuilder.fromAbsolute(network.getState());
-                state.reroot(posA);
-                removeNetwork(network);
-                applySplitResult(state.splitEdge(posB));
-            }
-        }
     }
 }

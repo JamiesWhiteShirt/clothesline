@@ -55,8 +55,10 @@ public interface INetworkManager<E extends INetworkEdge, N extends INetworkNode>
     void update();
 
     /**
-     * Attempts to connect two nodes into the same clothesline network. Returns true if the operation was successful,
-     * false otherwise.
+     * Attempts to connect two nodes into the same clothesline network. Returns true if the nodes exist and they are not
+     * already connected, false otherwise.
+     *
+     * This operation may not modify anything if the world is a client world.
      *
      * This operation may modify the structure of existing clothesline networks, remove existing clothesline networks or
      * create entirely new ones, in which case event listeners will be notified with
@@ -64,9 +66,25 @@ public interface INetworkManager<E extends INetworkEdge, N extends INetworkNode>
      * {@link INetworkManagerEventListener#onNetworkRemoved(INetworkManager, INetwork)} respectively.
      * @param fromPos the first node position
      * @param toPos the second node position
-     * @return true if the operation was successful, false otherwise
+     * @return true if the nodes exist and they are not already connected, false otherwise
      */
     boolean connect(BlockPos fromPos, BlockPos toPos);
+
+    /**
+     * Attempts to remove the connection between two nodes. Returns true if there was a connection between the nodes,
+     * false otherwise. If it results in removal of items, items will be spawned in the world.
+     *
+     * This operation may not modify anything if the world is a client world.
+     *
+     * This operation may modify the structure of existing clothesline networks, remove existing clothesline networks or
+     * create entirely new ones, in which case event listeners will be notified with
+     * {@link INetworkManagerEventListener#onNetworkAdded(INetworkManager, INetwork)} and
+     * {@link INetworkManagerEventListener#onNetworkRemoved(INetworkManager, INetwork)} respectively.
+     * @param posA the first node position
+     * @param posB the second node position
+     * @return true if there was a connection between the nodes, false otherwise
+     */
+    boolean disconnect(BlockPos posA, BlockPos posB);
 
     /**
      * Creates an empty clothesline network at the specified position

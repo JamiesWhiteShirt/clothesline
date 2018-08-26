@@ -1,10 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
-import com.jamieswhiteshirt.clothesline.api.INetwork;
-import com.jamieswhiteshirt.clothesline.api.IServerNetworkManager;
-import com.jamieswhiteshirt.clothesline.api.Path;
-import com.jamieswhiteshirt.clothesline.api.Line;
+import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.common.network.message.HitNetworkMessage;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldServer;
@@ -21,7 +18,7 @@ public class HitNetworkMessageHandler implements IMessageHandler<HitNetworkMessa
         EntityPlayerMP player = ctx.getServerHandler().player;
         WorldServer world = player.getServerWorld();
         world.addScheduledTask(() -> {
-            IServerNetworkManager manager = world.getCapability(Clothesline.SERVER_NETWORK_MANAGER_CAPABILITY, null);
+            INetworkManager manager = world.getCapability(Clothesline.NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 INetwork network = manager.getNetworkById(message.networkId);
                 if (network != null) {

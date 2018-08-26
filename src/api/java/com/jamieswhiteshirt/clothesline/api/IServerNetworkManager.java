@@ -1,7 +1,5 @@
 package com.jamieswhiteshirt.clothesline.api;
 
-import net.minecraft.util.math.BlockPos;
-
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
@@ -24,16 +22,4 @@ public interface IServerNetworkManager extends INetworkManager<INetworkEdge, INe
      */
     @Nullable
     INetwork getNetworkByUuid(UUID uuid);
-
-    /**
-     * Destroys the connection between two nodes if it exists.
-     *
-     * This operation may modify the structure of existing clothesline networks, remove existing clothesline networks or
-     * create entirely new ones, in which case event listeners will be notified with
-     * {@link INetworkManagerEventListener#onNetworkAdded(INetworkManager, INetwork)} and
-     * {@link INetworkManagerEventListener#onNetworkRemoved(INetworkManager, INetwork)} respectively.
-     * @param posA the first node position
-     * @param posB the second node position
-     */
-    void disconnect(BlockPos posA, BlockPos posB);
 }
