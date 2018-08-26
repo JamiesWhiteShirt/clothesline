@@ -43,7 +43,7 @@ public class TileEntityClotheslineAnchorRenderer extends TileEntitySpecialRender
         GlStateManager.pushMatrix();
         GlStateManager.scale(2.0D, 2.0D, 2.0D);
         renderItem.renderItem(new ItemStack(ClotheslineItems.CLOTHESLINE_ANCHOR, 1, 1), ItemCameraTransforms.TransformType.FIXED);
-        if (node != null && node.getNetwork().getState().getTree().isEmpty()) {
+        if (node != null && !node.getNetwork().getState().getTree().isEmpty()) {
             renderItem.renderItem(new ItemStack(ClotheslineItems.CLOTHESLINE_ANCHOR, 1, 2), ItemCameraTransforms.TransformType.FIXED);
         }
         GlStateManager.popMatrix();
