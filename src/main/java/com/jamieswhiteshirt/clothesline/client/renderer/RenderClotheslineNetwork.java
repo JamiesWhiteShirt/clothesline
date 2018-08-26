@@ -116,6 +116,7 @@ public final class RenderClotheslineNetwork {
         renderManager.renderEngine.bindTexture(TEXTURE);
         RenderHelper.enableStandardItemLighting();
         Minecraft.getMinecraft().entityRenderer.enableLightmap();
+        GlStateManager.enableCull();
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
@@ -123,6 +124,7 @@ public final class RenderClotheslineNetwork {
         bufferBuilder.begin(GL11.GL_QUADS, VERTEX_FORMAT);
         consumer.accept(bufferBuilder);
         tessellator.draw();
+        GlStateManager.disableCull();
     }
 
     public void render(IBlockAccess world, RTreeMap<Line, IClientNetworkEdge> edgesMap, ICamera camera, double x, double y, double z, float partialTicks) {
