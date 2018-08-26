@@ -256,7 +256,9 @@ public class ClientProxy extends CommonProxy {
                 IClientNetworkManager manager = world.getCapability(Clothesline.CLIENT_NETWORK_MANAGER_CAPABILITY, null);
                 if (manager != null) {
                     boolean showDebugInfo = Minecraft.getMinecraft().gameSettings.showDebugInfo;
+                    world.profiler.startSection("renderClotheslines");
                     renderClotheslineNetwork.render(world, manager.getEdges(), event.getCamera(), x, y, z, partialTicks);
+                    world.profiler.endSection();
                     if (showDebugInfo) {
                         renderClotheslineNetwork.debugRender(manager.getNodes(), manager.getEdges(), event.getCamera(), x, y, z, event.getPartialTicks());
                     }

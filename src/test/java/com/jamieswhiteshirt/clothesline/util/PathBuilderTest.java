@@ -21,9 +21,9 @@ class PathBuilderTest {
 
         PathBuilder builder = new PathBuilder();
         PathBuilder.NodeBuilder nodeA = builder.putNode(posA, 0);
-        nodeA.putEdgeTo(posB);
+        nodeA.putEdgeTo(posB, AttachmentUnit.lengthBetween(posA, posB));
         PathBuilder.NodeBuilder nodeB = builder.putNode(posB, 0);
-        nodeB.putEdgeTo(posA);
+        nodeB.putEdgeTo(posA, AttachmentUnit.lengthBetween(posB, posA));
         Path path = builder.build();
 
         Path.Edge a_b = new Path.Edge(posB.subtract(posA), new Line(posA, posB), AttachmentUnit.UNITS_PER_BLOCK * 0, AttachmentUnit.UNITS_PER_BLOCK * 1);
