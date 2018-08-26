@@ -6,6 +6,7 @@ import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.UUID;
 
 /**
  * Manages all the clothesline networks in a world.
@@ -20,13 +21,22 @@ public interface INetworkManager<E extends INetworkEdge, N extends INetworkNode>
     Collection<INetwork> getNetworks();
 
     /**
-     * Get a clothesline network by its shorter ID, or null if no clothesline network with the ID exists
+     * Get a clothesline network by its shorter ID, or null if no clothesline network with the ID exists.
      * @see INetwork#getId()
      * @param id the shorter ID
      * @return a clothesline network, or null if no clothesline network with the ID exists
      */
     @Nullable
     INetwork getNetworkById(int id);
+
+    /**
+     * Get a clothesline network by its longer UUID, or null if no clothesline network with the UUID exists.
+     * @see INetwork#getUuid()
+     * @param uuid the longer UUID
+     * @return a clothesline network, or null if no clothesline network with the UUID exists
+     */
+    @Nullable
+    INetwork getNetworkByUuid(UUID uuid);
 
     /**
      * Returns a spatial index of all the path edges of all currently loaded networks.

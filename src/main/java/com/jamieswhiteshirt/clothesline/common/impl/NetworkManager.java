@@ -29,6 +29,7 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
     private final World world;
     private List<INetwork> networks = new ArrayList<>();
     private IntHashMap<INetwork> networksById = new IntHashMap<>();
+    private Map<UUID, INetwork> networksByUuid = new HashMap<>();
     private RTreeMap<Line, E> networkEdges = createEdgesMap();
     private RTreeMap<BlockPos, N> networkNodes = createNodesMap();
     private final Map<ResourceLocation, INetworkManagerEventListener<E, N>> eventListeners = new TreeMap<>();
@@ -90,6 +91,10 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
         for (INetwork network : networks) {
             networksById.addKey(network.getId(), network);
         }
+        this.networksByUuid = new HashMap<>();
+        for (INetwork network : networks) {
+            networksByUuid.put(network.getUuid(), network);
+        }
         this.networkNodes = createNodesMap();
         this.networkEdges = createEdgesMap();
         for (INetwork network : networks) {
@@ -112,6 +117,12 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
         return networksById.lookup(id);
     }
 
+    @Nullable
+    @Override
+    public final INetwork getNetworkByUuid(UUID uuid) {
+        return networksByUuid.get(uuid);
+    }
+
     @Override
     public RTreeMap<BlockPos, N> getNodes() {
         return networkNodes;
@@ -125,6 +136,7 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
     protected void addNetwork(INetwork network) {
         networks.add(network);
         networksById.addKey(network.getId(), network);
+        networksByUuid.put(network.getUuid(), network);
         startIndexing(network);
 
         for (INetworkManagerEventListener<E, N> eventListener : eventListeners.values()) {
@@ -136,6 +148,7 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
     public void removeNetwork(INetwork network) {
         networks.remove(network);
         networksById.removeObject(network.getId());
+        networksByUuid.remove(network.getUuid());
         stopIndexing(network);
 
         for (INetworkManagerEventListener<E, N> eventListener : eventListeners.values()) {

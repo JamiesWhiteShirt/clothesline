@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INetworkNode> implements IServerNetworkManager {
     private final WorldServer world;
-    private Map<UUID, INetwork> networksByUuid = new HashMap<>();
     private int nextNetworkId = 0;
 
     public ServerNetworkManager(WorldServer world) {
@@ -51,10 +50,6 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
     public void reset(List<PersistentNetwork> data) {
         nextNetworkId = 0;
         List<INetwork> networks = data.stream().map(persistent -> new Network(nextNetworkId++, persistent)).collect(Collectors.toList());
-        this.networksByUuid = new HashMap<>();
-        for (INetwork network : networks) {
-            networksByUuid.put(network.getUuid(), network);
-        }
         resetInternal(networks);
     }
 
@@ -66,24 +61,6 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
     @Override
     protected INetworkNode createNetworkNode(Path.Node pathNode, INetwork network) {
         return new NetworkNode(network, pathNode);
-    }
-
-    @Override
-    protected void addNetwork(INetwork network) {
-        networksByUuid.put(network.getUuid(), network);
-        super.addNetwork(network);
-    }
-
-    @Override
-    public void removeNetwork(INetwork network) {
-        networksByUuid.remove(network.getUuid());
-        super.removeNetwork(network);
-    }
-
-    @Nullable
-    @Override
-    public final INetwork getNetworkByUuid(UUID uuid) {
-        return networksByUuid.get(uuid);
     }
 
     private void extend(INetwork network, BlockPos fromPos, BlockPos toPos) {
