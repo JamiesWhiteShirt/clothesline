@@ -6,16 +6,6 @@ import org.junit.jupiter.api.Test;
 
 class AttachmentUnitTest {
     @Test
-    void floorModAngleFloorsPositive() {
-        Assertions.assertEquals(AttachmentUnit.floorModAngle(540), 180);
-    }
-
-    @Test
-    void floorModAngleFloorsNegative() {
-        Assertions.assertEquals(AttachmentUnit.floorModAngle(-540), 180);
-    }
-
-    @Test
     void calculateDistanceIsCommutative() {
         BlockPos[] positions = new BlockPos[] {
             new BlockPos(0, 0, 0),
