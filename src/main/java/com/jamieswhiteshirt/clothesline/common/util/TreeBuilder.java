@@ -64,7 +64,7 @@ public final class TreeBuilder {
 
         private Tree.Edge toAbsolute(List<MutableSortedIntMap<ItemStack>> attachmentsList, int fromOffset) {
             attachmentsList.add(preAttachments);
-            Tree tree = this.tree.toAbsolute(attachmentsList, fromOffset + length, BlockPos.ORIGIN.subtract(delta));
+            Tree tree = this.tree.build(attachmentsList, fromOffset + length, BlockPos.ORIGIN.subtract(delta));
             attachmentsList.add(postAttachments);
             return new Tree.Edge(delta, length, fromOffset, tree);
         }
@@ -233,7 +233,7 @@ public final class TreeBuilder {
         throw new IllegalArgumentException("Position is not in TreeBuilder");
     }
 
-    public Tree toAbsolute(List<MutableSortedIntMap<ItemStack>> stacksList, int fromOffset) {
+    public Tree build(List<MutableSortedIntMap<ItemStack>> stacksList, int fromOffset) {
         int toOffset = fromOffset;
         ArrayList<Tree.Edge> treeEdges = new ArrayList<>(edges.size());
         for (Edge edge : edges) {
@@ -244,7 +244,7 @@ public final class TreeBuilder {
         return new Tree(pos, treeEdges, fromOffset, toOffset, rotation);
     }
 
-    private Tree toAbsolute(List<MutableSortedIntMap<ItemStack>> stacksList, int fromOffset, BlockPos fromKey) {
+    private Tree build(List<MutableSortedIntMap<ItemStack>> stacksList, int fromOffset, BlockPos fromKey) {
         int toOffset = fromOffset;
         int splitIndex = floorDeltaIndex(fromKey);
         ArrayList<Tree.Edge> treeEdges = new ArrayList<>(edges.size());

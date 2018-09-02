@@ -97,9 +97,9 @@ public final class NetworkStateBuilder {
         );
     }
 
-    public INetworkState toAbsolute() {
+    public INetworkState build() {
         LinkedList<MutableSortedIntMap<ItemStack>> attachmentsList = new LinkedList<>();
-        Tree tree = treeRoot.toAbsolute(attachmentsList, 0);
+        Tree tree = treeRoot.build(attachmentsList, 0);
         Path path = PathBuilder.buildPath(tree);
         return new NetworkState(0, 0, momentum, momentum, tree, path, MutableSortedIntMap.concatenate(attachmentsList));
     }

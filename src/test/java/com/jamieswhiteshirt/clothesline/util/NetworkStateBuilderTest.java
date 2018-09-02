@@ -26,7 +26,7 @@ class NetworkStateBuilderTest {
     void persistsEquivalence() {
         INetworkState a = NetworkTests.ab.state;
         NetworkStateBuilder builder = NetworkStateBuilder.fromAbsolute(a);
-        INetworkState b = builder.toAbsolute();
+        INetworkState b = builder.build();
         NetworkTests.assertNetworkStatesEquivalent(a, b);
     }
 
@@ -34,7 +34,7 @@ class NetworkStateBuilderTest {
     void canMakeAB() {
         NetworkStateBuilder builder = NetworkStateBuilder.emptyRoot(0, NetworkTests.posA);
         builder.addEdge(NetworkTests.posA, NetworkTests.posB);
-        INetworkState state = builder.toAbsolute();
+        INetworkState state = builder.build();
         NetworkTests.assertNetworkStatesEquivalent(state, NetworkTests.ab.state);
     }
 
@@ -84,7 +84,7 @@ class NetworkStateBuilderTest {
         NetworkStateBuilder builder = NetworkStateBuilder.emptyRoot(0, origin);
         Stream.of(new BlockPos(1, 0, 0), new BlockPos(0, -1, 0), new BlockPos(-1, -1, 0), new BlockPos(-1, 1, 0), new BlockPos(0, 5, 5))
             .forEach(pos -> builder.addEdge(origin, pos));
-        Tree tree = builder.toAbsolute().getTree();
+        Tree tree = builder.build().getTree();
         Assertions.assertEquals(origin, tree.getPos());
         List<Tree.Edge> edges = tree.getEdges();
         assertStrictlyOrdered(edges.stream().map(Tree.Edge::getDelta).collect(Collectors.toList()));

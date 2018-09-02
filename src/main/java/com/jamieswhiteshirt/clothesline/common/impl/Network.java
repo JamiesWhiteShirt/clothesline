@@ -39,16 +39,6 @@ public final class Network implements INetwork {
     }
 
     @Override
-    public void setState(INetworkState state) {
-        INetworkState previousState = this.state;
-        this.state = state;
-
-        for (INetworkEventListener eventListener : eventListeners.values()) {
-            eventListener.onStateChanged(this, previousState, state);
-        }
-    }
-
-    @Override
     public void update() {
         state.update();
     }

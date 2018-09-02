@@ -14,21 +14,8 @@ import java.util.*;
 
 @SideOnly(Side.CLIENT)
 public class SoundNetworkManagerListener<E extends INetworkEdge, N extends INetworkNode> implements INetworkManagerEventListener<E, N> {
-    private static final ResourceLocation SOUND_KEY = new ResourceLocation("clothesline", "sound");
-
     private final Map<BlockPos, ClotheslineRopeSound> anchorSounds = new HashMap<>();
     private final SoundHandler soundHandler = Minecraft.getMinecraft().getSoundHandler();
-    private final INetworkEventListener networkSoundListener = new INetworkEventListener() {
-        @Override
-        public void onStateChanged(INetwork network, INetworkState previousState, INetworkState newState) {
-            unlistenTo(previousState);
-            listenTo(newState);
-        }
-
-        @Override
-        public void onAttachmentChanged(INetwork network, int attachmentKey, ItemStack previousStack, ItemStack newStack) {
-        }
-    };
 
     private void listenTo(INetworkState state) {
         for (Path.Node node : state.getPath().getNodes().values()) {
@@ -49,7 +36,6 @@ public class SoundNetworkManagerListener<E extends INetworkEdge, N extends INetw
 
     private void listenTo(INetwork network) {
         listenTo(network.getState());
-        network.addEventListener(SOUND_KEY, networkSoundListener);
     }
 
     private void unlistenTo(INetwork network) {

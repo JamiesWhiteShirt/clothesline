@@ -33,16 +33,6 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
     private RTreeMap<Line, E> networkEdges = createEdgesMap();
     private RTreeMap<BlockPos, N> networkNodes = createNodesMap();
     private final Map<ResourceLocation, INetworkManagerEventListener<E, N>> eventListeners = new TreeMap<>();
-    private final INetworkEventListener spatialIndexListener = new INetworkEventListener() {
-        @Override
-        public void onStateChanged(INetwork network, INetworkState previousState, INetworkState newState) {
-            unassignNetworkPath(network, previousState.getPath());
-            assignNetworkPath(network, newState.getPath());
-        }
-
-        @Override
-        public void onAttachmentChanged(INetwork network, int attachmentKey, ItemStack previousStack, ItemStack newStack) { }
-    };
 
     private void unassignNetworkPath(INetwork network, Path path) {
         for (BlockPos pos : path.getNodes().keySet()) {
@@ -64,16 +54,12 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
         }
     }
 
-    private static final ResourceLocation SPATIAL_INDEX_KEY = new ResourceLocation("clothesline", "spatial_index");
-
     private void startIndexing(INetwork network) {
         assignNetworkPath(network, network.getState().getPath());
-        network.addEventListener(SPATIAL_INDEX_KEY, spatialIndexListener);
     }
 
     private void stopIndexing(INetwork network) {
         unassignNetworkPath(network, network.getState().getPath());
-        network.removeEventListener(SPATIAL_INDEX_KEY);
     }
 
     protected abstract E createNetworkEdge(Path.Edge pathEdge, INetwork network, int index);

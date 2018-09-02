@@ -34,7 +34,7 @@ class NetworkTest {
         BlockPos posB = new BlockPos(1, 0, 0);
         NetworkStateBuilder stateBuilder = NetworkStateBuilder.emptyRoot(0, posA);
         stateBuilder.addEdge(posA, posB);
-        network = new Network(0, new PersistentNetwork(new UUID(0, 0), stateBuilder.toAbsolute()));
+        network = new Network(0, new PersistentNetwork(new UUID(0, 0), stateBuilder.build()));
     }
 
     void assertItemStacksEqual(ItemStack expected, ItemStack actual) {
@@ -71,29 +71,6 @@ class NetworkTest {
         network.insertItem(0, new ItemStack(Items.STICK), true);
         network.extractItem(1, true);
 
-        Mockito.verifyZeroInteractions(eventListener);
-    }
-
-    @Test
-    void firesEventForStateChange() {
-        INetworkEventListener eventListener = Mockito.mock(INetworkEventListener.class);
-        network.addEventListener(eventListenerKey, eventListener);
-
-        INetworkState stateA = network.getState();
-        BlockPos posA = new BlockPos(0, 0, 0);
-        BlockPos posB = new BlockPos(2, 0, 0);
-        NetworkStateBuilder stateBuilder = NetworkStateBuilder.emptyRoot(0, posA);
-        stateBuilder.addEdge(posA, posB);
-        INetworkState stateB = stateBuilder.toAbsolute();
-
-        network.setState(stateB);
-        network.setState(stateA);
-        Mockito.verify(eventListener).onStateChanged(network, stateA, stateB);
-        Mockito.verify(eventListener).onStateChanged(network, stateB, stateA);
-
-        network.removeEventListener(eventListenerKey);
-
-        network.setState(stateB);
         Mockito.verifyZeroInteractions(eventListener);
     }
 

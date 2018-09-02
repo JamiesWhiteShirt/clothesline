@@ -9,10 +9,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldServer;
 
-import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -64,9 +61,12 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
     }
 
     private void extend(INetwork network, BlockPos fromPos, BlockPos toPos) {
-        NetworkStateBuilder relativeState = NetworkStateBuilder.fromAbsolute(network.getState());
-        relativeState.addEdge(fromPos, toPos);
-        network.setState(relativeState.toAbsolute());
+        NetworkStateBuilder stateBuilder = NetworkStateBuilder.fromAbsolute(network.getState());
+        stateBuilder.addEdge(fromPos, toPos);
+        Network newNetwork = new Network(nextNetworkId++, new PersistentNetwork(UUID.randomUUID(), stateBuilder.build()));
+
+        removeNetwork(network);
+        addNetwork(newNetwork);
     }
 
     @Override
@@ -75,9 +75,12 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
             INetworkNode node = getNodes().get(fromPos);
             if (node != null) {
                 INetwork network = node.getNetwork();
-                NetworkStateBuilder relativeState = NetworkStateBuilder.fromAbsolute(network.getState());
-                relativeState.reroot(toPos);
-                network.setState(relativeState.toAbsolute());
+                NetworkStateBuilder stateBuilder = NetworkStateBuilder.fromAbsolute(network.getState());
+                stateBuilder.reroot(toPos);
+                Network newNetwork = new Network(nextNetworkId++, new PersistentNetwork(UUID.randomUUID(), stateBuilder.build()));
+
+                removeNetwork(network);
+                addNetwork(newNetwork);
             }
             return false;
         }
@@ -103,7 +106,7 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
                 toState.reroot(toPos);
                 fromState.addSubState(fromPos, toState);
 
-                createAndAddNetwork(fromState.toAbsolute());
+                createAndAddNetwork(fromState.build());
             } else {
                 extend(fromNetwork, fromPos, toPos);
             }
@@ -114,7 +117,7 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
             } else {
                 NetworkStateBuilder stateBuilder = NetworkStateBuilder.emptyRoot(0, fromPos);
                 stateBuilder.addEdge(fromPos, toPos);
-                createAndAddNetwork(stateBuilder.toAbsolute());
+                createAndAddNetwork(stateBuilder.build());
             }
         }
 
@@ -146,9 +149,9 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
 
     private void applySplitResult(NetworkStateBuilder.SplitResult splitResult) {
         for (NetworkStateBuilder subState : splitResult.getSubStates()) {
-            createAndAddNetwork(subState.toAbsolute());
+            createAndAddNetwork(subState.build());
         }
-        dropNetworkItems(splitResult.getState().toAbsolute());
+        dropNetworkItems(splitResult.getState().build());
     }
 
     @Override
@@ -166,6 +169,6 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
     @Override
     public void createNode(BlockPos pos) {
         NetworkStateBuilder stateBuilder = NetworkStateBuilder.emptyRoot(0, pos);
-        createAndAddNetwork(stateBuilder.toAbsolute());
+        createAndAddNetwork(stateBuilder.build());
     }
 }

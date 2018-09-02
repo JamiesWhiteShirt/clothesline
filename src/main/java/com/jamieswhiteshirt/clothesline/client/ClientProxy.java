@@ -82,7 +82,6 @@ public class ClientProxy extends CommonProxy {
         networkChannel.registerMessage(new RemoveNetworkMessageHandler(), RemoveNetworkMessage.class, 2, Side.CLIENT);
         networkChannel.registerMessage(new SetAttachmentMessageHandler(), SetAttachmentMessage.class, 3, Side.CLIENT);
         networkChannel.registerMessage(new RemoveAttachmentMessageHandler(), RemoveAttachmentMessage.class, 4, Side.CLIENT);
-        networkChannel.registerMessage(new SetNetworkStateMessageHandler(), SetNetworkStateMessage.class, 5, Side.CLIENT);
         networkChannel.registerMessage(new SetConnectorPosMessageHandler(), SetConnectorPosMessage.class, 10, Side.CLIENT);
         networkChannel.registerMessage(new UpdateNetworkMessageHandler(), UpdateNetworkMessage.class, 11, Side.CLIENT);
         networkChannel.registerMessage(new SetAnchorHasCrankMessageHandler(), SetAnchorHasCrankMessage.class, 12, Side.CLIENT);

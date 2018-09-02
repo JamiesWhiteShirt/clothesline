@@ -1,13 +1,10 @@
 package com.jamieswhiteshirt.clothesline.common;
 
-import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.INetworkEventListener;
 import com.jamieswhiteshirt.clothesline.common.network.message.RemoveAttachmentMessage;
 import com.jamieswhiteshirt.clothesline.common.network.message.SetAttachmentMessage;
-import com.jamieswhiteshirt.clothesline.common.network.message.SetNetworkStateMessage;
 import com.jamieswhiteshirt.clothesline.common.util.BasicAttachment;
-import com.jamieswhiteshirt.clothesline.common.util.BasicNetworkState;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 
@@ -19,11 +16,6 @@ public class SyncNetworkListener implements INetworkEventListener {
     public SyncNetworkListener(int dimension, SimpleNetworkWrapper networkChannel) {
         this.dimension = dimension;
         this.networkChannel = networkChannel;
-    }
-
-    @Override
-    public void onStateChanged(INetwork network, INetworkState previousState, INetworkState newState) {
-        networkChannel.sendToDimension(new SetNetworkStateMessage(network.getId(), BasicNetworkState.fromAbsolute(newState)), dimension);
     }
 
     @Override

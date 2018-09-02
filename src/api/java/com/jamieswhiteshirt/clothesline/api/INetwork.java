@@ -44,14 +44,6 @@ public interface INetwork {
     INetworkState getState();
 
     /**
-     * Sets the state of the clothesline network.
-     * Notifies event listeners with
-     * {@link INetworkEventListener#onStateChanged(INetwork, INetworkState, INetworkState)}
-     * @param state the new state of the network
-     */
-    void setState(INetworkState state);
-
-    /**
      * Updates the state of the clothesline network, called each in-game tick.
      */
     void update();
