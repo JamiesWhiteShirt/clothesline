@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
-import com.jamieswhiteshirt.clothesline.api.IConnector;
+import com.jamieswhiteshirt.clothesline.internal.IConnector;
 import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;

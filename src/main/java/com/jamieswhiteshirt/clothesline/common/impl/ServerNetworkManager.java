@@ -17,6 +17,10 @@ public final class ServerNetworkManager extends NetworkManager<INetworkEdge, INe
     private final WorldServer world;
     private int nextNetworkId = 0;
 
+    private static final class NetworkTracker {
+
+    }
+
     public ServerNetworkManager(WorldServer world) {
         super(world);
         this.world = world;

@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.client.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
-import com.jamieswhiteshirt.clothesline.api.IConnector;
+import com.jamieswhiteshirt.clothesline.internal.IConnector;
 import com.jamieswhiteshirt.clothesline.common.network.message.SetConnectorPosMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;

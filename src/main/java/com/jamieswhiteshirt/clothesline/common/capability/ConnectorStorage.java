@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.capability;
 
-import com.jamieswhiteshirt.clothesline.api.IConnector;
+import com.jamieswhiteshirt.clothesline.internal.IConnector;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTUtil;

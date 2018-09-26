@@ -69,7 +69,7 @@ public interface INetwork {
      * Insert an ItemStack in the slot of the specified attachment key. Each slot can hold only one item.
      *
      * If the stack in the slot changes and simulation is disabled, event listeners are notified with
-     * {@link INetworkEventListener#onAttachmentChanged(INetwork, int, ItemStack, ItemStack)}
+     * {@link INetworkListener#onAttachmentChanged(INetwork, int, ItemStack, ItemStack)}
      * @see net.minecraftforge.items.IItemHandler#insertItem(int, ItemStack, boolean)
      */
     ItemStack insertItem(int attachmentKey, ItemStack stack, boolean simulate);
@@ -78,7 +78,7 @@ public interface INetwork {
      * Extract the ItemStack in the slot of the specified attachment key. Each slot can hold only one item.
      *
      * If the stack in the slot changes and simulation is disabled, event listeners are notified with
-     * {@link INetworkEventListener#onAttachmentChanged(INetwork, int, ItemStack, ItemStack)}
+     * {@link INetworkListener#onAttachmentChanged(INetwork, int, ItemStack, ItemStack)}
      * @see net.minecraftforge.items.IItemHandler#extractItem(int, int, boolean)
      */
     ItemStack extractItem(int attachmentKey, boolean simulate);
@@ -93,7 +93,7 @@ public interface INetwork {
      * Set the ItemStack in the slot of the specified attachment key, overriding anything already in the slot.
      *
      * Notifies event listeners with
-     * {@link INetworkEventListener#onAttachmentChanged(INetwork, int, ItemStack, ItemStack)}
+     * {@link INetworkListener#onAttachmentChanged(INetwork, int, ItemStack, ItemStack)}
      */
     void setAttachment(int attachmentKey, ItemStack stack);
 
@@ -106,11 +106,11 @@ public interface INetwork {
      * @param key the event listener key
      * @param eventListener the event listener
      */
-    void addEventListener(ResourceLocation key, INetworkEventListener eventListener);
+    void addEventListener(ResourceLocation key, INetworkListener eventListener);
 
     /**
      * Removes an event listener bound to the specified key with
-     * {@link #addEventListener(ResourceLocation, INetworkEventListener)}. If no event listener is bound to the key,
+     * {@link #addEventListener(ResourceLocation, INetworkListener)}. If no event listener is bound to the key,
      * nothing happens.
      * @param key the event listener key
      */

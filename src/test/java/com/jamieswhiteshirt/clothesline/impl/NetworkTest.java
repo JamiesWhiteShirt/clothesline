@@ -1,7 +1,6 @@
 package com.jamieswhiteshirt.clothesline.impl;
 
-import com.jamieswhiteshirt.clothesline.api.INetworkEventListener;
-import com.jamieswhiteshirt.clothesline.api.INetworkState;
+import com.jamieswhiteshirt.clothesline.api.INetworkListener;
 import com.jamieswhiteshirt.clothesline.api.PersistentNetwork;
 import com.jamieswhiteshirt.clothesline.common.impl.Network;
 import com.jamieswhiteshirt.clothesline.common.util.NetworkStateBuilder;
@@ -65,7 +64,7 @@ class NetworkTest {
     void simulationDoesNotFireEvents() {
         network.insertItem(1, new ItemStack(Items.STICK), false);
 
-        INetworkEventListener eventListener = Mockito.mock(INetworkEventListener.class);
+        INetworkListener eventListener = Mockito.mock(INetworkListener.class);
         network.addEventListener(eventListenerKey, eventListener);
 
         network.insertItem(0, new ItemStack(Items.STICK), true);
@@ -80,7 +79,7 @@ class NetworkTest {
 
     @Test
     void firesEventForAttachmentChange() {
-        INetworkEventListener eventListener = Mockito.mock(INetworkEventListener.class);
+        INetworkListener eventListener = Mockito.mock(INetworkListener.class);
         network.addEventListener(eventListenerKey, eventListener);
 
         ItemStack stack1 = new ItemStack(Items.APPLE);

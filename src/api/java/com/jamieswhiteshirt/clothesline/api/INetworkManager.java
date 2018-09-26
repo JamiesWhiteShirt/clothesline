@@ -54,7 +54,7 @@ public interface INetworkManager<E extends INetworkEdge, N extends INetworkNode>
      * Removes the clothesline network from the clothesline network manager.
      *
      * Notifies event listeners with
-     * {@link INetworkManagerEventListener#onNetworkRemoved(INetworkManager, INetwork)}.
+     * {@link INetworkManagerListener#onNetworkRemoved(INetworkManager, INetwork)}.
      * @param network the clothesline network
      */
     void removeNetwork(INetwork network);
@@ -72,8 +72,8 @@ public interface INetworkManager<E extends INetworkEdge, N extends INetworkNode>
      *
      * This operation may modify the structure of existing clothesline networks, remove existing clothesline networks or
      * create entirely new ones, in which case event listeners will be notified with
-     * {@link INetworkManagerEventListener#onNetworkAdded(INetworkManager, INetwork)} and
-     * {@link INetworkManagerEventListener#onNetworkRemoved(INetworkManager, INetwork)} respectively.
+     * {@link INetworkManagerListener#onNetworkAdded(INetworkManager, INetwork)} and
+     * {@link INetworkManagerListener#onNetworkRemoved(INetworkManager, INetwork)} respectively.
      * @param fromPos the first node position
      * @param toPos the second node position
      * @return true if the nodes exist and they are not already connected, false otherwise
@@ -88,8 +88,8 @@ public interface INetworkManager<E extends INetworkEdge, N extends INetworkNode>
      *
      * This operation may modify the structure of existing clothesline networks, remove existing clothesline networks or
      * create entirely new ones, in which case event listeners will be notified with
-     * {@link INetworkManagerEventListener#onNetworkAdded(INetworkManager, INetwork)} and
-     * {@link INetworkManagerEventListener#onNetworkRemoved(INetworkManager, INetwork)} respectively.
+     * {@link INetworkManagerListener#onNetworkAdded(INetworkManager, INetwork)} and
+     * {@link INetworkManagerListener#onNetworkRemoved(INetworkManager, INetwork)} respectively.
      * @param posA the first node position
      * @param posB the second node position
      * @return true if there was a connection between the nodes, false otherwise
@@ -100,7 +100,7 @@ public interface INetworkManager<E extends INetworkEdge, N extends INetworkNode>
      * Creates an empty clothesline network at the specified position
      *
      * Notifies event listeners with
-     * {@link INetworkManagerEventListener#onNetworkAdded(INetworkManager, INetwork)}.
+     * {@link INetworkManagerListener#onNetworkAdded(INetworkManager, INetwork)}.
      * @param pos the specified position to create an empty clothesline network at
      */
     void createNode(BlockPos pos);
@@ -110,8 +110,8 @@ public interface INetworkManager<E extends INetworkEdge, N extends INetworkNode>
      *
      * This operation may modify the structure of existing clothesline networks, remove existing clothesline networks or
      * create entirely new ones, in which case event listeners will be notified with
-     * {@link INetworkManagerEventListener#onNetworkAdded(INetworkManager, INetwork)} and
-     * {@link INetworkManagerEventListener#onNetworkRemoved(INetworkManager, INetwork)} respectively.
+     * {@link INetworkManagerListener#onNetworkAdded(INetworkManager, INetwork)} and
+     * {@link INetworkManagerListener#onNetworkRemoved(INetworkManager, INetwork)} respectively.
      * @param pos
      */
     void destroyNode(BlockPos pos);
@@ -125,11 +125,11 @@ public interface INetworkManager<E extends INetworkEdge, N extends INetworkNode>
      * @param key the event listener key
      * @param eventListener the event listener
      */
-    void addEventListener(ResourceLocation key, INetworkManagerEventListener<E, N> eventListener);
+    void addEventListener(ResourceLocation key, INetworkManagerListener<E, N> eventListener);
 
     /**
      * Removes an event listener bound to the specified key with
-     * {@link #addEventListener(ResourceLocation, INetworkManagerEventListener)}. If no event listener is bound to the
+     * {@link #addEventListener(ResourceLocation, INetworkManagerListener)}. If no event listener is bound to the
      * key, nothing happens.
      * @param key the event listener key
      */

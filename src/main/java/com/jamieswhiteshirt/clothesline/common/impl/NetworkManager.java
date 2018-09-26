@@ -5,7 +5,6 @@ import com.jamieswhiteshirt.rtree3i.Box;
 import com.jamieswhiteshirt.rtree3i.Configuration;
 import com.jamieswhiteshirt.rtree3i.ConfigurationBuilder;
 import com.jamieswhiteshirt.rtree3i.RTreeMap;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.IntHashMap;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -32,7 +31,7 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
     private Map<UUID, INetwork> networksByUuid = new HashMap<>();
     private RTreeMap<Line, E> networkEdges = createEdgesMap();
     private RTreeMap<BlockPos, N> networkNodes = createNodesMap();
-    private final Map<ResourceLocation, INetworkManagerEventListener<E, N>> eventListeners = new TreeMap<>();
+    private final Map<ResourceLocation, INetworkManagerListener<E, N>> eventListeners = new TreeMap<>();
 
     private void unassignNetworkPath(INetwork network, Path path) {
         for (BlockPos pos : path.getNodes().keySet()) {
@@ -87,7 +86,7 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
             startIndexing(network);
         }
 
-        for (INetworkManagerEventListener<E, N> eventListener : eventListeners.values()) {
+        for (INetworkManagerListener<E, N> eventListener : eventListeners.values()) {
             eventListener.onNetworksReset(this, previousNetworks, this.networks);
         }
     }
@@ -125,7 +124,7 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
         networksByUuid.put(network.getUuid(), network);
         startIndexing(network);
 
-        for (INetworkManagerEventListener<E, N> eventListener : eventListeners.values()) {
+        for (INetworkManagerListener<E, N> eventListener : eventListeners.values()) {
             eventListener.onNetworkAdded(this, network);
         }
     }
@@ -137,7 +136,7 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
         networksByUuid.remove(network.getUuid());
         stopIndexing(network);
 
-        for (INetworkManagerEventListener<E, N> eventListener : eventListeners.values()) {
+        for (INetworkManagerListener<E, N> eventListener : eventListeners.values()) {
             eventListener.onNetworkRemoved(this, network);
         }
     }
@@ -150,7 +149,7 @@ public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkN
     }
 
     @Override
-    public void addEventListener(ResourceLocation key, INetworkManagerEventListener<E, N> eventListener) {
+    public void addEventListener(ResourceLocation key, INetworkManagerListener<E, N> eventListener) {
         eventListeners.put(key, eventListener);
     }
 

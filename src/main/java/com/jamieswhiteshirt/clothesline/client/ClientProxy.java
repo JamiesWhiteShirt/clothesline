@@ -27,6 +27,7 @@ import com.jamieswhiteshirt.clothesline.hooks.api.ClientStoppedUsingItemEvent;
 import com.jamieswhiteshirt.clothesline.hooks.api.GetMouseOverEvent;
 import com.jamieswhiteshirt.clothesline.hooks.api.RenderEntitiesEvent;
 import com.jamieswhiteshirt.clothesline.hooks.api.UseItemMovementEvent;
+import com.jamieswhiteshirt.clothesline.internal.IConnector;
 import com.jamieswhiteshirt.rtree3i.Box;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -77,7 +78,7 @@ public class ClientProxy extends CommonProxy {
     @Override
     public SimpleNetworkWrapper createNetworkChannel() {
         SimpleNetworkWrapper networkChannel = super.createNetworkChannel();
-        networkChannel.registerMessage(new SetNetworksMessageHandler(), SetNetworkMessage.class, 0, Side.CLIENT);
+        networkChannel.registerMessage(new SetNetworksMessageHandler(), SetNetworksMessage.class, 0, Side.CLIENT);
         networkChannel.registerMessage(new AddNetworkMessageHandler(), AddNetworkMessage.class, 1, Side.CLIENT);
         networkChannel.registerMessage(new RemoveNetworkMessageHandler(), RemoveNetworkMessage.class, 2, Side.CLIENT);
         networkChannel.registerMessage(new SetAttachmentMessageHandler(), SetAttachmentMessage.class, 3, Side.CLIENT);

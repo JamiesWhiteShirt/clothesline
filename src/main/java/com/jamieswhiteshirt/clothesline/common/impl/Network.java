@@ -15,7 +15,7 @@ public final class Network implements INetwork {
     private final int id;
     private final UUID uuid;
     private INetworkState state;
-    private final Map<ResourceLocation, INetworkEventListener> eventListeners = new TreeMap<>();
+    private final Map<ResourceLocation, INetworkListener> eventListeners = new TreeMap<>();
 
     public Network(int id, PersistentNetwork persistentNetwork) {
         this.id = id;
@@ -105,13 +105,13 @@ public final class Network implements INetwork {
         ItemStack previousStack = state.getAttachment(attachmentKey);
         state.setAttachment(attachmentKey, stack);
 
-        for (INetworkEventListener eventListener : eventListeners.values()) {
+        for (INetworkListener eventListener : eventListeners.values()) {
             eventListener.onAttachmentChanged(this, attachmentKey, previousStack, stack);
         }
     }
 
     @Override
-    public void addEventListener(ResourceLocation key, INetworkEventListener eventListener) {
+    public void addEventListener(ResourceLocation key, INetworkListener eventListener) {
         eventListeners.put(key, eventListener);
     }
 

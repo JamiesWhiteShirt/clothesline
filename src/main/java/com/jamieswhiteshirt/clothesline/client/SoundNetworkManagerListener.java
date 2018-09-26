@@ -4,8 +4,6 @@ import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.client.audio.ClotheslineRopeSound;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -13,7 +11,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.*;
 
 @SideOnly(Side.CLIENT)
-public class SoundNetworkManagerListener<E extends INetworkEdge, N extends INetworkNode> implements INetworkManagerEventListener<E, N> {
+public class SoundNetworkManagerListener<E extends INetworkEdge, N extends INetworkNode> implements INetworkManagerListener<E, N> {
     private final Map<BlockPos, ClotheslineRopeSound> anchorSounds = new HashMap<>();
     private final SoundHandler soundHandler = Minecraft.getMinecraft().getSoundHandler();
 
@@ -56,20 +54,5 @@ public class SoundNetworkManagerListener<E extends INetworkEdge, N extends INetw
     @Override
     public void onNetworkRemoved(INetworkManager<E, N> networkManager, INetwork network) {
         unlistenTo(network);
-    }
-
-    @Override
-    public void onUpdate(INetworkManager<E, N> networkManager) {
-        /* EntityPlayerSP player = Minecraft.getMinecraft().player;
-        Box box = Box.create(
-            MathHelper.floor(player.posX - 10.0D),
-            MathHelper.floor(player.posY + player.getEyeHeight() - 10.0D),
-            MathHelper.floor(player.posZ - 10.0D),
-            MathHelper.ceil(player.posX + 10.0D),
-            MathHelper.ceil(player.posY + player.getEyeHeight() + 10.0D),
-            MathHelper.ceil(player.posZ + 10.0D)
-        );
-        networkManager.getNodes().entries(box::intersects).forEach(node -> {
-        }); */
     }
 }
