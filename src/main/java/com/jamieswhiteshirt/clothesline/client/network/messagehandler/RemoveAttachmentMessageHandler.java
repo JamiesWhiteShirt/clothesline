@@ -2,7 +2,7 @@ package com.jamieswhiteshirt.clothesline.client.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
-import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
+import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.common.network.message.RemoveAttachmentMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -23,9 +23,9 @@ public class RemoveAttachmentMessageHandler implements IMessageHandler<RemoveAtt
         Minecraft.getMinecraft().addScheduledTask(() -> {
             WorldClient world = Minecraft.getMinecraft().world;
             if (world != null) {
-                IClientNetworkManager manager = world.getCapability(Clothesline.CLIENT_NETWORK_MANAGER_CAPABILITY, null);
+                INetworkManager manager = world.getCapability(Clothesline.NETWORK_MANAGER_CAPABILITY, null);
                 if (manager != null) {
-                    INetwork network = manager.getNetworkById(message.networkId);
+                    INetwork network = manager.getNetworks().getById(message.networkId);
                     if (network != null) {
                         network.setAttachment(message.attachmentKey, ItemStack.EMPTY);
                     }

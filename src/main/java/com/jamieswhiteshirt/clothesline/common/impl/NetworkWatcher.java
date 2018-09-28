@@ -46,7 +46,7 @@ public final class NetworkWatcher implements INetworkListener {
     }
 
     public void removePlayer(EntityPlayerMP player) {
-        if (players.remove(player)) {
+        if (players.remove(player, 1) == 1) {
             networkChannel.sendTo(new RemoveNetworkMessage(network.getId()), player);
         }
     }

@@ -5,9 +5,9 @@ import net.minecraftforge.fml.common.eventhandler.Event;
 
 public class NetworkManagerCreatedEvent extends Event {
     private final World world;
-    private final INetworkManager<?, ?> networkManager;
+    private final INetworkManager networkManager;
 
-    public NetworkManagerCreatedEvent(World world, INetworkManager<?, ?> networkManager) {
+    public NetworkManagerCreatedEvent(World world, INetworkManager networkManager) {
         this.world = world;
         this.networkManager = networkManager;
     }
@@ -16,7 +16,7 @@ public class NetworkManagerCreatedEvent extends Event {
         return world;
     }
 
-    public INetworkManager<?, ?> getNetworkManager() {
+    public INetworkManager getNetworkManager() {
         return networkManager;
     }
 }

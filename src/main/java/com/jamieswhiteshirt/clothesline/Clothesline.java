@@ -1,18 +1,17 @@
 package com.jamieswhiteshirt.clothesline;
 
 import com.jamieswhiteshirt.clothesline.api.*;
-import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.common.*;
 import com.jamieswhiteshirt.clothesline.common.capability.*;
-import com.jamieswhiteshirt.clothesline.common.impl.Connector;
-import com.jamieswhiteshirt.clothesline.common.impl.ServerNetworkManager;
-import com.jamieswhiteshirt.clothesline.common.impl.NetworkManagerWatcher;
+import com.jamieswhiteshirt.clothesline.common.impl.*;
 import com.jamieswhiteshirt.clothesline.common.network.message.SetConnectorPosMessage;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
-import com.jamieswhiteshirt.clothesline.common.util.NodeIntersector;
+import com.jamieswhiteshirt.clothesline.common.util.NodeSpanFunction;
 import com.jamieswhiteshirt.clothesline.hooks.api.MayPlaceBlockEvent;
 import com.jamieswhiteshirt.clothesline.internal.IConnector;
-import com.jamieswhiteshirt.clothesline.internal.INetworkManagerWatcher;
+import com.jamieswhiteshirt.clothesline.internal.INetworkProvider;
+import com.jamieswhiteshirt.clothesline.internal.INetworkCollectionWatcher;
+import com.jamieswhiteshirt.clothesline.internal.IWorldEventDispatcher;
 import com.jamieswhiteshirt.rtree3i.Box;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -33,6 +32,7 @@ import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.ChunkWatchEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -46,6 +46,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.function.BiPredicate;
 
 @Mod(
     modid = Clothesline.MODID,
@@ -61,15 +63,11 @@ public class Clothesline {
     public static final String CERTIFICATE_FINGERPRINT = "3bae2d07b93a5971335cb2de15230c19c103db32";
 
     @CapabilityInject(INetworkManager.class)
-    public static final Capability<INetworkManager<?, ?>> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
-    @CapabilityInject(IServerNetworkManager.class)
-    public static final Capability<IServerNetworkManager> SERVER_NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
-    @CapabilityInject(IClientNetworkManager.class)
-    public static final Capability<IClientNetworkManager> CLIENT_NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
+    public static final Capability<INetworkManager> NETWORK_MANAGER_CAPABILITY = Util.nonNullInjected();
     @CapabilityInject(IConnector.class)
     public static final Capability<IConnector> CONNECTOR_CAPABILITY = Util.nonNullInjected();
-    @CapabilityInject(INetworkManagerWatcher.class)
-    public static final Capability<INetworkManagerWatcher> NETWORK_MANAGER_WATCHER_CAPABILITY = Util.nonNullInjected();
+    @CapabilityInject(IWorldEventDispatcher.class)
+    public static final Capability<IWorldEventDispatcher> WORLD_EVENT_DISPATCHER_CAPABILITY = Util.nonNullInjected();
 
     @Mod.Instance
     public static Clothesline instance;
@@ -88,10 +86,8 @@ public class Clothesline {
     public void preInit(FMLPreInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(this);
         CapabilityManager.INSTANCE.register(INetworkManager.class, new DummyStorage<>(), new DummyFactory<>());
-        CapabilityManager.INSTANCE.register(IServerNetworkManager.class, new DummyStorage<>(), new DummyFactory<>());
-        CapabilityManager.INSTANCE.register(IClientNetworkManager.class, new DummyStorage<>(), new DummyFactory<>());
         CapabilityManager.INSTANCE.register(IConnector.class, new ConnectorStorage(), Connector::new);
-        CapabilityManager.INSTANCE.register(INetworkManagerWatcher.class, new DummyStorage<>(), new DummyFactory<>());
+        CapabilityManager.INSTANCE.register(IWorldEventDispatcher.class, new DummyStorage<>(), new DummyFactory<>());
 
         networkChannel = proxy.createNetworkChannel();
         proxy.preInit(event);
@@ -129,12 +125,16 @@ public class Clothesline {
     public void attachWorldCapabilities(AttachCapabilitiesEvent<World> event) {
         World world = event.getObject();
         if (world instanceof WorldServer) {
-            ServerNetworkManager manager = new ServerNetworkManager((WorldServer) world);
-            MinecraftForge.EVENT_BUS.post(new NetworkManagerCreatedEvent(world, manager));
-            event.addCapability(new ResourceLocation(MODID, "network_manager"), new ServerNetworkManagerProvider(manager));
+            NetworkCollection networks = new NetworkCollection();
 
-            INetworkManagerWatcher watcher = new NetworkManagerWatcher<>(manager, (WorldServer) world, networkChannel, new NodeIntersector());
-            event.addCapability(new ResourceLocation(MODID, "network_manager_watcher"), new NetworkManagerWatcherProvider(watcher));
+            BiPredicate<Integer, Integer> isChunkLoaded = ((WorldServer)world).getChunkProvider()::isChunkGeneratedAt;
+            INetworkProvider provider = new NetworkProvider(networks, new NodeSpanFunction(), isChunkLoaded);
+
+            ServerNetworkManager manager = new ServerNetworkManager((WorldServer) world, networks, provider);
+            INetworkCollectionWatcher watcher = new NetworkCollectionWatcher(networks, (WorldServer) world, networkChannel, new NodeSpanFunction());
+            MinecraftForge.EVENT_BUS.post(new NetworkManagerCreatedEvent(world, manager));
+
+            event.addCapability(new ResourceLocation(MODID, "networks"), new ServerCapabilityProvider(manager, provider, watcher));
         }
     }
 
@@ -157,9 +157,9 @@ public class Clothesline {
     @SubscribeEvent
     public void onWorldTick(TickEvent.WorldTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
-            INetworkManager manager = event.world.getCapability(NETWORK_MANAGER_CAPABILITY, null);
-            if (manager != null) {
-                manager.update();
+            IWorldEventDispatcher eventDispatcher = event.world.getCapability(WORLD_EVENT_DISPATCHER_CAPABILITY, null);
+            if (eventDispatcher != null) {
+                eventDispatcher.onTick();
             }
         }
     }
@@ -168,12 +168,12 @@ public class Clothesline {
     public void onMayPlaceBlock(MayPlaceBlockEvent event) {
         AxisAlignedBB blockAabb = event.getState().getCollisionBoundingBox(event.getWorld(), event.getPos());
         if (blockAabb != Block.NULL_AABB) {
-            INetworkManager<?, ?> manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
+            INetworkManager manager = event.getWorld().getCapability(NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 BlockPos pos = event.getPos();
                 AxisAlignedBB aabb = blockAabb.offset(pos);
                 Box box = Box.create(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
-                boolean intersects = manager.getEdges()
+                boolean intersects = manager.getNetworks().getEdges()
                     .values(box::intersects)
                     .anyMatch(networkEdge -> {
                         Line line = networkEdge.getPathEdge().getLine();
@@ -190,9 +190,9 @@ public class Clothesline {
     public void onChunkWatch(ChunkWatchEvent.Watch event) {
         Chunk chunk = event.getChunkInstance();
         World world = chunk.getWorld();
-        INetworkManagerWatcher watcher = world.getCapability(NETWORK_MANAGER_WATCHER_CAPABILITY, null);
-        if (watcher != null) {
-            watcher.onPlayerWatchChunk(event.getPlayer(), chunk);
+        IWorldEventDispatcher eventDispatcher = world.getCapability(WORLD_EVENT_DISPATCHER_CAPABILITY, null);
+        if (eventDispatcher != null) {
+            eventDispatcher.onPlayerWatchChunk(event.getPlayer(), chunk);
         }
     }
 
@@ -200,9 +200,29 @@ public class Clothesline {
     public void onChunkUnWatch(ChunkWatchEvent.UnWatch event) {
         Chunk chunk = event.getChunkInstance();
         World world = chunk.getWorld();
-        INetworkManagerWatcher watcher = world.getCapability(NETWORK_MANAGER_WATCHER_CAPABILITY, null);
-        if (watcher != null) {
-            watcher.onPlayerUnWatchChunk(event.getPlayer(), chunk);
+        IWorldEventDispatcher eventDispatcher = world.getCapability(WORLD_EVENT_DISPATCHER_CAPABILITY, null);
+        if (eventDispatcher != null) {
+            eventDispatcher.onPlayerUnWatchChunk(event.getPlayer(), chunk);
+        }
+    }
+
+    @SubscribeEvent
+    public void onChunkLoad(ChunkEvent.Load event) {
+        World world = event.getWorld();
+        IWorldEventDispatcher eventDispatcher = world.getCapability(WORLD_EVENT_DISPATCHER_CAPABILITY, null);
+        if (eventDispatcher != null) {
+            Chunk chunk = event.getChunk();
+            eventDispatcher.onChunkLoaded(chunk.x, chunk.z);
+        }
+    }
+
+    @SubscribeEvent
+    public void onChunkUnload(ChunkEvent.Unload event) {
+        World world = event.getWorld();
+        IWorldEventDispatcher eventDispatcher = world.getCapability(WORLD_EVENT_DISPATCHER_CAPABILITY, null);
+        if (eventDispatcher != null) {
+            Chunk chunk = event.getChunk();
+            eventDispatcher.onChunkUnloaded(chunk.x, chunk.z);
         }
     }
 }

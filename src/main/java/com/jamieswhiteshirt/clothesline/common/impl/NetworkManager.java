@@ -1,160 +1,144 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.*;
-import com.jamieswhiteshirt.rtree3i.Box;
-import com.jamieswhiteshirt.rtree3i.Configuration;
-import com.jamieswhiteshirt.rtree3i.ConfigurationBuilder;
-import com.jamieswhiteshirt.rtree3i.RTreeMap;
-import net.minecraft.util.IntHashMap;
-import net.minecraft.util.ResourceLocation;
+import com.jamieswhiteshirt.clothesline.common.util.NetworkStateBuilder;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import javax.annotation.Nullable;
-import java.util.*;
-
-public abstract class NetworkManager<E extends INetworkEdge, N extends INetworkNode> implements INetworkManager<E, N> {
-    private static final Configuration configuration = new ConfigurationBuilder().star().build();
-
-    private static <E> RTreeMap<Line, E> createEdgesMap() {
-        return RTreeMap.create(configuration, Line::getBox);
-    }
-
-    private static <N> RTreeMap<BlockPos, N> createNodesMap() {
-        return RTreeMap.create(configuration, blockPos -> Box.create(blockPos.getX(), blockPos.getY(), blockPos.getZ(),
-            blockPos.getX() + 1, blockPos.getY() + 1, blockPos.getZ() + 1));
-    }
-
+public abstract class NetworkManager implements INetworkManager {
     private final World world;
-    private List<INetwork> networks = new ArrayList<>();
-    private IntHashMap<INetwork> networksById = new IntHashMap<>();
-    private Map<UUID, INetwork> networksByUuid = new HashMap<>();
-    private RTreeMap<Line, E> networkEdges = createEdgesMap();
-    private RTreeMap<BlockPos, N> networkNodes = createNodesMap();
-    private final Map<ResourceLocation, INetworkManagerListener<E, N>> eventListeners = new TreeMap<>();
+    private final INetworkCollection networks;
 
-    private void unassignNetworkPath(INetwork network, Path path) {
-        for (BlockPos pos : path.getNodes().keySet()) {
-            networkNodes = networkNodes.remove(pos);
-        }
-        for (Path.Edge pathEdge : path.getEdges()) {
-            networkEdges = networkEdges.remove(pathEdge.getLine());
-        }
-    }
-
-
-    private void assignNetworkPath(INetwork network, Path path) {
-        for (Path.Node graphNode : path.getNodes().values()) {
-            networkNodes = networkNodes.put(graphNode.getPos(), createNetworkNode(graphNode, network));
-        }
-        int i = 0;
-        for (Path.Edge graphEdge : path.getEdges()) {
-            networkEdges = networkEdges.put(graphEdge.getLine(), createNetworkEdge(graphEdge, network, i++));
-        }
-    }
-
-    private void startIndexing(INetwork network) {
-        assignNetworkPath(network, network.getState().getPath());
-    }
-
-    private void stopIndexing(INetwork network) {
-        unassignNetworkPath(network, network.getState().getPath());
-    }
-
-    protected abstract E createNetworkEdge(Path.Edge pathEdge, INetwork network, int index);
-
-    protected abstract N createNetworkNode(Path.Node pathNode, INetwork network);
-
-    protected NetworkManager(World world) {
+    protected NetworkManager(World world, INetworkCollection networks) {
         this.world = world;
+        this.networks = networks;
     }
 
-    protected void resetInternal(List<INetwork> networks) {
-        List<INetwork> previousNetworks = this.networks;
-        this.networks = new ArrayList<>(networks);
-        this.networksById = new IntHashMap<>();
-        for (INetwork network : networks) {
-            networksById.addKey(network.getId(), network);
-        }
-        this.networksByUuid = new HashMap<>();
-        for (INetwork network : networks) {
-            networksByUuid.put(network.getUuid(), network);
-        }
-        this.networkNodes = createNodesMap();
-        this.networkEdges = createEdgesMap();
-        for (INetwork network : networks) {
-            startIndexing(network);
-        }
+    protected abstract void createNetwork(INetworkState networkState);
 
-        for (INetworkManagerListener<E, N> eventListener : eventListeners.values()) {
-            eventListener.onNetworksReset(this, previousNetworks, this.networks);
-        }
-    }
+    protected abstract void deleteNetwork(INetwork network);
+
+    protected abstract void dropItems(INetworkState state);
 
     @Override
-    public List<INetwork> getNetworks() {
+    public INetworkCollection getNetworks() {
         return networks;
-    }
-
-    @Nullable
-    @Override
-    public INetwork getNetworkById(int id) {
-        return networksById.lookup(id);
-    }
-
-    @Nullable
-    @Override
-    public final INetwork getNetworkByUuid(UUID uuid) {
-        return networksByUuid.get(uuid);
-    }
-
-    @Override
-    public RTreeMap<BlockPos, N> getNodes() {
-        return networkNodes;
-    }
-
-    @Override
-    public RTreeMap<Line, E> getEdges() {
-        return networkEdges;
-    }
-
-    protected void addNetwork(INetwork network) {
-        networks.add(network);
-        networksById.addKey(network.getId(), network);
-        networksByUuid.put(network.getUuid(), network);
-        startIndexing(network);
-
-        for (INetworkManagerListener<E, N> eventListener : eventListeners.values()) {
-            eventListener.onNetworkAdded(this, network);
-        }
-    }
-
-    @Override
-    public void removeNetwork(INetwork network) {
-        networks.remove(network);
-        networksById.removeObject(network.getId());
-        networksByUuid.remove(network.getUuid());
-        stopIndexing(network);
-
-        for (INetworkManagerListener<E, N> eventListener : eventListeners.values()) {
-            eventListener.onNetworkRemoved(this, network);
-        }
     }
 
     @Override
     public final void update() {
         world.profiler.startSection("tickClotheslines");
-        getNetworks().forEach(INetwork::update);
+        networks.getValues().forEach(INetwork::update);
         world.profiler.endSection();
     }
 
-    @Override
-    public void addEventListener(ResourceLocation key, INetworkManagerListener<E, N> eventListener) {
-        eventListeners.put(key, eventListener);
+    private void extend(INetwork network, BlockPos fromPos, BlockPos toPos) {
+        NetworkStateBuilder stateBuilder = NetworkStateBuilder.fromAbsolute(network.getState());
+        stateBuilder.addEdge(fromPos, toPos);
+
+        deleteNetwork(network);
+        createNetwork(stateBuilder.build());
     }
 
     @Override
-    public void removeEventListener(ResourceLocation key) {
-        eventListeners.remove(key);
+    public final boolean connect(BlockPos fromPos, BlockPos toPos) {
+        if (fromPos.equals(toPos)) {
+            INetworkNode node = networks.getNodes().get(fromPos);
+            if (node != null) {
+                INetwork network = node.getNetwork();
+                NetworkStateBuilder stateBuilder = NetworkStateBuilder.fromAbsolute(network.getState());
+                stateBuilder.reroot(toPos);
+
+                deleteNetwork(network);
+                createNetwork(stateBuilder.build());
+            }
+            return false;
+        }
+
+        INetworkNode fromNode = networks.getNodes().get(fromPos);
+        INetworkNode toNode = networks.getNodes().get(toPos);
+
+        if (fromNode != null) {
+            INetwork fromNetwork = fromNode.getNetwork();
+            if (toNode != null) {
+                INetwork toNetwork = toNode.getNetwork();
+
+                if (fromNetwork == toNetwork) {
+                    //TODO: Look into circular networks
+                    return false;
+                }
+
+                deleteNetwork(fromNetwork);
+                deleteNetwork(toNetwork);
+
+                NetworkStateBuilder fromState = NetworkStateBuilder.fromAbsolute(fromNetwork.getState());
+                NetworkStateBuilder toState = NetworkStateBuilder.fromAbsolute(toNetwork.getState());
+                toState.reroot(toPos);
+                fromState.addSubState(fromPos, toState);
+
+                createNetwork(fromState.build());
+            } else {
+                extend(fromNetwork, fromPos, toPos);
+            }
+        } else {
+            if (toNode != null) {
+                INetwork toNetwork = toNode.getNetwork();
+                extend(toNetwork, toPos, fromPos);
+            } else {
+                NetworkStateBuilder stateBuilder = NetworkStateBuilder.emptyRoot(0, fromPos);
+                stateBuilder.addEdge(fromPos, toPos);
+                createNetwork(stateBuilder.build());
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean disconnect(BlockPos posA, BlockPos posB) {
+        if (posA.equals(posB)) {
+            return false;
+        }
+
+        INetworkNode nodeA = networks.getNodes().get(posA);
+        INetworkNode nodeB = networks.getNodes().get(posB);
+        if (nodeA != null && nodeB != null) {
+            INetwork network = nodeA.getNetwork();
+            if (network == nodeB.getNetwork()) {
+                NetworkStateBuilder state = NetworkStateBuilder.fromAbsolute(network.getState());
+                state.reroot(posA);
+                deleteNetwork(network);
+                applySplitResult(state.splitEdge(posB));
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void applySplitResult(NetworkStateBuilder.SplitResult splitResult) {
+        for (NetworkStateBuilder subState : splitResult.getSubStates()) {
+            createNetwork(subState.build());
+        }
+        dropItems(splitResult.getState().build());
+    }
+
+    @Override
+    public final void destroyNode(BlockPos pos) {
+        INetworkNode node = networks.getNodes().get(pos);
+        if (node != null) {
+            INetwork network = node.getNetwork();
+            NetworkStateBuilder state = NetworkStateBuilder.fromAbsolute(network.getState());
+            state.reroot(pos);
+            deleteNetwork(network);
+            applySplitResult(state.splitRoot());
+        }
+    }
+
+    @Override
+    public void createNode(BlockPos pos) {
+        NetworkStateBuilder stateBuilder = NetworkStateBuilder.emptyRoot(0, pos);
+        createNetwork(stateBuilder.build());
     }
 }

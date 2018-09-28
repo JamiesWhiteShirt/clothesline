@@ -1,88 +1,26 @@
 package com.jamieswhiteshirt.clothesline.client.impl;
 
-import com.jamieswhiteshirt.clothesline.api.Path;
-import com.jamieswhiteshirt.clothesline.api.INetwork;
-import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
-import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
-import com.jamieswhiteshirt.clothesline.api.INetworkNode;
+import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkManager;
-import com.jamieswhiteshirt.clothesline.common.impl.NetworkNode;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.List;
-
 @SideOnly(Side.CLIENT)
-public final class ClientNetworkManager extends NetworkManager<IClientNetworkEdge, INetworkNode> implements IClientNetworkManager {
-    public ClientNetworkManager(WorldClient world) {
-        super(world);
+public final class ClientNetworkManager extends NetworkManager {
+    public ClientNetworkManager(WorldClient world, INetworkCollection networks) {
+        super(world, networks);
     }
 
     @Override
-    public void reset(List<INetwork> networks) {
-        resetInternal(networks);
+    protected void createNetwork(INetworkState networkState) {
     }
 
     @Override
-    protected ClientNetworkEdge createNetworkEdge(Path.Edge pathEdge, INetwork network, int index) {
-        return new ClientNetworkEdge(network, pathEdge, index);
+    protected void deleteNetwork(INetwork network) {
     }
 
     @Override
-    protected INetworkNode createNetworkNode(Path.Node pathNode, INetwork network) {
-        return new NetworkNode(network, pathNode);
-    }
-
-    @Override
-    public void addNetwork(INetwork network) {
-        super.addNetwork(network);
-    }
-
-    @Override
-    public boolean connect(BlockPos fromPos, BlockPos toPos) {
-        if (fromPos.equals(toPos)) {
-            return false;
-        }
-
-        INetworkNode fromNode = getNodes().get(fromPos);
-        INetworkNode toNode = getNodes().get(toPos);
-
-        if (fromNode != null) {
-            INetwork fromNetwork = fromNode.getNetwork();
-            if (toNode != null) {
-                INetwork toNetwork = toNode.getNetwork();
-
-                //TODO: Look into circular networks
-                return fromNetwork != toNetwork;
-            }
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean disconnect(BlockPos posA, BlockPos posB) {
-        if (posA.equals(posB)) {
-            return false;
-        }
-
-        INetworkNode nodeA = getNodes().get(posA);
-        INetworkNode nodeB = getNodes().get(posB);
-        if (nodeA != null && nodeB != null) {
-            INetwork network = nodeA.getNetwork();
-            return network == nodeB.getNetwork();
-        }
-
-        return false;
-    }
-
-    @Override
-    public void destroyNode(BlockPos pos) {
-    }
-
-    @Override
-    public void createNode(BlockPos pos) {
+    protected void dropItems(INetworkState state) {
     }
 }

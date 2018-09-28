@@ -1,8 +1,8 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.*;
-import com.jamieswhiteshirt.clothesline.common.util.IIntersector;
-import com.jamieswhiteshirt.clothesline.internal.INetworkManagerWatcher;
+import com.jamieswhiteshirt.clothesline.common.util.ISpanFunction;
+import com.jamieswhiteshirt.clothesline.internal.INetworkCollectionWatcher;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -13,42 +13,29 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 
-import java.util.*;
-
-public final class NetworkManagerWatcher<E extends INetworkEdge, N extends INetworkNode> implements INetworkManagerWatcher {
+public final class NetworkCollectionWatcher implements INetworkCollectionWatcher {
     private static final ResourceLocation LISTENER_KEY = new ResourceLocation("clothesline", "watcher");
 
-    private final INetworkManager<E, N> manager;
+    private final INetworkCollection networks;
     private final PlayerChunkMap playerChunkMap;
     private final SimpleNetworkWrapper networkChannel;
-    private final IIntersector intersector;
-    private Int2ObjectMap<NetworkWatcher> networkWatchers = new Int2ObjectOpenHashMap<>();
+    private final ISpanFunction spanFunction;
+    private final Int2ObjectMap<NetworkWatcher> networkWatchers = new Int2ObjectOpenHashMap<>();
 
-    public NetworkManagerWatcher(INetworkManager<E, N> manager, WorldServer world, SimpleNetworkWrapper networkChannel, IIntersector intersector) {
-        this.manager = manager;
+    public NetworkCollectionWatcher(INetworkCollection networks, WorldServer world, SimpleNetworkWrapper networkChannel, ISpanFunction spanFunction) {
+        this.networks = networks;
         this.playerChunkMap = world.getPlayerChunkMap();
         this.networkChannel = networkChannel;
-        this.intersector = intersector;
+        this.spanFunction = spanFunction;
 
-        manager.addEventListener(LISTENER_KEY, new INetworkManagerListener<E, N>() {
+        networks.addEventListener(LISTENER_KEY, new INetworkCollectionListener() {
             @Override
-            public void onNetworksReset(INetworkManager<E, N> networkManager, List<INetwork> previousNetworks, List<INetwork> newNetworks) {
-                for (INetwork network : previousNetworks) {
-                    removeNetworkWatcher(network);
-                }
-                networkWatchers = new Int2ObjectOpenHashMap<>();
-                for (INetwork network : newNetworks) {
-                    addNetworkWatcher(network);
-                }
-            }
-
-            @Override
-            public void onNetworkAdded(INetworkManager<E, N> networkManager, INetwork network) {
+            public void onNetworkAdded(INetworkCollection networks, INetwork network) {
                 addNetworkWatcher(network);
             }
 
             @Override
-            public void onNetworkRemoved(INetworkManager<E, N> networkManager, INetwork network) {
+            public void onNetworkRemoved(INetworkCollection networks, INetwork network) {
                 removeNetworkWatcher(network);
             }
         });
@@ -56,14 +43,14 @@ public final class NetworkManagerWatcher<E extends INetworkEdge, N extends INetw
 
     @Override
     public void onPlayerWatchChunk(EntityPlayerMP player, Chunk chunk) {
-        for (INetwork network : intersector.getNetworksIntersectingChunk(manager, chunk.x, chunk.z)) {
+        for (INetwork network : spanFunction.getNetworkSpanOfChunk(networks, chunk.x, chunk.z)) {
             networkWatchers.get(network.getId()).addPlayer(player);
         }
     }
 
     @Override
     public void onPlayerUnWatchChunk(EntityPlayerMP player, Chunk chunk) {
-        for (INetwork network : intersector.getNetworksIntersectingChunk(manager, chunk.x, chunk.z)) {
+        for (INetwork network : spanFunction.getNetworkSpanOfChunk(networks, chunk.x, chunk.z)) {
             networkWatchers.get(network.getId()).removePlayer(player);
         }
     }
@@ -74,9 +61,9 @@ public final class NetworkManagerWatcher<E extends INetworkEdge, N extends INetw
         networkWatchers.put(network.getId(), networkWatcher);
 
         // Players may already be watching chunks that the network intersects with
-        for (long position : intersector.getChunksIntersectingNetwork(network)) {
-            int x = IIntersector.chunkX(position);
-            int z = IIntersector.chunkZ(position);
+        for (long position : spanFunction.getChunkSpanOfNetwork(network.getState())) {
+            int x = ISpanFunction.chunkX(position);
+            int z = ISpanFunction.chunkZ(position);
             PlayerChunkMapEntry entry = playerChunkMap.getEntry(x, z);
             if (entry != null) {
                 for (EntityPlayerMP player : entry.getWatchingPlayers()) {
@@ -90,6 +77,6 @@ public final class NetworkManagerWatcher<E extends INetworkEdge, N extends INetw
 
     private void removeNetworkWatcher(INetwork network) {
         network.removeEventListener(LISTENER_KEY);
-        networkWatchers.remove(network.getUuid()).clear();
+        networkWatchers.remove(network.getId()).clear();
     }
 }

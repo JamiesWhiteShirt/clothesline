@@ -3,7 +3,6 @@ package com.jamieswhiteshirt.clothesline.client.renderer;
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.api.client.EdgeAttachmentProjector;
-import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.rtree3i.RTreeMap;
@@ -103,13 +102,13 @@ public final class RenderClotheslineNetwork {
         }
     }
 
-    private void renderEdge(IBlockAccess world, IClientNetworkEdge edge, double x, double y, double z, BufferBuilder bufferBuilder, float partialTicks) {
+    private void renderEdge(IBlockAccess world, INetworkEdge edge, double x, double y, double z, BufferBuilder bufferBuilder, float partialTicks) {
         Path.Edge ge = edge.getPathEdge();
         Line line = ge.getLine();
         int combinedLightFrom = world.getCombinedLight(line.getFromPos(), 0);
         int combinedLightTo = world.getCombinedLight(line.getToPos(), 0);
         double shift = edge.getNetwork().getState().getShift(partialTicks);
-        renderEdge(ge.getFromOffset() - shift, ge.getToOffset() - shift, combinedLightFrom, combinedLightTo, edge.getProjection(), bufferBuilder, x, y, z);
+        renderEdge(ge.getFromOffset() - shift, ge.getToOffset() - shift, combinedLightFrom, combinedLightTo, LineProjection.create(edge), bufferBuilder, x, y, z);
     }
 
     public void buildAndDrawEdgeQuads(Consumer<BufferBuilder> consumer) {
@@ -127,11 +126,11 @@ public final class RenderClotheslineNetwork {
         GlStateManager.disableCull();
     }
 
-    public void render(IBlockAccess world, RTreeMap<Line, IClientNetworkEdge> edgesMap, ICamera camera, double x, double y, double z, float partialTicks) {
+    public void render(IBlockAccess world, RTreeMap<Line, INetworkEdge> edgesMap, ICamera camera, double x, double y, double z, float partialTicks) {
         Vec3d viewPos = new Vec3d(x, y, z);
 
         // Select all entries in the edge map intersecting with the camera frustum
-        Selection<IClientNetworkEdge> edges = edgesMap
+        Selection<INetworkEdge> edges = edgesMap
             .values(box -> camera.isBoundingBoxInFrustum(new AxisAlignedBB(box.x1(), box.y1(), box.z1(), box.x2(), box.y2(), box.z2())));
 
         // Draw the rope for all edges
@@ -158,7 +157,7 @@ public final class RenderClotheslineNetwork {
 
             List<MutableSortedIntMap.Entry<ItemStack>> attachments = state.getAttachmentsInRange((int) fromAttachmentKey, (int) toAttachmentKey);
             if (!attachments.isEmpty()) {
-                EdgeAttachmentProjector projector = edge.getProjector();
+                EdgeAttachmentProjector projector = EdgeAttachmentProjector.build(edge);
 
                 for (MutableSortedIntMap.Entry<ItemStack> attachmentEntry : attachments) {
                     double attachmentOffset = state.attachmentKeyToOffset(attachmentEntry.getKey(), partialTicks);
@@ -210,7 +209,7 @@ public final class RenderClotheslineNetwork {
 
     public void debugRender(
         RTreeMap<BlockPos, INetworkNode> nodesMap,
-        RTreeMap<Line, IClientNetworkEdge> edgesMap,
+        RTreeMap<Line, INetworkEdge> edgesMap,
         ICamera camera, double x, double y, double z, float partialTicks
     ) {
         TileEntityRendererDispatcher rendererDispatcher = TileEntityRendererDispatcher.instance;
@@ -219,7 +218,7 @@ public final class RenderClotheslineNetwork {
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
 
         // Select all edges in the edges map intersecting with the camera frustum
-        Selection<IClientNetworkEdge> edges = edgesMap
+        Selection<INetworkEdge> edges = edgesMap
             .values(box -> camera.isBoundingBoxInFrustum(new AxisAlignedBB(box.x1(), box.y1(), box.z1(), box.x2(), box.y2(), box.z2())));
 
         edges.forEach(edge -> {
@@ -229,7 +228,7 @@ public final class RenderClotheslineNetwork {
             Path.Node pathNode = node.getPathNode();
             int nodeIndex = pathNode.getEdges().indexOf(pathEdge);
             int networkIndex = edge.getNetwork().getState().getPath().getEdges().indexOf(pathEdge);
-            Vec3d pos = edge.getProjection().projectRUF(-0.125D, 0.125D, 0.5D);
+            Vec3d pos = LineProjection.create(edge).projectRUF(-0.125D, 0.125D, 0.5D);
             debugRenderText(nodeIndex + " " + networkIndex, pos.x - x, pos.y - y, pos.z - z, yaw, pitch, fontRenderer);
         });
     }

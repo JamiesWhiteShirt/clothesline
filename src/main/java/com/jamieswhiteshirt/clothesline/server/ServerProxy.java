@@ -12,7 +12,6 @@ public class ServerProxy extends CommonProxy {
     @Override
     public SimpleNetworkWrapper createNetworkChannel() {
         SimpleNetworkWrapper networkChannel = super.createNetworkChannel();
-        networkChannel.registerMessage(DummyMessageHandler.INSTANCE, SetNetworksMessage.class, 0, Side.CLIENT);
         networkChannel.registerMessage(DummyMessageHandler.INSTANCE, AddNetworkMessage.class, 1, Side.CLIENT);
         networkChannel.registerMessage(DummyMessageHandler.INSTANCE, RemoveNetworkMessage.class, 2, Side.CLIENT);
         networkChannel.registerMessage(DummyMessageHandler.INSTANCE, SetAttachmentMessage.class, 3, Side.CLIENT);

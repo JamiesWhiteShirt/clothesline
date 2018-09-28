@@ -1,7 +1,6 @@
 package com.jamieswhiteshirt.clothesline.api;
 
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 
 public class AttachmentUnit {
     /**

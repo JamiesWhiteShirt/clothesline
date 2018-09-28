@@ -14,7 +14,7 @@ import java.util.*;
 public final class Network implements INetwork {
     private final int id;
     private final UUID uuid;
-    private INetworkState state;
+    private final INetworkState state;
     private final Map<ResourceLocation, INetworkListener> eventListeners = new TreeMap<>();
 
     public Network(int id, PersistentNetwork persistentNetwork) {

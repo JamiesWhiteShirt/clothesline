@@ -2,8 +2,8 @@ package com.jamieswhiteshirt.clothesline.client.raytrace;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
-import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
-import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
+import com.jamieswhiteshirt.clothesline.api.INetworkEdge;
+import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork;
 import com.jamieswhiteshirt.clothesline.common.network.message.HitAttachmentMessage;
 import net.minecraft.client.renderer.GLAllocation;
@@ -24,14 +24,14 @@ public class AttachmentRaytraceHit extends NetworkRaytraceHit {
     private final int attachmentKey;
     private final Matrix4f l2w;
 
-    public AttachmentRaytraceHit(double distanceSq, IClientNetworkEdge edge, int attachmentKey, Matrix4f l2w) {
+    public AttachmentRaytraceHit(double distanceSq, INetworkEdge edge, int attachmentKey, Matrix4f l2w) {
         super(distanceSq, edge);
         this.attachmentKey = attachmentKey;
         this.l2w = l2w;
     }
 
     @Override
-    public boolean hitByEntity(IClientNetworkManager manager, EntityPlayer player) {
+    public boolean hitByEntity(INetworkManager manager, EntityPlayer player) {
         INetwork network = edge.getNetwork();
         Clothesline.instance.networkChannel.sendToServer(new HitAttachmentMessage(network.getId(), attachmentKey));
         network.hitAttachment(player, attachmentKey);
@@ -39,7 +39,7 @@ public class AttachmentRaytraceHit extends NetworkRaytraceHit {
     }
 
     @Override
-    public boolean useItem(IClientNetworkManager manager, EntityPlayer player, EnumHand hand) {
+    public boolean useItem(INetworkManager manager, EntityPlayer player, EnumHand hand) {
         return false;
     }
 

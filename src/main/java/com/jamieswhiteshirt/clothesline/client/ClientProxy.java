@@ -2,10 +2,8 @@ package com.jamieswhiteshirt.clothesline.client;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.*;
-import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
-import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
-import com.jamieswhiteshirt.clothesline.client.capability.ClientNetworkManagerProvider;
+import com.jamieswhiteshirt.clothesline.client.capability.ClientCapabilityProvider;
 import com.jamieswhiteshirt.clothesline.client.raytrace.EntityNetworkRaytraceHit;
 import com.jamieswhiteshirt.clothesline.client.impl.ClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.client.network.messagehandler.*;
@@ -20,6 +18,7 @@ import com.jamieswhiteshirt.clothesline.common.ClotheslineBlocks;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
 import com.jamieswhiteshirt.clothesline.common.CommonProxy;
 import com.jamieswhiteshirt.clothesline.common.block.BlockClotheslineAnchor;
+import com.jamieswhiteshirt.clothesline.common.impl.NetworkCollection;
 import com.jamieswhiteshirt.clothesline.common.item.ItemConnector;
 import com.jamieswhiteshirt.clothesline.common.network.message.*;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
@@ -28,6 +27,7 @@ import com.jamieswhiteshirt.clothesline.hooks.api.GetMouseOverEvent;
 import com.jamieswhiteshirt.clothesline.hooks.api.RenderEntitiesEvent;
 import com.jamieswhiteshirt.clothesline.hooks.api.UseItemMovementEvent;
 import com.jamieswhiteshirt.clothesline.internal.IConnector;
+import com.jamieswhiteshirt.clothesline.internal.IWorldEventDispatcher;
 import com.jamieswhiteshirt.rtree3i.Box;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -78,7 +78,6 @@ public class ClientProxy extends CommonProxy {
     @Override
     public SimpleNetworkWrapper createNetworkChannel() {
         SimpleNetworkWrapper networkChannel = super.createNetworkChannel();
-        networkChannel.registerMessage(new SetNetworksMessageHandler(), SetNetworksMessage.class, 0, Side.CLIENT);
         networkChannel.registerMessage(new AddNetworkMessageHandler(), AddNetworkMessage.class, 1, Side.CLIENT);
         networkChannel.registerMessage(new RemoveNetworkMessageHandler(), RemoveNetworkMessage.class, 2, Side.CLIENT);
         networkChannel.registerMessage(new SetAttachmentMessageHandler(), SetAttachmentMessage.class, 3, Side.CLIENT);
@@ -112,16 +111,16 @@ public class ClientProxy extends CommonProxy {
     public void attachWorldCapabilities(AttachCapabilitiesEvent<World> event) {
         World world = event.getObject();
         if (world instanceof WorldClient) {
-            ClientNetworkManager manager = new ClientNetworkManager((WorldClient) world);
+            ClientNetworkManager manager = new ClientNetworkManager((WorldClient) world, new NetworkCollection());
             MinecraftForge.EVENT_BUS.post(new NetworkManagerCreatedEvent(world, manager));
-            event.addCapability(new ResourceLocation(Clothesline.MODID, "network_manager"), new ClientNetworkManagerProvider(manager));
+            event.addCapability(new ResourceLocation(Clothesline.MODID, "networks"), new ClientCapabilityProvider(manager));
         }
     }
 
     @SubscribeEvent
     public void onNetworkManagerCreated(NetworkManagerCreatedEvent event) {
         if (event.getWorld().isRemote) {
-            event.getNetworkManager().addEventListener(SOUND_KEY, new SoundNetworkManagerListener<>());
+            event.getNetworkManager().getNetworks().addEventListener(SOUND_KEY, new SoundNetworkCollectionListener());
         }
     }
 
@@ -253,14 +252,14 @@ public class ClientProxy extends CommonProxy {
                 double y = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks;
                 double z = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks;
 
-                IClientNetworkManager manager = world.getCapability(Clothesline.CLIENT_NETWORK_MANAGER_CAPABILITY, null);
+                INetworkManager manager = world.getCapability(Clothesline.NETWORK_MANAGER_CAPABILITY, null);
                 if (manager != null) {
                     boolean showDebugInfo = Minecraft.getMinecraft().gameSettings.showDebugInfo;
                     world.profiler.startSection("renderClotheslines");
-                    renderClotheslineNetwork.render(world, manager.getEdges(), event.getCamera(), x, y, z, partialTicks);
+                    renderClotheslineNetwork.render(world, manager.getNetworks().getEdges(), event.getCamera(), x, y, z, partialTicks);
                     world.profiler.endSection();
                     if (showDebugInfo) {
-                        renderClotheslineNetwork.debugRender(manager.getNodes(), manager.getEdges(), event.getCamera(), x, y, z, event.getPartialTicks());
+                        renderClotheslineNetwork.debugRender(manager.getNetworks().getNodes(), manager.getNetworks().getEdges(), event.getCamera(), x, y, z, event.getPartialTicks());
                     }
                 }
 
@@ -304,9 +303,9 @@ public class ClientProxy extends CommonProxy {
         if (event.phase == TickEvent.Phase.END && !Minecraft.getMinecraft().isGamePaused()) {
             WorldClient world = Minecraft.getMinecraft().world;
             if (world != null) {
-                IClientNetworkManager manager = world.getCapability(Clothesline.CLIENT_NETWORK_MANAGER_CAPABILITY, null);
-                if (manager != null) {
-                    manager.update();
+                IWorldEventDispatcher eventDispatcher = world.getCapability(Clothesline.WORLD_EVENT_DISPATCHER_CAPABILITY, null);
+                if (eventDispatcher != null) {
+                    eventDispatcher.onTick();
                 }
             }
         }
@@ -338,7 +337,7 @@ public class ClientProxy extends CommonProxy {
         World world = mc.world;
         Entity renderViewEntity = mc.getRenderViewEntity();
         if (world != null && renderViewEntity != null) {
-            IClientNetworkManager manager = world.getCapability(Clothesline.CLIENT_NETWORK_MANAGER_CAPABILITY, null);
+            INetworkManager manager = world.getCapability(Clothesline.NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 Vec3d rayFrom = renderViewEntity.getPositionEyes(partialTicks);
                 Vec3d rayTo = mc.objectMouseOver.hitVec;
@@ -356,7 +355,7 @@ public class ClientProxy extends CommonProxy {
     }
 
     @Nullable
-    private NetworkRaytraceHit raytraceNetworks(IClientNetworkManager manager, Ray ray, double maxDistanceSq, float partialTicks) {
+    private NetworkRaytraceHit raytraceNetworks(INetworkManager manager, Ray ray, double maxDistanceSq, float partialTicks) {
         Box box = Box.create(
             (int) Math.floor(Math.min(ray.from.x, ray.to.x) - 0.5D),
             (int) Math.floor(Math.min(ray.from.y, ray.to.y) - 0.5D),
@@ -367,8 +366,8 @@ public class ClientProxy extends CommonProxy {
         );
 
         NetworkRaytraceHit hit = null;
-        List<IClientNetworkEdge> edges = manager.getEdges().values(box::intersects).collect(Collectors.toList());
-        for (IClientNetworkEdge edge : edges) {
+        List<INetworkEdge> edges = manager.getNetworks().getEdges().values(box::intersects).collect(Collectors.toList());
+        for (INetworkEdge edge : edges) {
             NetworkRaytraceHit hitCandidate = raytraceEdge(ray, edge, maxDistanceSq, partialTicks);
             if (hitCandidate != null && hitCandidate.distanceSq < maxDistanceSq) {
                 maxDistanceSq = hitCandidate.distanceSq;
@@ -380,9 +379,9 @@ public class ClientProxy extends CommonProxy {
     }
 
     @Nullable
-    private NetworkRaytraceHit raytraceEdge(Ray viewRay, IClientNetworkEdge edge, double maxDistanceSq, float partialTicks) {
+    private NetworkRaytraceHit raytraceEdge(Ray viewRay, INetworkEdge edge, double maxDistanceSq, float partialTicks) {
         Path.Edge pathEdge = edge.getPathEdge();
-        LineProjection projection = edge.getProjection();
+        LineProjection projection = LineProjection.create(edge);
         NetworkRaytraceHit hit = null;
 
         Ray edgeRay = new Ray(projection.projectRUF(-2.0D / 16.0D, 0.0D, 0.0D), projection.projectRUF(-2.0D / 16.0D, 0.0D, 1.0D));
@@ -418,7 +417,7 @@ public class ClientProxy extends CommonProxy {
             Vector4f lTo = new Vector4f();
             Vector4f wHitVec = new Vector4f();
 
-            EdgeAttachmentProjector projector = edge.getProjector();
+            EdgeAttachmentProjector projector = EdgeAttachmentProjector.build(edge);
             for (MutableSortedIntMap.Entry<ItemStack> attachment : attachments) {
                 double attachmentOffset = state.attachmentKeyToOffset(attachment.getKey(), partialTicks);
                 // Local space to world space matrix

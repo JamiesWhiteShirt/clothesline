@@ -1,5 +1,6 @@
 package com.jamieswhiteshirt.clothesline.api.client;
 
+import com.jamieswhiteshirt.clothesline.api.INetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.Path;
 import com.jamieswhiteshirt.clothesline.api.AttachmentUnit;
 import net.minecraft.util.math.BlockPos;
@@ -7,6 +8,8 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
+
+import java.util.List;
 
 public final class EdgeAttachmentProjector {
     private final int fromOffset;
@@ -53,6 +56,14 @@ public final class EdgeAttachmentProjector {
             angleBetween(fromPathEdge, pathEdge),
             angleBetween(pathEdge, toPathEdge)
         );
+    }
+
+    public static EdgeAttachmentProjector build(INetworkEdge edge) {
+        int index = edge.getIndex();
+        List<Path.Edge> edges = edge.getNetwork().getState().getPath().getEdges();
+        Path.Edge fromPathEdge = edges.get(Math.floorMod(index - 1, edges.size()));
+        Path.Edge toPathEdge = edges.get(Math.floorMod(index + 1, edges.size()));
+        return EdgeAttachmentProjector.build(fromPathEdge, edge.getPathEdge(), toPathEdge, LineProjection.create(edge));
     }
 
     private float calculateSwingAngle(double momentum, double offset) {

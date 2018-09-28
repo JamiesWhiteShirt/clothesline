@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
 public class TileEntityClotheslineAnchor extends TileEntity implements ITickable {
     @CapabilityInject(IItemHandler.class)
     private static final Capability<IItemHandler> ITEM_HANDLER_CAPABILITY = Util.nonNullInjected();
-    private INetworkManager<?, ?> manager;
+    private INetworkManager manager;
     private boolean hasCrank;
 
     public boolean getHasCrank() {
@@ -45,7 +45,7 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     @Nullable
     public INetworkNode getNetworkNode() {
         if (manager != null) {
-            return manager.getNodes().get(pos);
+            return manager.getNetworks().getNodes().get(pos);
         } else {
             return null;
         }

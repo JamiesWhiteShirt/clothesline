@@ -1,5 +1,6 @@
 package com.jamieswhiteshirt.clothesline.api.client;
 
+import com.jamieswhiteshirt.clothesline.api.INetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.Line;
 import net.minecraft.util.math.Vec3d;
 
@@ -44,5 +45,9 @@ public final class LineProjection {
         Vec3d upNormal = rightNormal.crossProduct(forwardNormal);
 
         return new LineProjection(from, rightNormal, upNormal, forward);
+    }
+
+    public static LineProjection create(INetworkEdge edge) {
+        return create(edge.getPathEdge().getLine());
     }
 }

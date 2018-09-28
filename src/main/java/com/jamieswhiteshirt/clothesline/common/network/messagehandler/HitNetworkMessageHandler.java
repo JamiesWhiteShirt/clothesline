@@ -20,7 +20,7 @@ public class HitNetworkMessageHandler implements IMessageHandler<HitNetworkMessa
         world.addScheduledTask(() -> {
             INetworkManager manager = world.getCapability(Clothesline.NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
-                INetwork network = manager.getNetworkById(message.networkId);
+                INetwork network = manager.getNetworks().getById(message.networkId);
                 if (network != null) {
                     Path.Edge edge = network.getState().getPath().getEdgeForPosition(message.offset);
                     if (Validation.canReachPos(player, edge.getPositionForOffset(message.offset))) {

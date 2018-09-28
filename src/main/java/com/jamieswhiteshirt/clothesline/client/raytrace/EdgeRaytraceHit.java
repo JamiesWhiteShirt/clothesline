@@ -2,8 +2,9 @@ package com.jamieswhiteshirt.clothesline.client.raytrace;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
-import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkEdge;
-import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
+import com.jamieswhiteshirt.clothesline.api.INetworkEdge;
+import com.jamieswhiteshirt.clothesline.api.INetworkManager;
+import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork;
 import com.jamieswhiteshirt.clothesline.common.network.message.HitNetworkMessage;
 import com.jamieswhiteshirt.clothesline.common.network.message.TryUseItemOnNetworkMessage;
@@ -16,13 +17,13 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class EdgeRaytraceHit extends NetworkRaytraceHit {
     private final double offset;
 
-    public EdgeRaytraceHit(double distanceSq, IClientNetworkEdge edge, double offset) {
+    public EdgeRaytraceHit(double distanceSq, INetworkEdge edge, double offset) {
         super(distanceSq, edge);
         this.offset = offset;
     }
 
     @Override
-    public boolean hitByEntity(IClientNetworkManager manager, EntityPlayer player) {
+    public boolean hitByEntity(INetworkManager manager, EntityPlayer player) {
         int offset = (int) Math.round(this.offset);
         INetwork network = edge.getNetwork();
         int attachmentKey = network.getState().offsetToAttachmentKey(offset);
@@ -31,7 +32,7 @@ public class EdgeRaytraceHit extends NetworkRaytraceHit {
     }
 
     @Override
-    public boolean useItem(IClientNetworkManager manager, EntityPlayer player, EnumHand hand) {
+    public boolean useItem(INetworkManager manager, EntityPlayer player, EnumHand hand) {
         int offset = (int) Math.round(this.offset);
         INetwork network = edge.getNetwork();
         int attachmentKey = network.getState().offsetToAttachmentKey(offset);
@@ -41,6 +42,6 @@ public class EdgeRaytraceHit extends NetworkRaytraceHit {
 
     @Override
     public void renderHighlight(RenderClotheslineNetwork renderClotheslineNetwork, float partialTicks, double x, double y, double z, float r, float g, float b, float a) {
-        renderClotheslineNetwork.renderOutline(edge.getProjection(), x, y, z, r, g, b, a);
+        renderClotheslineNetwork.renderOutline(LineProjection.create(edge), x, y, z, r, g, b, a);
     }
 }

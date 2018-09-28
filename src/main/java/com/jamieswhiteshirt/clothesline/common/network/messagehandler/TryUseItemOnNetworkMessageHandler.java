@@ -2,7 +2,7 @@ package com.jamieswhiteshirt.clothesline.common.network.messagehandler;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
-import com.jamieswhiteshirt.clothesline.api.IServerNetworkManager;
+import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.common.network.message.RemoveAttachmentMessage;
 import com.jamieswhiteshirt.clothesline.common.network.message.SetAttachmentMessage;
 import com.jamieswhiteshirt.clothesline.common.network.message.TryUseItemOnNetworkMessage;
@@ -23,9 +23,9 @@ public class TryUseItemOnNetworkMessageHandler implements IMessageHandler<TryUse
         EntityPlayerMP player = ctx.getServerHandler().player;
         WorldServer world = player.getServerWorld();
         world.addScheduledTask(() -> {
-            IServerNetworkManager manager = world.getCapability(Clothesline.SERVER_NETWORK_MANAGER_CAPABILITY, null);
+            INetworkManager manager = world.getCapability(Clothesline.NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
-                INetwork network = manager.getNetworkById(message.networkId);
+                INetwork network = manager.getNetworks().getById(message.networkId);
                 if (network != null) {
                     if (Validation.canReachAttachment(player, network, message.attachmentKey)) {
                         network.useItem(player, message.hand, message.attachmentKey);

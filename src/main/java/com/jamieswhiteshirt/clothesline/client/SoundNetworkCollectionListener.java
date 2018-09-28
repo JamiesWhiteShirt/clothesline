@@ -11,7 +11,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.*;
 
 @SideOnly(Side.CLIENT)
-public class SoundNetworkManagerListener<E extends INetworkEdge, N extends INetworkNode> implements INetworkManagerListener<E, N> {
+public class SoundNetworkCollectionListener implements INetworkCollectionListener {
     private final Map<BlockPos, ClotheslineRopeSound> anchorSounds = new HashMap<>();
     private final SoundHandler soundHandler = Minecraft.getMinecraft().getSoundHandler();
 
@@ -32,27 +32,13 @@ public class SoundNetworkManagerListener<E extends INetworkEdge, N extends INetw
         }
     }
 
-    private void listenTo(INetwork network) {
+    @Override
+    public void onNetworkAdded(INetworkCollection networks, INetwork network) {
         listenTo(network.getState());
     }
 
-    private void unlistenTo(INetwork network) {
+    @Override
+    public void onNetworkRemoved(INetworkCollection networks, INetwork network) {
         unlistenTo(network.getState());
-    }
-
-    @Override
-    public void onNetworksReset(INetworkManager<E, N> networkManager, List<INetwork> previousNetworks, List<INetwork> newNetworks) {
-        previousNetworks.forEach(this::unlistenTo);
-        newNetworks.forEach(this::listenTo);
-    }
-
-    @Override
-    public void onNetworkAdded(INetworkManager<E, N> networkManager, INetwork network) {
-        listenTo(network);
-    }
-
-    @Override
-    public void onNetworkRemoved(INetworkManager<E, N> networkManager, INetwork network) {
-        unlistenTo(network);
     }
 }

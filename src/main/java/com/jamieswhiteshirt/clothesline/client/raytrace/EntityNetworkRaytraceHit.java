@@ -1,30 +1,24 @@
 package com.jamieswhiteshirt.clothesline.client.raytrace;
 
-import com.jamieswhiteshirt.clothesline.api.client.IClientNetworkManager;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
+import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.lang.reflect.Field;
-
 @SideOnly(Side.CLIENT)
 public final class EntityNetworkRaytraceHit extends Entity {
-    private static final Field blockHitDelay = ReflectionHelper.findField(PlayerControllerMP.class, "field_78781_i", "blockHitDelay");
-
-    private IClientNetworkManager manager;
+    private INetworkManager manager;
     private NetworkRaytraceHit hit;
 
     public EntityNetworkRaytraceHit(World worldIn) {
         super(worldIn);
     }
 
-    public EntityNetworkRaytraceHit(World world, IClientNetworkManager manager, NetworkRaytraceHit hit) {
+    public EntityNetworkRaytraceHit(World world, INetworkManager manager, NetworkRaytraceHit hit) {
         this(world);
         this.manager = manager;
         this.hit = hit;
@@ -41,24 +35,6 @@ public final class EntityNetworkRaytraceHit extends Entity {
 
     @Override
     public boolean hitByEntity(Entity entity) {
-        /*PlayerControllerMP playerController = Minecraft.getMinecraft().playerController;
-        try {
-            int delay = (int)blockHitDelay.get(playerController);
-            if (delay > 0) {
-                blockHitDelay.set(playerController, delay - 1);
-                return true;
-            } else {
-                if (hit.hitByEntity(manager, (EntityPlayer) entity)) {
-                    blockHitDelay.set(playerController, 5);
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        } catch (IllegalAccessException e) {
-            Clothesline.logger.error("Could not access block hit delay for clothesline hit", e);
-            return false;
-        }*/
         return hit.hitByEntity(manager, (EntityPlayer) entity);
     }
 
