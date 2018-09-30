@@ -4,7 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.INetworkCollection;
-import com.jamieswhiteshirt.clothesline.api.PersistentNetwork;
+import com.jamieswhiteshirt.clothesline.internal.PersistentNetwork;
 import com.jamieswhiteshirt.clothesline.common.impl.Network;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkCollection;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkCollectionTracker;

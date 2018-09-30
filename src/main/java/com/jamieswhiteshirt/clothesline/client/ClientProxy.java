@@ -7,11 +7,9 @@ import com.jamieswhiteshirt.clothesline.client.capability.ClientCapabilityProvid
 import com.jamieswhiteshirt.clothesline.client.raytrace.EntityNetworkRaytraceHit;
 import com.jamieswhiteshirt.clothesline.client.impl.ClientNetworkManager;
 import com.jamieswhiteshirt.clothesline.client.network.messagehandler.*;
-import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
 import com.jamieswhiteshirt.clothesline.client.raytrace.AttachmentRaytraceHit;
 import com.jamieswhiteshirt.clothesline.client.raytrace.EdgeRaytraceHit;
 import com.jamieswhiteshirt.clothesline.client.raytrace.NetworkRaytraceHit;
-import com.jamieswhiteshirt.clothesline.api.client.EdgeAttachmentProjector;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork;
 import com.jamieswhiteshirt.clothesline.client.renderer.tileentity.TileEntityClotheslineAnchorRenderer;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineBlocks;

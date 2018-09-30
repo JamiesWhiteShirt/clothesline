@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
-import com.jamieswhiteshirt.clothesline.api.PersistentNetwork;
+import com.jamieswhiteshirt.clothesline.internal.PersistentNetwork;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 public final class NetworkProviderEntry {

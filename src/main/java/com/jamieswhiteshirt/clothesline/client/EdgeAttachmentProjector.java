@@ -1,4 +1,4 @@
-package com.jamieswhiteshirt.clothesline.api.client;
+package com.jamieswhiteshirt.clothesline.client;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.Path;
@@ -6,11 +6,14 @@ import com.jamieswhiteshirt.clothesline.api.AttachmentUnit;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
 import java.util.List;
 
+@SideOnly(Side.CLIENT)
 public final class EdgeAttachmentProjector {
     private final int fromOffset;
     private final int toOffset;

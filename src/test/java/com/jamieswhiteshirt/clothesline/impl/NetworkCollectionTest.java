@@ -4,6 +4,7 @@ import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.common.impl.Network;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkCollection;
 import com.jamieswhiteshirt.clothesline.common.util.NetworkStateBuilder;
+import com.jamieswhiteshirt.clothesline.internal.PersistentNetwork;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import org.junit.jupiter.api.Assertions;

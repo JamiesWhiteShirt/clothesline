@@ -1,7 +1,5 @@
 package com.jamieswhiteshirt.clothesline.internal;
 
-import com.jamieswhiteshirt.clothesline.api.PersistentNetwork;
-
 import java.util.Collection;
 import java.util.UUID;
 

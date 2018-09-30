@@ -5,6 +5,7 @@ import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.common.impl.Network;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkState;
 import com.jamieswhiteshirt.clothesline.common.util.PathBuilder;
+import com.jamieswhiteshirt.clothesline.internal.PersistentNetwork;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import org.junit.jupiter.api.Assertions;

@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.impl;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkCollection;
-import com.jamieswhiteshirt.clothesline.api.PersistentNetwork;
+import com.jamieswhiteshirt.clothesline.internal.PersistentNetwork;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkCollection;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkProvider;
 import com.jamieswhiteshirt.clothesline.common.util.ISpanFunction;

@@ -1,6 +1,6 @@
 package com.jamieswhiteshirt.clothesline.common.util;
 
-import com.jamieswhiteshirt.clothesline.api.PersistentNetwork;
+import com.jamieswhiteshirt.clothesline.internal.PersistentNetwork;
 
 import java.util.Objects;
 import java.util.UUID;

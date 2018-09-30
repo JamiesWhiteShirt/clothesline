@@ -4,7 +4,7 @@ import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.SetMultimap;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.INetworkCollection;
-import com.jamieswhiteshirt.clothesline.api.PersistentNetwork;
+import com.jamieswhiteshirt.clothesline.internal.PersistentNetwork;
 import com.jamieswhiteshirt.clothesline.common.util.ISpanFunction;
 import com.jamieswhiteshirt.clothesline.internal.INetworkProvider;
 import it.unimi.dsi.fastutil.longs.LongSet;

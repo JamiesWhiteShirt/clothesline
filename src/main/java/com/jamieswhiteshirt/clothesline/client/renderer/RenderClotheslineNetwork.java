@@ -2,8 +2,8 @@ package com.jamieswhiteshirt.clothesline.client.renderer;
 
 import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.*;
-import com.jamieswhiteshirt.clothesline.api.client.EdgeAttachmentProjector;
-import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
+import com.jamieswhiteshirt.clothesline.client.EdgeAttachmentProjector;
+import com.jamieswhiteshirt.clothesline.client.LineProjection;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.rtree3i.RTreeMap;
 import com.jamieswhiteshirt.rtree3i.Selection;

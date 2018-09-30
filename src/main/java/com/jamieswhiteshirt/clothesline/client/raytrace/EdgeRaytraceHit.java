@@ -4,7 +4,7 @@ import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.INetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
-import com.jamieswhiteshirt.clothesline.api.client.LineProjection;
+import com.jamieswhiteshirt.clothesline.client.LineProjection;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork;
 import com.jamieswhiteshirt.clothesline.common.network.message.HitNetworkMessage;
 import com.jamieswhiteshirt.clothesline.common.network.message.TryUseItemOnNetworkMessage;

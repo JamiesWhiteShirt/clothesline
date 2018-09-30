@@ -2,7 +2,7 @@ package com.jamieswhiteshirt.clothesline.common.util;
 
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.common.impl.Network;
-import com.jamieswhiteshirt.clothesline.api.PersistentNetwork;
+import com.jamieswhiteshirt.clothesline.internal.PersistentNetwork;
 
 import java.util.Objects;
 

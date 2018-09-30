@@ -1,7 +1,7 @@
 package com.jamieswhiteshirt.clothesline.impl;
 
 import com.jamieswhiteshirt.clothesline.api.INetworkListener;
-import com.jamieswhiteshirt.clothesline.api.PersistentNetwork;
+import com.jamieswhiteshirt.clothesline.internal.PersistentNetwork;
 import com.jamieswhiteshirt.clothesline.common.impl.Network;
 import com.jamieswhiteshirt.clothesline.common.util.NetworkStateBuilder;
 import net.minecraft.init.Bootstrap;

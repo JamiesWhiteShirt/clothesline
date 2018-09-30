@@ -3,6 +3,7 @@ package com.jamieswhiteshirt.clothesline.common.impl;
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.internal.INetworkProvider;
+import com.jamieswhiteshirt.clothesline.internal.PersistentNetwork;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
