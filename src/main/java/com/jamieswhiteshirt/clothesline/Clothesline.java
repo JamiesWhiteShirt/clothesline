@@ -146,10 +146,10 @@ public class Clothesline {
             INetworkProvider provider = new NetworkProvider(networks, new NodeSpanFunction(), isChunkLoaded);
 
             ServerNetworkManager manager = new ServerNetworkManager((WorldServer) world, networks, provider);
-            INetworkCollectionTracker<EntityPlayerMP> watcher = new NetworkCollectionTracker<>(networks, getWatchingPlayers, new PlayerNetworkMessenger(networkChannel), new NodeSpanFunction());
+            INetworkCollectionTracker<EntityPlayerMP> tracker = new NetworkCollectionTracker<>(networks, getWatchingPlayers, new PlayerNetworkMessenger(networkChannel), new NodeSpanFunction());
             MinecraftForge.EVENT_BUS.post(new NetworkManagerCreatedEvent(world, manager));
 
-            event.addCapability(new ResourceLocation(MODID, "networks"), new ServerCapabilityProvider(manager, provider, watcher));
+            event.addCapability(new ResourceLocation(MODID, "networks"), new ServerCapabilityProvider(manager, provider, tracker));
         }
     }
 

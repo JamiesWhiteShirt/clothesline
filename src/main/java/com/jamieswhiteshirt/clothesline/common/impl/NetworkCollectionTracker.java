@@ -54,6 +54,13 @@ public final class NetworkCollectionTracker<T> implements INetworkCollectionTrac
         }
     }
 
+    @Override
+    public void update() {
+        for (NetworkTracker<T> tracker : networkTrackers.values()) {
+            tracker.update();
+        }
+    }
+
     private void addNetworkWatcher(INetwork network) {
         NetworkTracker<T> networkTracker = new NetworkTracker<>(network, messenger);
         network.addEventListener(LISTENER_KEY, networkTracker);

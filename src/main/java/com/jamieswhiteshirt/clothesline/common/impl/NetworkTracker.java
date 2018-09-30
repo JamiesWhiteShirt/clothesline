@@ -11,17 +11,21 @@ public final class NetworkTracker<T> implements INetworkListener {
     private final INetwork network;
     private final INetworkMessenger<T> messenger;
     private final Multiset<T> watchers = LinkedHashMultiset.create();
+    private int lastShift;
+    private int lastMomentum;
 
     public NetworkTracker(INetwork network, INetworkMessenger<T> messenger) {
         this.network = network;
         this.messenger = messenger;
+        this.lastShift= network.getState().getShift();
+        this.lastMomentum = network.getState().getMomentum();
     }
 
     @Override
     public void onAttachmentChanged(INetwork network, int attachmentKey, ItemStack previousStack, ItemStack newStack) {
         if (!ItemStack.areItemStacksEqual(previousStack, newStack)) {
-            for (T player : watchers.elementSet()) {
-                messenger.setAttachment(player, network, attachmentKey, newStack);
+            for (T watcher : watchers.elementSet()) {
+                messenger.setAttachment(watcher, network, attachmentKey, newStack);
             }
         }
     }
@@ -39,9 +43,23 @@ public final class NetworkTracker<T> implements INetworkListener {
     }
 
     public void clear() {
-        for (T player : watchers.elementSet()) {
-            messenger.removeNetwork(player, network);
+        for (T watcher : watchers.elementSet()) {
+            messenger.removeNetwork(watcher, network);
         }
         watchers.clear();
+    }
+
+    public void update() {
+        int shift = network.getState().getShift();
+        int momentum = network.getState().getMomentum();
+
+        if (shift != lastShift || momentum != lastMomentum) {
+            for (T watcher : watchers.elementSet()) {
+                messenger.setShiftAndMomentum(watcher, network, shift, momentum);
+            }
+
+            lastShift = shift;
+            lastMomentum = momentum;
+        }
     }
 }

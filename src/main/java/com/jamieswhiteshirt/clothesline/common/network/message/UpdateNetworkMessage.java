@@ -21,7 +21,7 @@ public class UpdateNetworkMessage implements IMessage {
     public void fromBytes(ByteBuf buf) {
         networkId = ByteBufSerialization.readNetworkId(buf);
         shift = buf.readInt();
-        momentum = buf.readUnsignedByte();
+        momentum = buf.readByte();
     }
 
     @Override

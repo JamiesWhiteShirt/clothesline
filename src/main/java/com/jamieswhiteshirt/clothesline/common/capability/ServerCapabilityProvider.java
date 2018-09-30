@@ -20,21 +20,22 @@ import java.util.stream.Collectors;
 public class ServerCapabilityProvider implements ICapabilitySerializable<NBTTagList> {
     private final INetworkManager manager;
     private final INetworkProvider provider;
-    private final INetworkCollectionTracker<EntityPlayerMP> watcher;
+    private final INetworkCollectionTracker<EntityPlayerMP> tracker;
     private final IWorldEventDispatcher eventDispatcher = new IWorldEventDispatcher() {
         @Override
         public void onTick() {
             manager.update();
+            tracker.update();
         }
 
         @Override
         public void onPlayerWatchChunk(EntityPlayerMP player, Chunk chunk) {
-            watcher.onWatchChunk(player, chunk.x, chunk.z);
+            tracker.onWatchChunk(player, chunk.x, chunk.z);
         }
 
         @Override
         public void onPlayerUnWatchChunk(EntityPlayerMP player, Chunk chunk) {
-            watcher.onUnWatchChunk(player, chunk.x, chunk.z);
+            tracker.onUnWatchChunk(player, chunk.x, chunk.z);
         }
 
         @Override
@@ -48,10 +49,10 @@ public class ServerCapabilityProvider implements ICapabilitySerializable<NBTTagL
         }
     };
 
-    public ServerCapabilityProvider(INetworkManager manager, INetworkProvider provider, INetworkCollectionTracker<EntityPlayerMP> watcher) {
+    public ServerCapabilityProvider(INetworkManager manager, INetworkProvider provider, INetworkCollectionTracker<EntityPlayerMP> tracker) {
         this.manager = manager;
         this.provider = provider;
-        this.watcher = watcher;
+        this.tracker = tracker;
     }
 
     @Override
