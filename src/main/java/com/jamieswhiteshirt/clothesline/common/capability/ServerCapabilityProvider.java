@@ -4,7 +4,7 @@ import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.common.util.BasicPersistentNetwork;
 import com.jamieswhiteshirt.clothesline.common.util.NBTSerialization;
-import com.jamieswhiteshirt.clothesline.internal.INetworkCollectionWatcher;
+import com.jamieswhiteshirt.clothesline.internal.INetworkCollectionTracker;
 import com.jamieswhiteshirt.clothesline.internal.INetworkProvider;
 import com.jamieswhiteshirt.clothesline.internal.IWorldEventDispatcher;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class ServerCapabilityProvider implements ICapabilitySerializable<NBTTagList> {
     private final INetworkManager manager;
     private final INetworkProvider provider;
-    private final INetworkCollectionWatcher watcher;
+    private final INetworkCollectionTracker<EntityPlayerMP> watcher;
     private final IWorldEventDispatcher eventDispatcher = new IWorldEventDispatcher() {
         @Override
         public void onTick() {
@@ -29,12 +29,12 @@ public class ServerCapabilityProvider implements ICapabilitySerializable<NBTTagL
 
         @Override
         public void onPlayerWatchChunk(EntityPlayerMP player, Chunk chunk) {
-            watcher.onPlayerWatchChunk(player, chunk);
+            watcher.onWatchChunk(player, chunk);
         }
 
         @Override
         public void onPlayerUnWatchChunk(EntityPlayerMP player, Chunk chunk) {
-            watcher.onPlayerUnWatchChunk(player, chunk);
+            watcher.onUnWatchChunk(player, chunk);
         }
 
         @Override
@@ -48,7 +48,7 @@ public class ServerCapabilityProvider implements ICapabilitySerializable<NBTTagL
         }
     };
 
-    public ServerCapabilityProvider(INetworkManager manager, INetworkProvider provider, INetworkCollectionWatcher watcher) {
+    public ServerCapabilityProvider(INetworkManager manager, INetworkProvider provider, INetworkCollectionTracker<EntityPlayerMP> watcher) {
         this.manager = manager;
         this.provider = provider;
         this.watcher = watcher;

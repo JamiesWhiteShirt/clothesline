@@ -10,7 +10,7 @@ import com.jamieswhiteshirt.clothesline.common.util.NodeSpanFunction;
 import com.jamieswhiteshirt.clothesline.hooks.api.MayPlaceBlockEvent;
 import com.jamieswhiteshirt.clothesline.internal.IConnector;
 import com.jamieswhiteshirt.clothesline.internal.INetworkProvider;
-import com.jamieswhiteshirt.clothesline.internal.INetworkCollectionWatcher;
+import com.jamieswhiteshirt.clothesline.internal.INetworkCollectionTracker;
 import com.jamieswhiteshirt.clothesline.internal.IWorldEventDispatcher;
 import com.jamieswhiteshirt.rtree3i.Box;
 import net.minecraft.block.Block;
@@ -18,6 +18,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
+import net.minecraft.server.management.PlayerChunkMap;
+import net.minecraft.server.management.PlayerChunkMapEntry;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -47,6 +49,9 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 
 @Mod(
@@ -128,10 +133,20 @@ public class Clothesline {
             NetworkCollection networks = new NetworkCollection();
 
             BiPredicate<Integer, Integer> isChunkLoaded = ((WorldServer)world).getChunkProvider()::isChunkGeneratedAt;
+            PlayerChunkMap chunkMap = ((WorldServer) world).getPlayerChunkMap();
+            BiFunction<Integer, Integer, Collection<EntityPlayerMP>> getWatchingPlayers = (Integer x, Integer z) -> {
+                PlayerChunkMapEntry entry = chunkMap.getEntry(x, z);
+                if (entry != null) {
+                    return chunkMap.getEntry(x, z).getWatchingPlayers();
+                } else {
+                    return Collections.emptyList();
+                }
+            };
+
             INetworkProvider provider = new NetworkProvider(networks, new NodeSpanFunction(), isChunkLoaded);
 
             ServerNetworkManager manager = new ServerNetworkManager((WorldServer) world, networks, provider);
-            INetworkCollectionWatcher watcher = new NetworkCollectionWatcher(networks, (WorldServer) world, networkChannel, new NodeSpanFunction());
+            INetworkCollectionTracker<EntityPlayerMP> watcher = new NetworkCollectionTracker<>(networks, getWatchingPlayers, new PlayerNetworkMessenger(networkChannel), new NodeSpanFunction());
             MinecraftForge.EVENT_BUS.post(new NetworkManagerCreatedEvent(world, manager));
 
             event.addCapability(new ResourceLocation(MODID, "networks"), new ServerCapabilityProvider(manager, provider, watcher));
