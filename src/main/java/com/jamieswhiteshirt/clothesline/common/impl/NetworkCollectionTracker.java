@@ -41,15 +41,15 @@ public final class NetworkCollectionTracker<T> implements INetworkCollectionTrac
     }
 
     @Override
-    public void onWatchChunk(T watcher, Chunk chunk) {
-        for (INetwork network : spanFunction.getNetworkSpanOfChunk(networks, chunk.x, chunk.z)) {
+    public void onWatchChunk(T watcher, int x, int z) {
+        for (INetwork network : spanFunction.getNetworkSpanOfChunk(networks, x, z)) {
             networkTrackers.get(network.getId()).addWatcher(watcher);
         }
     }
 
     @Override
-    public void onUnWatchChunk(T watcher, Chunk chunk) {
-        for (INetwork network : spanFunction.getNetworkSpanOfChunk(networks, chunk.x, chunk.z)) {
+    public void onUnWatchChunk(T watcher, int x, int z) {
+        for (INetwork network : spanFunction.getNetworkSpanOfChunk(networks, x, z)) {
             networkTrackers.get(network.getId()).removeWatcher(watcher);
         }
     }

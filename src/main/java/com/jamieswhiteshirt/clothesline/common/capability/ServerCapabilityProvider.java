@@ -29,12 +29,12 @@ public class ServerCapabilityProvider implements ICapabilitySerializable<NBTTagL
 
         @Override
         public void onPlayerWatchChunk(EntityPlayerMP player, Chunk chunk) {
-            watcher.onWatchChunk(player, chunk);
+            watcher.onWatchChunk(player, chunk.x, chunk.z);
         }
 
         @Override
         public void onPlayerUnWatchChunk(EntityPlayerMP player, Chunk chunk) {
-            watcher.onUnWatchChunk(player, chunk);
+            watcher.onUnWatchChunk(player, chunk.x, chunk.z);
         }
 
         @Override
