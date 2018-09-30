@@ -23,13 +23,13 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 
 public class NetworkCollectionTrackerTest {
+    INetwork network0;
     INetworkCollection collection;
     INetworkMessenger<Object> messenger;
     SetMultimap<Long, Object> chunkWatchers;
     INetworkCollectionTracker<Object> tracker;
     Object watcher;
 
-    INetwork network0 = createNetwork(0, new UUID(0, 0), new BlockPos(0, 0, 0), new BlockPos(16, 0, 0));
     long chunk0 = ISpanFunction.chunkPosition(0, 0);
     long chunk1 = ISpanFunction.chunkPosition(1, 0);
 
@@ -51,6 +51,7 @@ public class NetworkCollectionTrackerTest {
 
     @BeforeEach
     void resetTracker() {
+        network0 = createNetwork(0, new UUID(0, 0), new BlockPos(0, 0, 0), new BlockPos(16, 0, 0));
         collection = new NetworkCollection();
         messenger = Mockito.mock(INetworkMessenger.class);
         chunkWatchers = HashMultimap.create();
@@ -116,5 +117,23 @@ public class NetworkCollectionTrackerTest {
 
         Mockito.verify(messenger).removeNetwork(watcher, network0);
         Mockito.verifyNoMoreInteractions(messenger);
+    }
+
+    @Test
+    void sendsUpdateMessagesForTrackedNetwork() {
+        watchChunk(chunk0, watcher);
+        collection.add(network0);
+
+        Mockito.verify(messenger).addNetwork(watcher, network0);
+
+        network0.getState().setShift(1);
+        tracker.update();
+
+        Mockito.verify(messenger).setShiftAndMomentum(watcher, network0, 1, 0);
+
+        network0.getState().setMomentum(1);
+        tracker.update();
+
+        Mockito.verify(messenger).setShiftAndMomentum(watcher, network0, 1, 1);
     }
 }
