@@ -14,10 +14,12 @@ import com.jamieswhiteshirt.clothesline.internal.INetworkCollectionTracker;
 import com.jamieswhiteshirt.clothesline.internal.IWorldEventDispatcher;
 import com.jamieswhiteshirt.rtree3i.Box;
 import net.minecraft.block.Block;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.management.PlayerChunkMap;
 import net.minecraft.server.management.PlayerChunkMapEntry;
 import net.minecraft.util.ResourceLocation;
@@ -84,6 +86,13 @@ public class Clothesline {
     public static CommonProxy proxy;
 
     public static final Logger logger = LogManager.getLogger(MODID);
+
+    public static CreativeTabs creativeTab = new CreativeTabs("clothesline") {
+        @Override
+        public ItemStack createIcon() {
+            return new ItemStack(ClotheslineItems.CLOTHESLINE);
+        }
+    };
 
     public SimpleNetworkWrapper networkChannel;
 
