@@ -172,4 +172,8 @@ public final class Path {
     public Vec3d getPositionForOffset(int offset) {
         return getEdgeForPosition(offset).getPositionForOffset(offset);
     }
+
+    public boolean isEmpty() {
+        return edges.isEmpty();
+    }
 }

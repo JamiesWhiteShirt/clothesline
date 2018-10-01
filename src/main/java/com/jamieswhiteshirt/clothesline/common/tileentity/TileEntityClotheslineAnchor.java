@@ -75,7 +75,7 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
         if (capability == ITEM_HANDLER_CAPABILITY && facing != null) {
             INetworkNode node = getNetworkNode();
-            if (node != null) {
+            if (node != null && !node.getNetwork().getState().getPath().isEmpty()) {
                 INetwork network = node.getNetwork();
                 int attachmentKey = network.getState().offsetToAttachmentKey(node.getPathNode().getOffsetForDelta(facing.getDirectionVec()));
                 return ITEM_HANDLER_CAPABILITY.cast(new NetworkItemHandler(network, attachmentKey));
@@ -88,7 +88,7 @@ public class TileEntityClotheslineAnchor extends TileEntity implements ITickable
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
         if (capability == ITEM_HANDLER_CAPABILITY && facing != null) {
             INetworkNode node = getNetworkNode();
-            return node != null;
+            return node != null && !node.getNetwork().getState().getPath().isEmpty();
         }
         return false;
     }
