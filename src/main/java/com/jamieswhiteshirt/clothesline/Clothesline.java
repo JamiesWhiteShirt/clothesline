@@ -138,8 +138,6 @@ public class Clothesline {
     public void attachWorldCapabilities(AttachCapabilitiesEvent<World> event) {
         World world = event.getObject();
         if (world instanceof WorldServer) {
-            NetworkCollection networks = new NetworkCollection();
-
             BiPredicate<Integer, Integer> isChunkLoaded = ((WorldServer)world).getChunkProvider()::isChunkGeneratedAt;
             PlayerChunkMap chunkMap = ((WorldServer) world).getPlayerChunkMap();
             BiFunction<Integer, Integer, Collection<EntityPlayerMP>> getWatchingPlayers = (Integer x, Integer z) -> {
@@ -151,8 +149,8 @@ public class Clothesline {
                 }
             };
 
+            NetworkCollection networks = new NetworkCollection();
             INetworkProvider provider = new NetworkProvider(networks, isChunkLoaded);
-
             ServerNetworkManager manager = new ServerNetworkManager((WorldServer) world, networks, provider);
             INetworkCollectionTracker<EntityPlayerMP> tracker = new NetworkCollectionTracker<>(networks, getWatchingPlayers, new PlayerNetworkMessenger(networkChannel));
             MinecraftForge.EVENT_BUS.post(new NetworkManagerCreatedEvent(world, manager));

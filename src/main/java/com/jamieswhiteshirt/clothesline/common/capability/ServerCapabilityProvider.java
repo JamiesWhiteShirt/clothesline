@@ -8,16 +8,19 @@ import com.jamieswhiteshirt.clothesline.internal.INetworkCollectionTracker;
 import com.jamieswhiteshirt.clothesline.internal.INetworkProvider;
 import com.jamieswhiteshirt.clothesline.internal.IWorldEventDispatcher;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
 import java.util.stream.Collectors;
 
-public class ServerCapabilityProvider implements ICapabilitySerializable<NBTTagList> {
+public class ServerCapabilityProvider implements ICapabilitySerializable<NBTBase> {
     private final INetworkManager manager;
     private final INetworkProvider provider;
     private final INetworkCollectionTracker<EntityPlayerMP> tracker;
@@ -72,17 +75,51 @@ public class ServerCapabilityProvider implements ICapabilitySerializable<NBTTagL
     }
 
     @Override
-    @Nullable
-    public NBTTagList serializeNBT() {
-        return NBTSerialization.writePersistentNetworks(provider.getNetworks().stream()
-            .map(BasicPersistentNetwork::fromAbsolute)
+    public void deserializeNBT(NBTBase nbt) {
+        if (nbt == null) {
+            Clothesline.logger.error("Invalid save data. Expected tag compound, found none. Discarding save data.");
+            return;
+        }
+        if (!(nbt instanceof NBTTagCompound)) {
+            Clothesline.logger.error("Invalid save data. Expected tag compound, found something else. Discarding save data.");
+            return;
+        }
+        NBTTagCompound compound = (NBTTagCompound)nbt;
+
+        int version;
+        if (!compound.hasKey("Version", Constants.NBT.TAG_INT)) {
+            Clothesline.logger.warn("Invalid save data. Expected a Version, found no Version. Assuming Version 0.");
+            version = 0;
+        } else {
+            version = compound.getInteger("Version");
+        }
+
+        if (version < 0 || version > 0) {
+            Clothesline.logger.error("Invalid save data. Expected Version <= 0, found " + version + ". Discarding save data.");
+            return;
+        }
+
+        if (!compound.hasKey("Networks", Constants.NBT.TAG_LIST)) {
+            Clothesline.logger.error("Invalid save data. Expected list of Networks, found none. Discarding save data.");
+            return;
+        }
+
+        NBTTagList networks = compound.getTagList("Networks", Constants.NBT.TAG_COMPOUND);
+        provider.reset(NBTSerialization.readPersistentNetworks(networks).stream()
+            .map(BasicPersistentNetwork::toAbsolute)
             .collect(Collectors.toList()));
     }
 
     @Override
-    public void deserializeNBT(NBTTagList nbt) {
-        provider.reset(NBTSerialization.readPersistentNetworks(nbt).stream()
-            .map(BasicPersistentNetwork::toAbsolute)
-            .collect(Collectors.toList()));
+    public NBTTagCompound serializeNBT() {
+        NBTTagCompound compound = new NBTTagCompound();
+        compound.setInteger("Version", 0);
+        compound.setTag(
+            "Networks",
+            NBTSerialization.writePersistentNetworks(provider.getNetworks().stream()
+                .map(BasicPersistentNetwork::fromAbsolute)
+                .collect(Collectors.toList()))
+        );
+        return compound;
     }
 }
