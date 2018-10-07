@@ -16,7 +16,7 @@ public interface INetworkState {
      * The maximum amount of attachment units per tick that the clothesline network may rotate with.
      * @see AttachmentUnit
      */
-    int MAX_MOMENTUM = 40;
+    int MAX_MOMENTUM = 30;
 
     /**
      * Returns the tree, a canonical representation of the structure of the clothesline network.

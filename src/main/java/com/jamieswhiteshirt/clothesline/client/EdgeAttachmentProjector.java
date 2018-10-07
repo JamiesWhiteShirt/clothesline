@@ -83,7 +83,7 @@ public final class EdgeAttachmentProjector {
             angleDiff = toAngleDiff;
         }
         float speedRatio = (float) momentum / AttachmentUnit.UNITS_PER_BLOCK;
-        float swingMax = 3.0F * (float) angleDiff * speedRatio * speedRatio;
+        float swingMax = 6.0F * (float) angleDiff * speedRatio * speedRatio;
 
         return swingMax *
             (float)(Math.exp(-t / (AttachmentUnit.UNITS_PER_BLOCK * 2.0D))) *
