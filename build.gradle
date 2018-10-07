@@ -71,6 +71,8 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
+
+    exclude '**/*.psd'
 }
 
 jar {
