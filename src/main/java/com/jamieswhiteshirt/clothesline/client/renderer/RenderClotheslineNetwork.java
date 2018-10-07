@@ -78,27 +78,30 @@ public final class RenderClotheslineNetwork {
             double nr = NORMAL_RIGHT_MULTIPLIERS[j];
             double nu = NORMAL_UP_MULTIPLIERS[j];
 
+            double uFrom = (4.0D - j) / 4.0D;
+            double uTo = (3.0D - j) / 4.0D;
+
             Vec3d normal = p.projectTangentRU(nr, nu);
             posNormal(bufferBuilder, p.projectRUF(
                 (r1 - 4.0D) / 32.0D,
                 u1 / 32.0D,
                 0.0D
-            ).subtract(x, y, z), normal).tex(0.0D, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
+            ).subtract(x, y, z), normal).tex(uFrom, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
             posNormal(bufferBuilder, p.projectRUF(
                 (r2 - 4.0D) / 32.0D,
                 u2 / 32.0D,
                 0.0D
-            ).subtract(x, y, z), normal).tex(1.0D, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
+            ).subtract(x, y, z), normal).tex(uTo, vFrom).lightmap(lightFrom1, lightFrom2).endVertex();
             posNormal(bufferBuilder, p.projectRUF(
                 (r2 - 4.0D) / 32.0D,
                 u2 / 32.0D,
                 1.0D
-            ).subtract(x, y, z), normal).tex(1.0D, vTo).lightmap(lightTo1, lightTo2).endVertex();
+            ).subtract(x, y, z), normal).tex(uTo, vTo).lightmap(lightTo1, lightTo2).endVertex();
             posNormal(bufferBuilder, p.projectRUF(
                 (r1 - 4.0D) / 32.0D,
                 u1 / 32.0D,
                 1.0D
-            ).subtract(x, y, z), normal).tex(0.0D, vTo).lightmap(lightTo1, lightTo2).endVertex();
+            ).subtract(x, y, z), normal).tex(uFrom, vTo).lightmap(lightTo1, lightTo2).endVertex();
         }
     }
 
@@ -227,9 +230,8 @@ public final class RenderClotheslineNetwork {
             INetworkNode node = nodesMap.get(nodePos);
             Path.Node pathNode = node.getPathNode();
             int nodeIndex = pathNode.getEdges().indexOf(pathEdge);
-            int networkIndex = edge.getNetwork().getState().getPath().getEdges().indexOf(pathEdge);
             Vec3d pos = LineProjection.create(edge).projectRUF(-0.125D, 0.125D, 0.5D);
-            debugRenderText(nodeIndex + " " + networkIndex, pos.x - x, pos.y - y, pos.z - z, yaw, pitch, fontRenderer);
+            debugRenderText("L" + nodeIndex + " G" + edge.getIndex(), pos.x - x, pos.y - y, pos.z - z, yaw, pitch, fontRenderer);
         });
     }
 }

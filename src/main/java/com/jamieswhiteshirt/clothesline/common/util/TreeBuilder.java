@@ -102,7 +102,7 @@ public final class TreeBuilder {
         return new TreeBuilder(root, new ArrayList<>(), 0);
     }
 
-    private int deltaInsertionIndex(BlockPos delta, int left, int right) {
+    private int flooredEdgeIndex(BlockPos delta, int left, int right) {
         while (left < right) {
             int mid = (left + right) / 2;
             int comparison = DeltaComparator.getInstance().compare(edges.get(mid).delta, delta);
@@ -115,8 +115,8 @@ public final class TreeBuilder {
         return left;
     }
 
-    public int deltaInsertionIndex(BlockPos delta) {
-        return deltaInsertionIndex(delta, 0, edges.size());
+    public int flooredEdgeIndex(BlockPos delta) {
+        return flooredEdgeIndex(delta, 0, edges.size());
     }
 
     private final BlockPos pos;
@@ -157,7 +157,7 @@ public final class TreeBuilder {
     }
 
     private void addEdge(Edge edge) {
-        int insertionIndex = deltaInsertionIndex(edge.delta);
+        int insertionIndex = flooredEdgeIndex(edge.delta);
         edges.add(insertionIndex, edge);
     }
 
@@ -243,7 +243,7 @@ public final class TreeBuilder {
 
     private Tree build(List<MutableSortedIntMap<ItemStack>> stacksList, int fromOffset, BlockPos fromKey) {
         int toOffset = fromOffset;
-        int splitIndex = deltaInsertionIndex(fromKey);
+        int splitIndex = flooredEdgeIndex(fromKey);
         ArrayList<Tree.Edge> treeEdges = new ArrayList<>(edges.size());
         for (Edge edge : edges.subList(splitIndex, edges.size())) {
             Tree.Edge staticEdge = edge.toAbsolute(stacksList, toOffset);
