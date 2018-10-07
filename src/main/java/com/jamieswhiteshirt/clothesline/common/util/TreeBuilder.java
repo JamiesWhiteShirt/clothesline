@@ -106,9 +106,9 @@ public final class TreeBuilder {
         if (minIndex != maxIndex) {
             int middleIndex = (minIndex + maxIndex) / 2;
             int comparison = DeltaComparator.getInstance().compare(delta, edges.get(middleIndex).delta);
-            if (comparison < 0) {
+            if (comparison > 0) {
                 return floorDeltaIndex(delta, minIndex, middleIndex);
-            } else if (comparison > 0) {
+            } else if (comparison < 0) {
                 return floorDeltaIndex(delta, middleIndex + 1, maxIndex);
             } else {
                 return middleIndex;
