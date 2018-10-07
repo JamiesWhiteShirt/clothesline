@@ -15,7 +15,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class EdgeRaytraceHit extends NetworkRaytraceHit {
-    private final double offset;
+    public final double offset;
 
     public EdgeRaytraceHit(double distanceSq, INetworkEdge edge, double offset) {
         super(distanceSq, edge);

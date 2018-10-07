@@ -21,7 +21,7 @@ import java.nio.FloatBuffer;
 @SideOnly(Side.CLIENT)
 public class AttachmentRaytraceHit extends NetworkRaytraceHit {
     private static final AxisAlignedBB attachmentBox = new AxisAlignedBB(-0.5D, -0.5D, -0.5D, 0.5D, 0.5D, 0.5D);
-    private final int attachmentKey;
+    public final int attachmentKey;
     private final Matrix4f l2w;
 
     public AttachmentRaytraceHit(double distanceSq, INetworkEdge edge, int attachmentKey, Matrix4f l2w) {

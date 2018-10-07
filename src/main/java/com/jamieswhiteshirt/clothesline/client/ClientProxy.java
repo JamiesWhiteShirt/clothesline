@@ -61,6 +61,7 @@ import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector4f;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -464,6 +465,46 @@ public class ClientProxy extends CommonProxy {
                         GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
                         GlStateManager.enableAlpha();
                         Gui.drawModalRectWithCustomSizedTexture(scaledWidth / 2 - 15 + offset, scaledHeight / 2 - 7, offset, 0, 16, 16, ICONS_WIDTH, ICONS_HEIGHT);
+                    }
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onRenderTextOverlay(RenderGameOverlayEvent.Text event) {
+        Minecraft mc = Minecraft.getMinecraft();
+        RayTraceResult objectMouseOver = mc.objectMouseOver;
+        if (mc.gameSettings.showDebugInfo && objectMouseOver != null) {
+            if (objectMouseOver.typeOfHit == RayTraceResult.Type.ENTITY) {
+                Entity entity = objectMouseOver.entityHit;
+                if (entity instanceof EntityNetworkRaytraceHit) {
+                    NetworkRaytraceHit hit = ((EntityNetworkRaytraceHit) entity).getHit();
+                    INetworkEdge edge = hit.edge;
+                    INetwork network = edge.getNetwork();
+                    event.getRight().addAll(Arrays.asList(
+                        "",
+                        "Network ID: " + network.getId(),
+                        "Path index: " + edge.getIndex(),
+                        "Span: " + edge.getPathEdge().getFromOffset() + " to " + edge.getPathEdge().getToOffset()
+                    ));
+
+                    if (hit instanceof EdgeRaytraceHit) {
+                        event.getRight().add("Position: " + Math.round(((EdgeRaytraceHit)hit).offset));
+                    }
+                    if (hit instanceof AttachmentRaytraceHit) {
+                        event.getRight().add("Attachment: " + ((AttachmentRaytraceHit)hit).attachmentKey);
+                    }
+                }
+            } else if (objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK) {
+                INetworkManager manager = mc.world.getCapability(Clothesline.NETWORK_MANAGER_CAPABILITY, null);
+                if (manager != null) {
+                    INetworkNode node = manager.getNetworks().getNodes().get(objectMouseOver.getBlockPos());
+                    if (node != null) {
+                        event.getRight().addAll(Arrays.asList(
+                            "",
+                            "Network ID: " + node.getNetwork().getId()
+                        ));
                     }
                 }
             }
