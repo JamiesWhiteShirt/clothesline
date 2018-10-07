@@ -145,7 +145,7 @@ public class Clothesline {
             BiFunction<Integer, Integer, Collection<EntityPlayerMP>> getWatchingPlayers = (Integer x, Integer z) -> {
                 PlayerChunkMapEntry entry = chunkMap.getEntry(x, z);
                 if (entry != null) {
-                    return chunkMap.getEntry(x, z).getWatchingPlayers();
+                    return entry.getWatchingPlayers();
                 } else {
                     return Collections.emptyList();
                 }
