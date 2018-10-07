@@ -1,5 +1,7 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.SetMultimap;
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.rtree3i.Box;
 import com.jamieswhiteshirt.rtree3i.Configuration;
@@ -9,6 +11,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -30,6 +33,7 @@ public final class NetworkCollection implements INetworkCollection {
     private final Map<UUID, INetwork> byUuid = new HashMap<>();
     private RTreeMap<Line, INetworkEdge> edges = createEdgesMap();
     private RTreeMap<BlockPos, INetworkNode> nodes = createNodesMap();
+    private final SetMultimap<Long, INetwork> chunkSpanMap = MultimapBuilder.hashKeys().linkedHashSetValues().build();
     private final Map<ResourceLocation, INetworkCollectionListener> eventListeners = new TreeMap<>();
 
     @Override
@@ -63,6 +67,10 @@ public final class NetworkCollection implements INetworkCollection {
             edges = edges.put(pathEdge.getLine(), new NetworkEdge(network, pathEdge, i++));
         }
 
+        for (long position : network.getState().getChunkSpan()) {
+            chunkSpanMap.put(position, network);
+        }
+
         for (INetworkCollectionListener eventListener : eventListeners.values()) {
             eventListener.onNetworkAdded(this, network);
         }
@@ -79,6 +87,10 @@ public final class NetworkCollection implements INetworkCollection {
         }
         for (Path.Edge pathEdge : network.getState().getPath().getEdges()) {
             edges = edges.remove(pathEdge.getLine());
+        }
+
+        for (long position : network.getState().getChunkSpan()) {
+            chunkSpanMap.remove(position, network);
         }
 
         for (INetworkCollectionListener eventListener : eventListeners.values()) {
@@ -106,6 +118,11 @@ public final class NetworkCollection implements INetworkCollection {
     @Override
     public RTreeMap<Line, INetworkEdge> getEdges() {
         return edges;
+    }
+
+    @Override
+    public Set<INetwork> getNetworksSpanningChunk(int x, int z) {
+        return chunkSpanMap.get(ChunkPos.asLong(x, z));
     }
 
     @Override

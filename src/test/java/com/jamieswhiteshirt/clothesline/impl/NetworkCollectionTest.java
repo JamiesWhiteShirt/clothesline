@@ -5,6 +5,7 @@ import com.jamieswhiteshirt.clothesline.common.impl.Network;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkCollection;
 import com.jamieswhiteshirt.clothesline.common.util.NetworkStateBuilder;
 import com.jamieswhiteshirt.clothesline.internal.PersistentNetwork;
+import it.unimi.dsi.fastutil.longs.LongSets;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import org.junit.jupiter.api.Assertions;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
@@ -132,6 +134,21 @@ public class NetworkCollectionTest {
 
         for (Path.Edge pathEdge : network0.getState().getPath().getEdges()) {
             Assertions.assertNull(collection.getEdges().get(pathEdge.getLine()));
+        }
+    }
+
+    @Test
+    void indexesChunkSpan() {
+        collection.add(network0);
+
+        for (long position : network0.getState().getChunkSpan()) {
+            Assertions.assertEquals(Collections.singleton(network0), collection.getNetworksSpanningChunk((int)position, (int)(position >> 32)));
+        }
+
+        collection.remove(network0);
+
+        for (long position : network0.getState().getChunkSpan()) {
+            Assertions.assertEquals(Collections.emptySet(), collection.getNetworksSpanningChunk((int)position, (int)(position >> 32)));
         }
     }
 

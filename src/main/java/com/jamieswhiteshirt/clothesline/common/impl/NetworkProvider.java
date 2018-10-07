@@ -5,9 +5,8 @@ import com.google.common.collect.SetMultimap;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.INetworkCollection;
 import com.jamieswhiteshirt.clothesline.internal.PersistentNetwork;
-import com.jamieswhiteshirt.clothesline.common.util.ISpanFunction;
 import com.jamieswhiteshirt.clothesline.internal.INetworkProvider;
-import it.unimi.dsi.fastutil.longs.LongSet;
+import net.minecraft.util.math.ChunkPos;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -18,15 +17,13 @@ import java.util.stream.Collectors;
 
 public final class NetworkProvider implements INetworkProvider {
     private final INetworkCollection networks;
-    private final ISpanFunction spanFunction;
     private final BiPredicate<Integer, Integer> isChunkLoaded;
     private Map<UUID, NetworkProviderEntry> entryMap = new HashMap<>();
     private SetMultimap<Long, UUID> chunkMap = MultimapBuilder.hashKeys().linkedHashSetValues().build();
     private int nextNetworkId = 0;
 
-    public NetworkProvider(INetworkCollection networks, ISpanFunction spanFunction, BiPredicate<Integer, Integer> isChunkLoaded) {
+    public NetworkProvider(INetworkCollection networks, BiPredicate<Integer, Integer> isChunkLoaded) {
         this.networks = networks;
-        this.spanFunction = spanFunction;
         this.isChunkLoaded = isChunkLoaded;
     }
 
@@ -59,13 +56,12 @@ public final class NetworkProvider implements INetworkProvider {
 
     @Override
     public void addNetwork(PersistentNetwork persistentNetwork) {
-        LongSet chunks = spanFunction.getChunkSpanOfNetwork(persistentNetwork.getState());
-        NetworkProviderEntry entry = new NetworkProviderEntry(persistentNetwork, chunks);
+        NetworkProviderEntry entry = new NetworkProviderEntry(persistentNetwork);
         entryMap.put(persistentNetwork.getUuid(), entry);
-        for (long position : entry.getChunkSpan()) {
+        for (long position : entry.getPersistentNetwork().getState().getChunkSpan()) {
             chunkMap.put(position, persistentNetwork.getUuid());
             // Increment load count if this network spans an already loaded chunk
-            if (isChunkLoaded.test(ISpanFunction.chunkX(position), ISpanFunction.chunkZ(position))) {
+            if (isChunkLoaded.test((int)position, (int)(position >> 32))) {
                 chunkLoaded(entry);
             }
         }
@@ -74,7 +70,7 @@ public final class NetworkProvider implements INetworkProvider {
     @Override
     public void removeNetwork(UUID uuid) {
         NetworkProviderEntry entry = entryMap.remove(uuid);
-        for (long position : entry.getChunkSpan()) {
+        for (long position : entry.getPersistentNetwork().getState().getChunkSpan()) {
             chunkMap.remove(position, uuid);
         }
 
@@ -84,7 +80,7 @@ public final class NetworkProvider implements INetworkProvider {
 
     @Override
     public void onChunkLoaded(int x, int z) {
-        long position = ISpanFunction.chunkPosition(x, z);
+        long position = ChunkPos.asLong(x, z);
         for (UUID uuid : chunkMap.get(position)) {
             NetworkProviderEntry entry = entryMap.get(uuid);
             chunkLoaded(entry);
@@ -93,7 +89,7 @@ public final class NetworkProvider implements INetworkProvider {
 
     @Override
     public void onChunkUnloaded(int x, int z) {
-        long position = ISpanFunction.chunkPosition(x, z);
+        long position = ChunkPos.asLong(x, z);
         for (UUID uuid : chunkMap.get(position)) {
             NetworkProviderEntry entry = entryMap.get(uuid);
             if (entry.decrementLoadCount()) {

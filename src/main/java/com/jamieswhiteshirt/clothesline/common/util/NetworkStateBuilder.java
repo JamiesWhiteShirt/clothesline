@@ -5,6 +5,7 @@ import com.jamieswhiteshirt.clothesline.api.Path;
 import com.jamieswhiteshirt.clothesline.api.Tree;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkState;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
@@ -101,7 +102,8 @@ public final class NetworkStateBuilder {
         LinkedList<MutableSortedIntMap<ItemStack>> attachmentsList = new LinkedList<>();
         Tree tree = treeRoot.build(attachmentsList, 0);
         Path path = PathBuilder.buildPath(tree);
-        return new NetworkState(0, 0, momentum, momentum, tree, path, MutableSortedIntMap.concatenate(attachmentsList));
+        LongSet chunkSpan = ChunkSpan.ofPath(path);
+        return new NetworkState(0, 0, momentum, momentum, tree, path, chunkSpan, MutableSortedIntMap.concatenate(attachmentsList));
     }
 
     @Override

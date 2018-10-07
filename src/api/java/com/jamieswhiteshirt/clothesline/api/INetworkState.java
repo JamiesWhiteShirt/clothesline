@@ -1,6 +1,7 @@
 package com.jamieswhiteshirt.clothesline.api;
 
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.item.ItemStack;
 
 import java.util.List;
@@ -29,6 +30,13 @@ public interface INetworkState {
      * @return the path through the structure of the clothesline network
      */
     Path getPath();
+
+    /**
+     * Returns the span of chunks covered by the clothesline network. Values are chunk positions encoded with
+     * {@link net.minecraft.util.math.ChunkPos#asLong(int, int)}. This set must not be modified.
+     * @return the span of chunks covered by the clothesline network
+     */
+    LongSet getChunkSpan();
 
     /**
      * Returns the range of attachment slots, on [0, {@link #getPathLength()})

@@ -1,13 +1,11 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.*;
-import com.jamieswhiteshirt.clothesline.common.util.ISpanFunction;
 import com.jamieswhiteshirt.clothesline.internal.INetworkCollectionTracker;
 import com.jamieswhiteshirt.clothesline.internal.INetworkMessenger;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.chunk.Chunk;
 
 import java.util.Collection;
 import java.util.function.BiFunction;
@@ -18,14 +16,12 @@ public final class NetworkCollectionTracker<T> implements INetworkCollectionTrac
     private final INetworkCollection networks;
     private final BiFunction<Integer, Integer, Collection<T>> getChunkWatchers;
     private final INetworkMessenger<T> messenger;
-    private final ISpanFunction spanFunction;
     private final Int2ObjectMap<NetworkTracker<T>> networkTrackers = new Int2ObjectOpenHashMap<>();
 
-    public NetworkCollectionTracker(INetworkCollection networks, BiFunction<Integer, Integer, Collection<T>> getChunkWatchers, INetworkMessenger<T> messenger, ISpanFunction spanFunction) {
+    public NetworkCollectionTracker(INetworkCollection networks, BiFunction<Integer, Integer, Collection<T>> getChunkWatchers, INetworkMessenger<T> messenger) {
         this.networks = networks;
         this.getChunkWatchers = getChunkWatchers;
         this.messenger = messenger;
-        this.spanFunction = spanFunction;
 
         networks.addEventListener(LISTENER_KEY, new INetworkCollectionListener() {
             @Override
@@ -42,14 +38,14 @@ public final class NetworkCollectionTracker<T> implements INetworkCollectionTrac
 
     @Override
     public void onWatchChunk(T watcher, int x, int z) {
-        for (INetwork network : spanFunction.getNetworkSpanOfChunk(networks, x, z)) {
+        for (INetwork network : networks.getNetworksSpanningChunk(x, z)) {
             networkTrackers.get(network.getId()).addWatcher(watcher);
         }
     }
 
     @Override
     public void onUnWatchChunk(T watcher, int x, int z) {
-        for (INetwork network : spanFunction.getNetworkSpanOfChunk(networks, x, z)) {
+        for (INetwork network : networks.getNetworksSpanningChunk(x, z)) {
             networkTrackers.get(network.getId()).removeWatcher(watcher);
         }
     }
@@ -67,9 +63,9 @@ public final class NetworkCollectionTracker<T> implements INetworkCollectionTrac
         networkTrackers.put(network.getId(), networkTracker);
 
         // Players may already be watching chunks that the network intersects with
-        for (long position : spanFunction.getChunkSpanOfNetwork(network.getState())) {
-            int x = ISpanFunction.chunkX(position);
-            int z = ISpanFunction.chunkZ(position);
+        for (long position : network.getState().getChunkSpan()) {
+            int x = (int)position;
+            int z = (int)(position >> 32);
             for (T watcher : getChunkWatchers.apply(x, z)) {
                 networkTracker.addWatcher(watcher);
             }

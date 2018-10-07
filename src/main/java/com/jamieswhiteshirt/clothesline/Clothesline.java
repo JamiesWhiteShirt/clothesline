@@ -6,7 +6,6 @@ import com.jamieswhiteshirt.clothesline.common.capability.*;
 import com.jamieswhiteshirt.clothesline.common.impl.*;
 import com.jamieswhiteshirt.clothesline.common.network.message.SetConnectorPosMessage;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
-import com.jamieswhiteshirt.clothesline.common.util.NodeSpanFunction;
 import com.jamieswhiteshirt.clothesline.hooks.api.MayPlaceBlockEvent;
 import com.jamieswhiteshirt.clothesline.internal.IConnector;
 import com.jamieswhiteshirt.clothesline.internal.INetworkProvider;
@@ -152,10 +151,10 @@ public class Clothesline {
                 }
             };
 
-            INetworkProvider provider = new NetworkProvider(networks, new NodeSpanFunction(), isChunkLoaded);
+            INetworkProvider provider = new NetworkProvider(networks, isChunkLoaded);
 
             ServerNetworkManager manager = new ServerNetworkManager((WorldServer) world, networks, provider);
-            INetworkCollectionTracker<EntityPlayerMP> tracker = new NetworkCollectionTracker<>(networks, getWatchingPlayers, new PlayerNetworkMessenger(networkChannel), new NodeSpanFunction());
+            INetworkCollectionTracker<EntityPlayerMP> tracker = new NetworkCollectionTracker<>(networks, getWatchingPlayers, new PlayerNetworkMessenger(networkChannel));
             MinecraftForge.EVENT_BUS.post(new NetworkManagerCreatedEvent(world, manager));
 
             event.addCapability(new ResourceLocation(MODID, "networks"), new ServerCapabilityProvider(manager, provider, tracker));

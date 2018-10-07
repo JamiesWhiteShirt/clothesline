@@ -5,6 +5,7 @@ import com.jamieswhiteshirt.clothesline.api.INetworkState;
 import com.jamieswhiteshirt.clothesline.api.Tree;
 import com.jamieswhiteshirt.clothesline.api.util.MathUtil;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.item.ItemStack;
 
 import java.util.List;
@@ -23,11 +24,13 @@ public final class NetworkState implements INetworkState {
 
     private final Tree tree;
     private final Path path;
+    private final LongSet chunkSpan;
     private final MutableSortedIntMap<ItemStack> attachments;
 
-    public NetworkState(int previousShift, int shift, int previousMomentum, int momentum, Tree tree, Path path, MutableSortedIntMap<ItemStack> attachments) {
+    public NetworkState(int previousShift, int shift, int previousMomentum, int momentum, Tree tree, Path path, LongSet chunkSpan, MutableSortedIntMap<ItemStack> attachments) {
         this.tree = tree;
         this.path = path;
+        this.chunkSpan = chunkSpan;
         this.attachments = attachments;
         this.previousShift = previousShift;
         this.previousMomentum = previousMomentum;
@@ -47,6 +50,11 @@ public final class NetworkState implements INetworkState {
     @Override
     public Path getPath() {
         return path;
+    }
+
+    @Override
+    public LongSet getChunkSpan() {
+        return chunkSpan;
     }
 
     @Override

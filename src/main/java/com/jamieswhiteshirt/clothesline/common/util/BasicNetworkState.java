@@ -5,6 +5,7 @@ import com.jamieswhiteshirt.clothesline.api.Path;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkState;
 import com.jamieswhiteshirt.clothesline.api.Tree;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.item.ItemStack;
 
 import java.util.ArrayList;
@@ -15,12 +16,12 @@ import java.util.stream.Collectors;
 public final class BasicNetworkState {
     public static BasicNetworkState fromAbsolute(INetworkState state) {
         return new BasicNetworkState(
-                state.getShift(),
-                state.getMomentum(),
-                BasicTree.fromAbsolute(state.getTree()),
-                state.getAttachments().entries().stream().map(
-                        entry -> new BasicAttachment(entry.getKey(), entry.getValue().copy())
-                ).collect(Collectors.toList())
+            state.getShift(),
+            state.getMomentum(),
+            BasicTree.fromAbsolute(state.getTree()),
+            state.getAttachments().entries().stream().map(
+                entry -> new BasicAttachment(entry.getKey(), entry.getValue().copy())
+            ).collect(Collectors.toList())
         );
     }
 
@@ -55,20 +56,24 @@ public final class BasicNetworkState {
     public INetworkState toAbsolute() {
         Tree tree = this.tree.toAbsolute();
         Path path = PathBuilder.buildPath(tree);
+        LongSet chunkSpan = ChunkSpan.ofPath(path);
         MutableSortedIntMap<ItemStack> attachments = new MutableSortedIntMap<>(
-                new ArrayList<>(this.attachments.stream().map(
-                        attachment -> new MutableSortedIntMap.Entry<>(attachment.getKey(), attachment.getStack())
-                ).collect(Collectors.toList())),
-                path.getLength()
+            new ArrayList<>(
+                this.attachments.stream()
+                .map(attachment -> new MutableSortedIntMap.Entry<>(attachment.getKey(), attachment.getStack()))
+                .collect(Collectors.toList())
+            ),
+            path.getLength()
         );
         return new NetworkState(
-                shift,
-                shift,
-                momentum,
-                momentum,
-                tree,
-                path,
-                attachments
+            shift,
+            shift,
+            momentum,
+            momentum,
+            tree,
+            path,
+            chunkSpan,
+            attachments
         );
     }
 

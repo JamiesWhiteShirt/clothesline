@@ -4,13 +4,12 @@ import com.jamieswhiteshirt.clothesline.api.INetworkCollection;
 import com.jamieswhiteshirt.clothesline.internal.PersistentNetwork;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkCollection;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkProvider;
-import com.jamieswhiteshirt.clothesline.common.util.ISpanFunction;
 import com.jamieswhiteshirt.clothesline.common.util.NetworkStateBuilder;
-import com.jamieswhiteshirt.clothesline.common.util.NodeSpanFunction;
 import com.jamieswhiteshirt.clothesline.internal.INetworkProvider;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,10 +17,9 @@ import org.junit.jupiter.api.Test;
 import java.util.UUID;
 
 public class NetworkProviderTest {
-    ISpanFunction spanFunction = new NodeSpanFunction();
     PersistentNetwork network0 = createPersistentNetwork(new UUID(0, 0), new BlockPos(0, 0, 0), new BlockPos(16, 0, 0));
-    long chunk0 = ISpanFunction.chunkPosition(0, 0);
-    long chunk1 = ISpanFunction.chunkPosition(1, 0);
+    long chunk0 = ChunkPos.asLong(0, 0);
+    long chunk1 = ChunkPos.asLong(1, 0);
 
     INetworkProvider provider;
     INetworkCollection collection;
@@ -32,7 +30,7 @@ public class NetworkProviderTest {
     void resetCollection() {
         collection = new NetworkCollection();
         loadedChunks = new LongOpenHashSet();
-        provider = new NetworkProvider(collection, spanFunction, (Integer x, Integer z) -> loadedChunks.contains(ISpanFunction.chunkPosition(x, z)));
+        provider = new NetworkProvider(collection, (Integer x, Integer z) -> loadedChunks.contains(ChunkPos.asLong(x, z)));
     }
 
     PersistentNetwork createPersistentNetwork(UUID uuid, BlockPos pos0, BlockPos pos1) {
@@ -43,12 +41,12 @@ public class NetworkProviderTest {
 
     void loadChunk(long position) {
         loadedChunks.add(position);
-        provider.onChunkLoaded(ISpanFunction.chunkX(position), ISpanFunction.chunkZ(position));
+        provider.onChunkLoaded((int)position, (int)(position >> 32));
     }
 
     void unloadChunk(long position) {
         loadedChunks.remove(position);
-        provider.onChunkUnloaded(ISpanFunction.chunkX(position), ISpanFunction.chunkZ(position));
+        provider.onChunkUnloaded((int)position, (int)(position >> 32));
     }
 
     @Test

@@ -4,8 +4,10 @@ import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
 import com.jamieswhiteshirt.clothesline.common.impl.Network;
 import com.jamieswhiteshirt.clothesline.common.impl.NetworkState;
+import com.jamieswhiteshirt.clothesline.common.util.ChunkSpan;
 import com.jamieswhiteshirt.clothesline.common.util.PathBuilder;
 import com.jamieswhiteshirt.clothesline.internal.PersistentNetwork;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import org.junit.jupiter.api.Assertions;
@@ -37,8 +39,9 @@ class NetworkTests {
                 0, AttachmentUnit.UNITS_PER_BLOCK * 2, 0
             );
             Path path = PathBuilder.buildPath(tree);
+            LongSet chunkSpan = ChunkSpan.ofPath(path);
             this.attachments = MutableSortedIntMap.empty(AttachmentUnit.UNITS_PER_BLOCK * 2);
-            this.state = new NetworkState(0, 0, 0, 0, tree, path, attachments);
+            this.state = new NetworkState(0, 0, 0, 0, tree, path, chunkSpan, attachments);
             this.persistentNetwork = new PersistentNetwork(new UUID(0, 0), state);
             this.network = new Network(0, persistentNetwork);
         }

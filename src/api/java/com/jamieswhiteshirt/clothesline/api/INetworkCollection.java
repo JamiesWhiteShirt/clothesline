@@ -6,6 +6,7 @@ import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public interface INetworkCollection {
@@ -80,6 +81,12 @@ public interface INetworkCollection {
      * @return a spatial index of all the path nodes of all currently loaded networks
      */
     RTreeMap<BlockPos, INetworkNode> getNodes();
+
+    /**
+     * Returns a set of networks spanning the chunk at the specified position. This set must not be modified
+     * @return a set of networks spanning the chunk at the specified position
+     */
+    Set<INetwork> getNetworksSpanningChunk(int x, int z);
 
     /**
      * Adds an event listener that will be notified when the collection of clothesline networks changes. The event
