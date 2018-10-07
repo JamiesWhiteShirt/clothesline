@@ -33,28 +33,25 @@ public final class Path {
             return baseRotation;
         }
 
-        private int floorDeltaIndex(Vec3i delta, int minIndex, int maxIndex) {
-            if (minIndex != maxIndex) {
-                int middleIndex = (minIndex + maxIndex) / 2;
-                int comparison = DeltaComparator.getInstance().compare(delta, edges.get(middleIndex).getDelta());
+        private int flooredEdgeIndex(Vec3i delta, int left, int right) {
+            while (left < right) {
+                int mid = (left + right) / 2;
+                int comparison = DeltaComparator.getInstance().compare(edges.get(mid).delta, delta);
                 if (comparison > 0) {
-                    return floorDeltaIndex(delta, minIndex, middleIndex);
-                } else if (comparison < 0) {
-                    return floorDeltaIndex(delta, middleIndex + 1, maxIndex);
+                    right = mid;
                 } else {
-                    return middleIndex;
+                    left = mid + 1;
                 }
-            } else {
-                return minIndex;
             }
+            return left;
         }
 
-        private int floorDeltaIndex(Vec3i delta) {
-            return floorDeltaIndex(delta, 0, edges.size());
+        private int flooredEdgeIndex(Vec3i delta) {
+            return flooredEdgeIndex(delta, 0, edges.size());
         }
 
         public int getOffsetForDelta(Vec3i delta) {
-            return edges.get(floorDeltaIndex(delta) % edges.size()).fromOffset;
+            return edges.get(flooredEdgeIndex(delta) % edges.size()).fromOffset;
         }
 
         @Override

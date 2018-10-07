@@ -102,24 +102,21 @@ public final class TreeBuilder {
         return new TreeBuilder(root, new ArrayList<>(), 0);
     }
 
-    private int floorDeltaIndex(BlockPos delta, int minIndex, int maxIndex) {
-        if (minIndex != maxIndex) {
-            int middleIndex = (minIndex + maxIndex) / 2;
-            int comparison = DeltaComparator.getInstance().compare(delta, edges.get(middleIndex).delta);
+    private int deltaInsertionIndex(BlockPos delta, int left, int right) {
+        while (left < right) {
+            int mid = (left + right) / 2;
+            int comparison = DeltaComparator.getInstance().compare(edges.get(mid).delta, delta);
             if (comparison > 0) {
-                return floorDeltaIndex(delta, minIndex, middleIndex);
-            } else if (comparison < 0) {
-                return floorDeltaIndex(delta, middleIndex + 1, maxIndex);
+                right = mid;
             } else {
-                return middleIndex;
+                left = mid + 1;
             }
-        } else {
-            return minIndex;
         }
+        return left;
     }
 
-    public int floorDeltaIndex(BlockPos delta) {
-        return floorDeltaIndex(delta, 0, edges.size());
+    public int deltaInsertionIndex(BlockPos delta) {
+        return deltaInsertionIndex(delta, 0, edges.size());
     }
 
     private final BlockPos pos;
@@ -160,7 +157,7 @@ public final class TreeBuilder {
     }
 
     private void addEdge(Edge edge) {
-        int insertionIndex = floorDeltaIndex(edge.delta);
+        int insertionIndex = deltaInsertionIndex(edge.delta);
         edges.add(insertionIndex, edge);
     }
 
@@ -246,7 +243,7 @@ public final class TreeBuilder {
 
     private Tree build(List<MutableSortedIntMap<ItemStack>> stacksList, int fromOffset, BlockPos fromKey) {
         int toOffset = fromOffset;
-        int splitIndex = floorDeltaIndex(fromKey);
+        int splitIndex = deltaInsertionIndex(fromKey);
         ArrayList<Tree.Edge> treeEdges = new ArrayList<>(edges.size());
         for (Edge edge : edges.subList(splitIndex, edges.size())) {
             Tree.Edge staticEdge = edge.toAbsolute(stacksList, toOffset);
