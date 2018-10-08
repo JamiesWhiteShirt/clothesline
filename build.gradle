@@ -88,8 +88,7 @@ jar {
         attributes([
                 'ContainedDeps': configurations.contained.files.collect { it.name }.join(' '),
                 'Maven-Artifact': "${project.group}:${project.archivesBaseName}:${project.version}",
-                'Timestamp': System.currentTimeMillis(),
-                'FMLAT': 'clothesline_at.cfg'
+                'Timestamp': System.currentTimeMillis()
         ])
     }
 }
