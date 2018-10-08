@@ -17,7 +17,7 @@ archivesBaseName = 'clothesline'
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
 minecraft {
-    version = '1.12.2-14.23.4.2758'
+    version = '1.12.2-14.23.5.2768'
     runDir = 'run'
 
     clientJvmArgs = serverJvmArgs = ['-Dfml.coreMods.load=$fmlCorePlugin']
