@@ -166,6 +166,9 @@ public class ClientProxy extends CommonProxy {
         ModelLoader.setCustomModelResourceLocation(
             ClotheslineItems.CRANK, 0, new ModelResourceLocation(new ResourceLocation("clothesline", "crank"), "inventory")
         );
+        ModelLoader.setCustomModelResourceLocation(
+            ClotheslineItems.SPINNER, 0, new ModelResourceLocation(new ResourceLocation("clothesline", "spinner"), "inventory")
+        );
     }
 
     private void renderHeldClothesline(BlockPos posA, Vec3d vecB, World world, double x, double y, double z) {
