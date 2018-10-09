@@ -451,23 +451,25 @@ public class ClientProxy extends CommonProxy {
     public void onPostRenderCrosshair(RenderGameOverlayEvent.Post event) {
         if (event.getType() == RenderGameOverlayEvent.ElementType.CROSSHAIRS) {
             Minecraft mc = Minecraft.getMinecraft();
-            RayTraceResult objectMouseOver = mc.objectMouseOver;
-            if (objectMouseOver != null && objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK) {
-                BlockPos pos = objectMouseOver.getBlockPos();
-                if (mc.world.getBlockState(pos).getBlock() == ClotheslineBlocks.CLOTHESLINE_ANCHOR) {
-                    TileEntityClotheslineAnchor tileEntity = BlockClotheslineAnchor.getTileEntity(mc.world, pos);
-                    if (tileEntity != null && tileEntity.getHasCrank()) {
-                        Vec3d hitVec = objectMouseOver.hitVec;
-                        ScaledResolution scaledResolution = event.getResolution();
+            if (mc.gameSettings.thirdPersonView == 0) {
+                RayTraceResult objectMouseOver = mc.objectMouseOver;
+                if (objectMouseOver != null && objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK) {
+                    BlockPos pos = objectMouseOver.getBlockPos();
+                    if (mc.world.getBlockState(pos).getBlock() == ClotheslineBlocks.CLOTHESLINE_ANCHOR) {
+                        TileEntityClotheslineAnchor tileEntity = BlockClotheslineAnchor.getTileEntity(mc.world, pos);
+                        if (tileEntity != null && tileEntity.getHasCrank()) {
+                            Vec3d hitVec = objectMouseOver.hitVec;
+                            ScaledResolution scaledResolution = event.getResolution();
 
-                        int scaledWidth = scaledResolution.getScaledWidth();
-                        int scaledHeight = scaledResolution.getScaledHeight();
-                        int offset = BlockClotheslineAnchor.getCrankMultiplier(pos, hitVec.x, hitVec.z, mc.player) > 0 ? 0 : 16;
+                            int scaledWidth = scaledResolution.getScaledWidth();
+                            int scaledHeight = scaledResolution.getScaledHeight();
+                            int offset = BlockClotheslineAnchor.getCrankMultiplier(pos, hitVec.x, hitVec.z, mc.player) > 0 ? 0 : 16;
 
-                        mc.getTextureManager().bindTexture(ICONS);
-                        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-                        GlStateManager.enableAlpha();
-                        Gui.drawModalRectWithCustomSizedTexture(scaledWidth / 2 - 15 + offset, scaledHeight / 2 - 7, offset, 0, 16, 16, ICONS_WIDTH, ICONS_HEIGHT);
+                            mc.getTextureManager().bindTexture(ICONS);
+                            GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+                            GlStateManager.enableAlpha();
+                            Gui.drawModalRectWithCustomSizedTexture(scaledWidth / 2 - 15 + offset, scaledHeight / 2 - 7, offset, 0, 16, 16, ICONS_WIDTH, ICONS_HEIGHT);
+                        }
                     }
                 }
             }
