@@ -2,10 +2,12 @@ package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.api.util.MutableSortedIntMap;
+import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
 import com.jamieswhiteshirt.clothesline.internal.INetworkProvider;
 import com.jamieswhiteshirt.clothesline.internal.PersistentNetwork;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldServer;
 
@@ -22,7 +24,7 @@ public final class ServerNetworkManager extends NetworkManager {
     }
 
     private void dropAttachment(INetworkState state, ItemStack stack, int attachmentKey) {
-        if (!stack.isEmpty() && world.getGameRules().getBoolean("doTileDrops")) {
+        if (!stack.isEmpty()) {
             Vec3d pos = state.getPath().getPositionForOffset(state.attachmentKeyToOffset(attachmentKey));
             EntityItem entityitem = new EntityItem(world, pos.x, pos.y - 0.5D, pos.z, stack);
             entityitem.setDefaultPickupDelay();
@@ -30,10 +32,30 @@ public final class ServerNetworkManager extends NetworkManager {
         }
     }
 
+    private void dropTreeItems(Tree tree) {
+        BlockPos from = tree.getPos();
+        for (Tree.Edge edge : tree.getEdges()) {
+            BlockPos to = edge.getTree().getPos();
+            EntityItem entityitem = new EntityItem(
+                world,
+                (1 + from.getX() + to.getX()) / 2.0D,
+                (1 + from.getY() + to.getY()) / 2.0D,
+                (1 + from.getZ() + to.getZ()) / 2.0D,
+                new ItemStack(ClotheslineItems.CLOTHESLINE)
+            );
+            entityitem.setDefaultPickupDelay();
+            world.spawnEntity(entityitem);
+            dropTreeItems(edge.getTree());
+        }
+    }
+
     @Override
     protected void dropItems(INetworkState state) {
-        for (MutableSortedIntMap.Entry<ItemStack> entry : state.getAttachments().entries()) {
-            dropAttachment(state, entry.getValue(), entry.getKey());
+        if (world.getGameRules().getBoolean("doTileDrops")) {
+            for (MutableSortedIntMap.Entry<ItemStack> entry : state.getAttachments().entries()) {
+                dropAttachment(state, entry.getValue(), entry.getKey());
+            }
+            dropTreeItems(state.getTree());
         }
     }
 

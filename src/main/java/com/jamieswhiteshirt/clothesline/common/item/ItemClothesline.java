@@ -23,7 +23,10 @@ public class ItemClothesline extends ItemConnector {
             if (world.getBlockState(to).getBlock() == ClotheslineBlocks.CLOTHESLINE_ANCHOR) {
                 RayTraceResult result = world.rayTraceBlocks(Utility.midVec(from), Utility.midVec(to), false, true, false);
                 if (result == null || result.typeOfHit == RayTraceResult.Type.MISS) {
-                    return manager.connect(from, to);
+                    if (manager.connect(from, to)) {
+                        entity.getHeldItem(hand).shrink(1);
+                        return true;
+                    }
                 }
             }
         }
