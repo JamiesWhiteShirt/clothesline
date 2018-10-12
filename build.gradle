@@ -9,6 +9,8 @@ buildscript {
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'jacoco'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 version = '1.12.2-1.0.0.0-SNAPSHOT'
 group = 'com.jamieswhiteshirt'
@@ -19,9 +21,6 @@ sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 minecraft {
     version = '1.12.2-14.23.5.2768'
     runDir = 'run'
-
-    clientJvmArgs = serverJvmArgs = ['-Dfml.coreMods.load=$fmlCorePlugin']
-
     mappings = 'stable_39'
 }
 
@@ -33,18 +32,22 @@ repositories {
     maven {
         url 'http://maven.jamieswhiteshirt.com/libs-snapshot/'
     }
+    maven {
+        url 'http://maven.jamieswhiteshirt.com/libs-release/'
+    }
 }
 
 configurations {
-    contained
-    contained.transitive = false
+    contained {
+        transitive = false
+    }
 }
 
 dependencies {
     contained 'com.jamieswhiteshirt:rtree-3i-lite:0.1-SNAPSHOT'
     compile 'com.jamieswhiteshirt:rtree-3i-lite:0.1-SNAPSHOT'
-    contained 'com.jamieswhiteshirt:clothesline-hooks:1.12.2-1.0.0.0-SNAPSHOT'
-    deobfCompile 'com.jamieswhiteshirt:clothesline-hooks:1.12.2-1.0.0.0-SNAPSHOT'
+    contained 'com.jamieswhiteshirt:clothesline-hooks:1.12.2-0.0.1.0'
+    deobfCompile 'com.jamieswhiteshirt:clothesline-hooks:1.12.2-0.0.1.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.2.+'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.2.+'
     testCompile 'org.mockito:mockito-core:2.+'
@@ -75,7 +78,27 @@ processResources {
     exclude '**/*.psd'
 }
 
+// We need two jars with slightly different dependency management.
+
+// Let build systems handle the transitive dependencies of the jar
+// The jar must not include contained dependencies
 jar {
+    from sourceSets.api.output
+    from sourceSets.main.output
+
+    manifest {
+        attributes([
+                'Maven-Artifact': "${project.group}:${project.archivesBaseName}:${project.version}",
+                'Timestamp': System.currentTimeMillis()
+        ])
+    }
+}
+
+// The bundle jar is ready to be dropped in the mods folder and must contain its dependencies
+// The bundle jar must include contained dependencies
+task bundleJar(type: Jar) {
+    classifier 'bundle'
+
     from sourceSets.api.output
     from sourceSets.main.output
 
@@ -99,10 +122,9 @@ task sourcesJar(type: Jar) {
     classifier = 'sources'
 }
 
-task apiJar(type: Jar) {
-    from sourceSets.api.output
-    classifier = 'api'
-}
+// The jar is reobfuscated with the default reobfJar task
+// Create reobfBundleJar task
+reobf.create('bundleJar')
 
 task signJar(type: SignJar, dependsOn: reobfJar) {
     onlyIf {
@@ -118,4 +140,46 @@ task signJar(type: SignJar, dependsOn: reobfJar) {
     keyPass = project.properties.keyStoreKeyPass
 }
 
-build.dependsOn signJar
+task signBundleJar(type: SignJar, dependsOn: reobfBundleJar) {
+    onlyIf {
+        project.hasProperty('keyStore')
+    }
+
+    inputFile = bundleJar.archivePath
+    outputFile = bundleJar.archivePath
+
+    keyStore = project.properties.keyStore
+    alias = project.properties.keyStoreAlias
+    storePass = project.properties.keyStorePass
+    keyPass = project.properties.keyStoreKeyPass
+}
+
+artifacts {
+    archives(signJar.outputFile) {
+        builtBy signJar
+    }
+    archives(signBundleJar.outputFile) {
+        builtBy signBundleJar
+    }
+    archives sourceJar
+}
+
+project.ext.isReleaseVersion = !version.endsWith("-SNAPSHOT")
+
+signing {
+    required { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        repository(url: 'https://maven.jamieswhiteshirt.com/libs-release/') {
+            authentication(userName: project.properties.mavenUser, password: project.properties.mavenPassword)
+        }
+        snapshotRepository(url: 'https://maven.jamieswhiteshirt.com/libs-snapshot/') {
+            authentication(userName: project.properties.mavenUser, password: project.properties.mavenPassword)
+        }
+
+        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+    }
+}
