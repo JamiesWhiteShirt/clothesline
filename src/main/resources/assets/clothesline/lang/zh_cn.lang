@@ -1,0 +1,10 @@
+item.clothesline.clothesline.name=晾衣绳
+item.clothesline.crank.name=曲柄
+item.clothesline.spinner.name=纺线器
+
+tile.clothesline.clotheslineAnchor.name=晾衣绳轴
+
+subtitles.block.clothesline.clothesline_anchor.squeak=滑轮：吱扭
+subtitles.block.clothesline.clothesline_anchor.rope=晾衣绳：拉动
+
+itemGroup.clothesline=晾衣绳
