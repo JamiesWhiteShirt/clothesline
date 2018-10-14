@@ -188,10 +188,6 @@ uploadArchives {
     }
 }
 
-task resolutionTest(type: DefaultTask) {
-    println file(signBundleJar.outputFile)
-}
-
 curseforge {
     if (project.hasProperty('curseForgeApiKey')) {
         apiKey = project.properties.curseForgeApiKey
