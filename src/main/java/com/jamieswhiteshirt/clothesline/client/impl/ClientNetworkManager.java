@@ -21,6 +21,6 @@ public final class ClientNetworkManager extends NetworkManager {
     }
 
     @Override
-    protected void dropItems(INetworkState state) {
+    protected void dropItems(INetworkState state, boolean dropClotheslines) {
     }
 }

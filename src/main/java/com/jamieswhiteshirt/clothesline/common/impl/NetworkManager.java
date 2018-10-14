@@ -1,9 +1,13 @@
 package com.jamieswhiteshirt.clothesline.common.impl;
 
 import com.jamieswhiteshirt.clothesline.api.*;
+import com.jamieswhiteshirt.clothesline.common.Util;
 import com.jamieswhiteshirt.clothesline.common.util.NetworkStateBuilder;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+
+import javax.annotation.Nullable;
 
 public abstract class NetworkManager implements INetworkManager {
     private final World world;
@@ -18,7 +22,7 @@ public abstract class NetworkManager implements INetworkManager {
 
     protected abstract void deleteNetwork(INetwork network);
 
-    protected abstract void dropItems(INetworkState state);
+    protected abstract void dropItems(INetworkState state, boolean dropClotheslines);
 
     @Override
     public INetworkCollection getNetworks() {
@@ -95,7 +99,7 @@ public abstract class NetworkManager implements INetworkManager {
     }
 
     @Override
-    public boolean disconnect(BlockPos posA, BlockPos posB) {
+    public boolean breakConnection(@Nullable EntityLivingBase entity, BlockPos posA, BlockPos posB) {
         if (posA.equals(posB)) {
             return false;
         }
@@ -108,7 +112,7 @@ public abstract class NetworkManager implements INetworkManager {
                 NetworkStateBuilder state = NetworkStateBuilder.fromAbsolute(network.getState());
                 state.reroot(posA);
                 deleteNetwork(network);
-                applySplitResult(state.splitEdge(posB));
+                applySplitResult(state.splitEdge(posB), !Util.isCreativePlayer(entity));
 
                 return true;
             }
@@ -117,28 +121,28 @@ public abstract class NetworkManager implements INetworkManager {
         return false;
     }
 
-    private void applySplitResult(NetworkStateBuilder.SplitResult splitResult) {
+    private void applySplitResult(NetworkStateBuilder.SplitResult splitResult, boolean dropClotheslines) {
         for (NetworkStateBuilder subState : splitResult.getSubStates()) {
             createNetwork(subState.build());
         }
-        dropItems(splitResult.getState().build());
-    }
-
-    @Override
-    public final void destroyNode(BlockPos pos) {
-        INetworkNode node = networks.getNodes().get(pos);
-        if (node != null) {
-            INetwork network = node.getNetwork();
-            NetworkStateBuilder state = NetworkStateBuilder.fromAbsolute(network.getState());
-            state.reroot(pos);
-            deleteNetwork(network);
-            applySplitResult(state.splitRoot());
-        }
+        dropItems(splitResult.getState().build(), dropClotheslines);
     }
 
     @Override
     public void createNode(BlockPos pos) {
         NetworkStateBuilder stateBuilder = NetworkStateBuilder.emptyRoot(0, pos);
         createNetwork(stateBuilder.build());
+    }
+
+    @Override
+    public final void breakNode(@Nullable EntityLivingBase entity, BlockPos pos) {
+        INetworkNode node = networks.getNodes().get(pos);
+        if (node != null) {
+            INetwork network = node.getNetwork();
+            NetworkStateBuilder state = NetworkStateBuilder.fromAbsolute(network.getState());
+            state.reroot(pos);
+            deleteNetwork(network);
+            applySplitResult(state.splitRoot(), !Util.isCreativePlayer(entity));
+        }
     }
 }

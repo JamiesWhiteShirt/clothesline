@@ -25,7 +25,7 @@ public class HitNetworkMessageHandler implements IMessageHandler<HitNetworkMessa
                     Path.Edge edge = network.getState().getPath().getEdgeForPosition(message.offset);
                     if (Validation.canReachPos(player, edge.getPositionForOffset(message.offset))) {
                         Line line = edge.getLine();
-                        manager.disconnect(line.getFromPos(), line.getToPos());
+                        manager.breakConnection(player, line.getFromPos(), line.getToPos());
                     }
                 }
             }

@@ -50,12 +50,14 @@ public final class ServerNetworkManager extends NetworkManager {
     }
 
     @Override
-    protected void dropItems(INetworkState state) {
+    protected void dropItems(INetworkState state, boolean dropClotheslines) {
         if (world.getGameRules().getBoolean("doTileDrops")) {
             for (MutableSortedIntMap.Entry<ItemStack> entry : state.getAttachments().entries()) {
                 dropAttachment(state, entry.getValue(), entry.getKey());
             }
-            dropTreeItems(state.getTree());
+            if (dropClotheslines) {
+                dropTreeItems(state.getTree());
+            }
         }
     }
 
