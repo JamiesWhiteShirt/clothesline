@@ -338,11 +338,12 @@ public class ClientProxy extends CommonProxy {
         Minecraft mc = Minecraft.getMinecraft();
         World world = mc.world;
         Entity renderViewEntity = mc.getRenderViewEntity();
-        if (world != null && renderViewEntity != null) {
+        RayTraceResult objectMouseOver = mc.objectMouseOver;
+        if (world != null && renderViewEntity != null && objectMouseOver != null) {
             INetworkManager manager = world.getCapability(Clothesline.NETWORK_MANAGER_CAPABILITY, null);
             if (manager != null) {
                 Vec3d rayFrom = renderViewEntity.getPositionEyes(partialTicks);
-                Vec3d rayTo = mc.objectMouseOver.hitVec;
+                Vec3d rayTo = objectMouseOver.hitVec;
 
                 Ray ray = new Ray(rayFrom, rayTo);
 
