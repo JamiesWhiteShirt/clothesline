@@ -6,9 +6,11 @@ import com.jamieswhiteshirt.clothesline.api.INetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.client.LineProjection;
 import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork;
+import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
 import com.jamieswhiteshirt.clothesline.common.network.message.HitNetworkMessage;
 import com.jamieswhiteshirt.clothesline.common.network.message.TryUseItemOnNetworkMessage;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -43,5 +45,10 @@ public class EdgeRaytraceHit extends NetworkRaytraceHit {
     @Override
     public void renderHighlight(RenderClotheslineNetwork renderClotheslineNetwork, float partialTicks, double x, double y, double z, float r, float g, float b, float a) {
         renderClotheslineNetwork.renderOutline(LineProjection.create(edge), x, y, z, r, g, b, a);
+    }
+
+    @Override
+    public ItemStack getPickedResult() {
+        return new ItemStack(ClotheslineItems.CLOTHESLINE);
     }
 }

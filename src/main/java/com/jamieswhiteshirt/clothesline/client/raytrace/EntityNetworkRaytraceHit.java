@@ -3,8 +3,10 @@ package com.jamieswhiteshirt.clothesline.client.raytrace;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -41,6 +43,11 @@ public final class EntityNetworkRaytraceHit extends Entity {
     @Override
     public boolean processInitialInteract(EntityPlayer player, EnumHand hand) {
         return hit.useItem(manager, player, hand);
+    }
+
+    @Override
+    public ItemStack getPickedResult(RayTraceResult target) {
+        return hit.getPickedResult();
     }
 
     public NetworkRaytraceHit getHit() {

@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.relauncher.Side;
@@ -54,5 +55,10 @@ public class AttachmentRaytraceHit extends NetworkRaytraceHit {
         GlStateManager.multMatrix(l2wBuffer);
         RenderGlobal.drawSelectionBoundingBox(attachmentBox, r, g, b, a);
         GlStateManager.popMatrix();
+    }
+
+    @Override
+    public ItemStack getPickedResult() {
+        return edge.getNetwork().getAttachment(attachmentKey);
     }
 }

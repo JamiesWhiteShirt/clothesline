@@ -4,6 +4,7 @@ import com.jamieswhiteshirt.clothesline.api.INetworkEdge;
 import com.jamieswhiteshirt.clothesline.api.INetworkManager;
     import com.jamieswhiteshirt.clothesline.client.renderer.RenderClotheslineNetwork;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -23,4 +24,6 @@ public abstract class NetworkRaytraceHit {
     public abstract boolean useItem(INetworkManager manager, EntityPlayer player, EnumHand hand);
 
     public abstract void renderHighlight(RenderClotheslineNetwork renderClotheslineNetwork, float partialTicks, double x, double y, double z, float r, float g, float b, float a);
+
+    public abstract ItemStack getPickedResult();
 }
