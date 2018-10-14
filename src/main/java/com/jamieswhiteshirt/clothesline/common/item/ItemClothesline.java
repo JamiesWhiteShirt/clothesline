@@ -5,6 +5,7 @@ import com.jamieswhiteshirt.clothesline.api.INetworkManager;
 import com.jamieswhiteshirt.clothesline.api.Utility;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineBlocks;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -24,7 +25,9 @@ public class ItemClothesline extends ItemConnector {
                 RayTraceResult result = world.rayTraceBlocks(Utility.midVec(from), Utility.midVec(to), false, true, false);
                 if (result == null || result.typeOfHit == RayTraceResult.Type.MISS) {
                     if (manager.connect(from, to)) {
-                        entity.getHeldItem(hand).shrink(1);
+                        if (!(entity instanceof EntityPlayer && ((EntityPlayer) entity).isCreative())) {
+                            entity.getHeldItem(hand).shrink(1);
+                        }
                         return true;
                     }
                 }
