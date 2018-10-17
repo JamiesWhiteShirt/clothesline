@@ -2,14 +2,14 @@
 {
   "modid": "clothesline",
   "name": "Clothesline",
-  "description": "For more than clothes!",
+  "description": "A seamless laundry experience that is definitely not an item transport mod.",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
   "authorList": ["JamiesWhiteShirt"],
   "credits": "",
-  "logoFile": "",
+  "logoFile": "/clothesline_logo.png",
   "screenshots": [],
   "dependencies": []
 }
