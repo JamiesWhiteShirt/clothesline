@@ -5,7 +5,7 @@
   "description": "A seamless laundry experience that is definitely not an item transport mod.",
   "version": "${version}",
   "mcversion": "${mcversion}",
-  "url": "",
+  "url": "https://minecraft.curseforge.com/projects/clothesline",
   "updateUrl": "",
   "authorList": ["JamiesWhiteShirt"],
   "credits": "",
