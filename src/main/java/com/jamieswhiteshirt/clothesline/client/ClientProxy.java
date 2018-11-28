@@ -247,12 +247,12 @@ public class ClientProxy extends CommonProxy {
     public void onRenderEntities(RenderEntitiesEvent event) {
         if (MinecraftForgeClient.getRenderPass() == 0) {
             WorldClient world = Minecraft.getMinecraft().world;
-            EntityPlayerSP player = Minecraft.getMinecraft().player;
-            if (world != null && player != null) {
+            Entity renderViewEntity = Minecraft.getMinecraft().getRenderViewEntity();
+            if (world != null && renderViewEntity != null) {
                 float partialTicks = event.getPartialTicks();
-                double x = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
-                double y = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks;
-                double z = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks;
+                double x = renderViewEntity.lastTickPosX + (renderViewEntity.posX - renderViewEntity.lastTickPosX) * partialTicks;
+                double y = renderViewEntity.lastTickPosY + (renderViewEntity.posY - renderViewEntity.lastTickPosY) * partialTicks;
+                double z = renderViewEntity.lastTickPosZ + (renderViewEntity.posZ - renderViewEntity.lastTickPosZ) * partialTicks;
 
                 INetworkManager manager = world.getCapability(Clothesline.NETWORK_MANAGER_CAPABILITY, null);
                 if (manager != null) {
@@ -265,8 +265,8 @@ public class ClientProxy extends CommonProxy {
                     }
                 }
 
-                if (Minecraft.getMinecraft().gameSettings.thirdPersonView <= 0) {
-                    renderFirstPersonPlayerHeldClothesline(player, x, y, z, partialTicks);
+                if (Minecraft.getMinecraft().gameSettings.thirdPersonView <= 0 && renderViewEntity instanceof EntityPlayer) {
+                    renderFirstPersonPlayerHeldClothesline((EntityPlayer) renderViewEntity, x, y, z, partialTicks);
                 }
             }
         }
@@ -278,12 +278,12 @@ public class ClientProxy extends CommonProxy {
         if (target.typeOfHit == RayTraceResult.Type.ENTITY) {
             if (target.entityHit instanceof EntityNetworkRaytraceHit) {
                 EntityNetworkRaytraceHit entity = (EntityNetworkRaytraceHit) target.entityHit;
-                EntityPlayer player = event.getPlayer();
+                Entity renderViewEntity = Minecraft.getMinecraft().getRenderViewEntity();
                 float partialTicks = event.getPartialTicks();
 
-                double x = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
-                double y = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks;
-                double z = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks;
+                double x = renderViewEntity.lastTickPosX + (renderViewEntity.posX - renderViewEntity.lastTickPosX) * partialTicks;
+                double y = renderViewEntity.lastTickPosY + (renderViewEntity.posY - renderViewEntity.lastTickPosY) * partialTicks;
+                double z = renderViewEntity.lastTickPosZ + (renderViewEntity.posZ - renderViewEntity.lastTickPosZ) * partialTicks;
 
                 GlStateManager.enableBlend();
                 GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
