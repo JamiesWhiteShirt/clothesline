@@ -10,8 +10,11 @@ import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
 import com.jamieswhiteshirt.clothesline.common.network.message.HitNetworkMessage;
 import com.jamieswhiteshirt.clothesline.common.network.message.TryUseItemOnNetworkMessage;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -29,6 +32,8 @@ public class EdgeRaytraceHit extends NetworkRaytraceHit {
         int offset = (int) Math.round(this.offset);
         INetwork network = edge.getNetwork();
         int attachmentKey = network.getState().offsetToAttachmentKey(offset);
+        Vec3d pos = edge.getPathEdge().getPositionForOffset(offset);
+        player.world.playSound(player, pos.x, pos.y, pos.z, SoundEvents.ENTITY_LEASHKNOT_BREAK, SoundCategory.BLOCKS, 1.0F, 1.0F);
         Clothesline.instance.networkChannel.sendToServer(new HitNetworkMessage(network.getId(), attachmentKey, offset));
         return true;
     }

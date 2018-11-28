@@ -4,6 +4,9 @@ import com.jamieswhiteshirt.clothesline.Clothesline;
 import com.jamieswhiteshirt.clothesline.api.*;
 import com.jamieswhiteshirt.clothesline.common.network.message.HitNetworkMessage;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -23,9 +26,11 @@ public class HitNetworkMessageHandler implements IMessageHandler<HitNetworkMessa
                 INetwork network = manager.getNetworks().getById(message.networkId);
                 if (network != null) {
                     Path.Edge edge = network.getState().getPath().getEdgeForPosition(message.offset);
-                    if (Validation.canReachPos(player, edge.getPositionForOffset(message.offset))) {
+                    Vec3d pos = edge.getPositionForOffset(message.offset);
+                    if (Validation.canReachPos(player, pos)) {
                         Line line = edge.getLine();
                         manager.breakConnection(player, line.getFromPos(), line.getToPos());
+                        world.playSound(player, pos.x, pos.y, pos.z, SoundEvents.ENTITY_LEASHKNOT_BREAK, SoundCategory.BLOCKS, 1.0F, 1.0F);
                     }
                 }
             }

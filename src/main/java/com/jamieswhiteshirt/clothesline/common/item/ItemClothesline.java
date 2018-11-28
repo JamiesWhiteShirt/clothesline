@@ -7,7 +7,9 @@ import com.jamieswhiteshirt.clothesline.common.ClotheslineBlocks;
 import com.jamieswhiteshirt.clothesline.common.Util;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
@@ -29,6 +31,7 @@ public class ItemClothesline extends ItemConnector {
                         if (!Util.isCreativePlayer(entity)) {
                             entity.getHeldItem(hand).shrink(1);
                         }
+                        world.playSound(entity instanceof EntityPlayer ? (EntityPlayer) entity : null, to, SoundEvents.ENTITY_LEASHKNOT_PLACE, SoundCategory.BLOCKS, 1.0F, 1.0F);
                         return true;
                     }
                 }
