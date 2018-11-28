@@ -1,3 +1,9 @@
+# 0.0.2.1
+
+- Updated details about Clothesline in Mods menu
+- Added sounds effects to connecting and disconnecting clotheslines
+- Fixed so that the right view entity is used for rendering
+
 # 0.0.2.0
 
 - Added Chinese translation ([#9](https://github.com/JamiesWhiteShirt/clothesline/pull/9))

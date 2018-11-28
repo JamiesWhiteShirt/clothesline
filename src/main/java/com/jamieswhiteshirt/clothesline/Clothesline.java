@@ -64,7 +64,7 @@ import java.util.function.BiPredicate;
 )
 public class Clothesline {
     public static final String MODID = "clothesline";
-    public static final String VERSION = "1.12.2-0.0.2.0";
+    public static final String VERSION = "1.12.2-0.0.2.1";
     public static final String DEPENDENCIES = "required-after:clothesline-hooks;required-after:forge@[14.23.4.2705,)";
     public static final String CERTIFICATE_FINGERPRINT = "3bae2d07b93a5971335cb2de15230c19c103db32";
 
