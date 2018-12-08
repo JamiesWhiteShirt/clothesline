@@ -1,3 +1,6 @@
+# 0.0.2.2
+- Fixed incompatibility with iChunUtil and potentially other mods
+
 # 0.0.2.1
 
 - Updated details about Clothesline in Mods menu
