@@ -50,8 +50,8 @@ configurations {
 dependencies {
     contained 'com.jamieswhiteshirt:rtree-3i-lite:0.1-SNAPSHOT'
     compile 'com.jamieswhiteshirt:rtree-3i-lite:0.1-SNAPSHOT'
-    contained 'com.jamieswhiteshirt:clothesline-hooks:1.12.2-0.0.1.1'
-    deobfCompile 'com.jamieswhiteshirt:clothesline-hooks:1.12.2-0.0.1.1'
+    contained 'com.jamieswhiteshirt:clothesline-hooks:1.12.2-0.0.1.2'
+    deobfCompile 'com.jamieswhiteshirt:clothesline-hooks:1.12.2-0.0.1.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.2.+'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.2.+'
     testCompile 'org.mockito:mockito-core:2.+'
