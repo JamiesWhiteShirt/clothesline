@@ -1,6 +1,7 @@
 # Clothesline
 [![Build Status](https://travis-ci.com/JamiesWhiteShirt/clothesline.svg?branch=master)](https://travis-ci.com/JamiesWhiteShirt/clothesline)
-[![](http://cf.way2muchnoise.eu/clothesline.svg)](https://minecraft.curseforge.com/projects/clothesline)
+[![CurseForge Downloads](http://cf.way2muchnoise.eu/clothesline.svg)](https://minecraft.curseforge.com/projects/clothesline)
+[![Maven Repository](https://img.shields.io/maven-metadata/v/https/maven.jamieswhiteshirt.com/libs-release/com/jamieswhiteshirt/clothesline/maven-metadata.xml.svg)](https://maven.jamieswhiteshirt.com/libs-release/com/jamieswhiteshirt/clothesline/)
 
 A seamless laundry experience that is definitely not an item transport mod.
 
