@@ -48,8 +48,8 @@ configurations {
 }
 
 dependencies {
-    contained 'com.jamieswhiteshirt:rtree-3i-lite:0.1-SNAPSHOT'
-    compile 'com.jamieswhiteshirt:rtree-3i-lite:0.1-SNAPSHOT'
+    contained 'com.jamieswhiteshirt:rtree-3i-lite:0.3.0'
+    compile 'com.jamieswhiteshirt:rtree-3i-lite:0.3.0'
     contained 'com.jamieswhiteshirt:clothesline-hooks:1.12.2-0.0.1.2'
     deobfCompile 'com.jamieswhiteshirt:clothesline-hooks:1.12.2-0.0.1.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.2.+'

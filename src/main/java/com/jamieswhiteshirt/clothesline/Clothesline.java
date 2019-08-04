@@ -195,7 +195,7 @@ public class Clothesline {
                 AxisAlignedBB aabb = blockAabb.offset(pos);
                 Box box = Box.create(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
                 boolean intersects = manager.getNetworks().getEdges()
-                    .values(box::intersects)
+                    .values(box::intersectsClosed)
                     .anyMatch(networkEdge -> {
                         Line line = networkEdge.getPathEdge().getLine();
                         return aabb.calculateIntercept(line.getFromVec(), line.getToVec()) != null;

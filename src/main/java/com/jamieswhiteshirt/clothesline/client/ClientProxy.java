@@ -369,7 +369,7 @@ public class ClientProxy extends CommonProxy {
         );
 
         NetworkRaytraceHit hit = null;
-        List<INetworkEdge> edges = manager.getNetworks().getEdges().values(box::intersects).collect(Collectors.toList());
+        List<INetworkEdge> edges = manager.getNetworks().getEdges().values(box::intersectsClosed).collect(Collectors.toList());
         for (INetworkEdge edge : edges) {
             NetworkRaytraceHit hitCandidate = raytraceEdge(ray, edge, maxDistanceSq, partialTicks);
             if (hitCandidate != null && hitCandidate.distanceSq < maxDistanceSq) {
