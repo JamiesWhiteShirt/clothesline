@@ -3,9 +3,11 @@ package com.jamieswhiteshirt.clothesline.client.renderer.tileentity;
 import com.jamieswhiteshirt.clothesline.api.INetwork;
 import com.jamieswhiteshirt.clothesline.api.INetworkNode;
 import com.jamieswhiteshirt.clothesline.api.AttachmentUnit;
+import com.jamieswhiteshirt.clothesline.common.ClotheslineBlocks;
 import com.jamieswhiteshirt.clothesline.common.ClotheslineItems;
 import com.jamieswhiteshirt.clothesline.common.block.BlockClotheslineAnchor;
 import com.jamieswhiteshirt.clothesline.common.tileentity.TileEntityClotheslineAnchor;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
@@ -25,6 +27,8 @@ public class TileEntityClotheslineAnchorRenderer extends TileEntitySpecialRender
 
     @Override
     public void render(TileEntityClotheslineAnchor te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
+        IBlockState state = te.getWorld().getBlockState(te.getPos());
+        if (state.getBlock() != ClotheslineBlocks.CLOTHESLINE_ANCHOR) return;
         INetworkNode node = te.getNetworkNode();
         float crankRotation = 0.0F;
         if (node != null) {
@@ -34,7 +38,7 @@ public class TileEntityClotheslineAnchorRenderer extends TileEntitySpecialRender
         }
         GlStateManager.pushMatrix();
         GlStateManager.translate(x + 0.5D, y + 0.5D, z + 0.5D);
-        if (te.getWorld().getBlockState(te.getPos()).getValue(BlockClotheslineAnchor.FACING) == EnumFacing.DOWN) {
+        if (state.getValue(BlockClotheslineAnchor.FACING) == EnumFacing.DOWN) {
             GlStateManager.rotate(180.0F, 1.0F, 0.0F, 0.0F);
             crankRotation = -crankRotation;
         }
