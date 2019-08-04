@@ -1,3 +1,7 @@
+# 0.0.3.0
+- Updated to rtree-3i-lite 0.3.0
+- Fixed rare rendering crash
+
 # 0.0.2.2
 - Fixed incompatibility with iChunUtil and potentially other mods
 

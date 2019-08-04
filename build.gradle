@@ -16,7 +16,7 @@ apply plugin: 'jacoco'
 apply plugin: 'maven'
 apply plugin: 'signing'
 
-version = '1.12.2-0.0.2.2'
+version = '1.12.2-0.0.3.0'
 group = 'com.jamieswhiteshirt'
 archivesBaseName = 'clothesline'
 
